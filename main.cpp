@@ -1,119 +1,120 @@
 #include <algorithm>
+#include <chrono>
 #include <cmath>
 #include <fstream>
 #include <iostream>
 #include <sstream>
 #include <vector>
 
-void load_dataset(const std::string &fname, std::vector<std::vector<float>> &ds)
+class Dataset
 {
-    std::ifstream ifs(fname);
+public:
+    std::vector<std::vector<float>> cols;
+    int n_rows;
+    int n_cols;
 
-    int row_idx = -1;
+    Dataset() : n_rows(0), n_cols(0) {}
 
-    while (!ifs.eof()) {
-        std::vector<float> row;
-        std::string line;
-        ifs >> line;
+    void load_csv(const std::string &fname)
+    {
+        n_rows = -1;
+        std::ifstream ifs(fname);
 
-        row_idx++;
+        while (!ifs.eof()) {
+            std::string line;
+            ifs >> line;
+            n_rows++;
 
-        // Skip header
-        if (row_idx == 0) {
-            continue;
+            std::stringstream ss(line);
+            std::string cell;
+
+            for (int i = 0; std::getline(ss, cell, ','); i++) {
+                if (n_rows == 0) {
+                    cols.push_back(std::vector<float>());
+                    n_cols++;
+                    continue;
+                }
+
+                cols[i].push_back(std::stof(cell));
+            }
+        }
+    }
+};
+
+class Block
+{
+public:
+    std::vector<const float *> cols;
+    int E;
+    int tau;
+    int n;
+
+    Block(const Dataset &ds, int col_idx, int E, int tau) : E(E), tau(tau)
+    {
+        cols.resize(E);
+
+        for (int i = 0; i < E; i++) {
+            cols[i] = ds.cols[col_idx].data() + (E - i - 1) * tau;
         }
 
-        std::stringstream ss(line);
-        std::string cell;
+        n = ds.n_rows - (E - 1) * tau;
+    }
 
-        while (std::getline(ss, cell, ',')) {
-            row.push_back(std::stod(cell));
+    void print()
+    {
+        for (int i = 0; i < n; i++) {
+            for (int j = 0; j < E; j++) {
+                std::cout << cols[j][i] << ", ";
+            }
+            std::cout << std::endl;
         }
-
-        ds.push_back(row);
     }
 
-    std::cout << ds.size() << " rows read from " << fname << std::endl;
-}
+    void
+    calc_distances(std::vector<std::vector<std::pair<float, int>>> &distances)
+    {
+        distances.resize(n);
 
-void select_timeseries(const std::vector<std::vector<float>> &ds, int col_idx,
-                       std::vector<float> &ts)
-{
-    for (const auto &row : ds) {
-        ts.push_back(row[col_idx]);
-    }
-}
+        #pragma omp parallel for
+        for (int i = 0; i < n; i++) {
+            std::vector<std::pair<float, int>> dist_vec(n);
 
-void print_timeseries(const std::vector<float> &ts)
-{
-    for (const auto val : ts) {
-        std::cout << val << std::endl;
-    }
-}
+            for (int j = 0; j < n; j++) {
+                float norm = 0.0f;
 
-void create_block(const std::vector<float> &ts, int E, int tau,
-                  std::vector<const float *> &block)
-{
-    block.resize(E);
+                for (int k = 0; k < E; k++) {
+                    norm +=
+                        (cols[k][i] - cols[k][j]) * (cols[k][i] - cols[k][j]);
+                }
 
-    for (int i = 0; i < E; i++) {
-        block[i] = ts.data() + (E - i - 1) * tau;
-    }
-}
-
-void print_block(const std::vector<const float *> &block, int len)
-{
-    for (int i = 0; i < len; i++) {
-        for (int j = 0; j < block.size(); j++) {
-            std::cout << block[j][i] << ", ";
-        }
-        std::cout << std::endl;
-    }
-}
-
-void calc_distances(const std::vector<const float *> &block, int len,
-                    std::vector<std::vector<std::pair<float, int>>> &distances)
-{
-    distances.resize(len);
-
-    #pragma omp parallel for
-    for (int i = 0; i < len; i++) {
-        std::vector<std::pair<float, int>> dist_vec(len);
-
-        for (int j = 0; j < len; j++) {
-            float norm = 0.0f;
-
-            for (int k = 0; k < block.size(); k++) {
-                norm +=
-                    (block[k][i] - block[k][j]) * (block[k][i] - block[k][j]);
+                dist_vec[j] = std::make_pair(std::sqrt(norm), j);
             }
 
-            dist_vec[j] = std::make_pair(std::sqrt(norm), j);
+            std::sort(dist_vec.begin(), dist_vec.end());
+            distances[i] = dist_vec;
         }
-
-        std::sort(dist_vec.begin(), dist_vec.end());
-        distances[i] = dist_vec;
     }
-}
+};
 
 int main(int argc, char *argv[])
 {
-    std::vector<std::vector<float>> ds;
+    Dataset ds;
+    ds.load_csv(argv[1]);
 
-    load_dataset(argv[1], ds);
+    std::cout << ds.n_rows << " rows read from " << argv[1] << std::endl;
 
-    for (int E = 20; E <= 20; E++) {
-        std::vector<float> ts;
+    const int tau = 1;
+    const int E_max = 20;
 
-        select_timeseries(ds, 0, ts);
+    for (int i = 0; i < ds.n_cols; i++) {
+        std::cout << "Processing column #" << i << std::endl;
 
-        std::vector<const float *> block;
+        for (int E = 2; E <= E_max; E++) {
+            Block block(ds, i, E, tau);
+            std::vector<std::vector<std::pair<float, int>>> distances;
 
-        create_block(ts, E, 1, block);
-
-        std::vector<std::vector<std::pair<float, int>>> distances;
-
-        calc_distances(block, ts.size() - (E - 1) * 1, distances);
+            block.calc_distances(distances);
+        }
     }
 
     return 0;
