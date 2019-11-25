@@ -74,11 +74,12 @@ public:
     calc_distances(std::vector<std::vector<std::pair<float, int>>> &distances)
     {
         distances.resize(n);
+        for (int i = 0; i < n; i++) {
+            distances[i].resize(n);
+        }
 
         #pragma omp parallel for
         for (int i = 0; i < n; i++) {
-            std::vector<std::pair<float, int>> dist_vec(n);
-
             for (int j = 0; j < n; j++) {
                 float norm = 0.0f;
 
@@ -87,11 +88,11 @@ public:
                         (cols[k][i] - cols[k][j]) * (cols[k][i] - cols[k][j]);
                 }
 
-                dist_vec[j] = std::make_pair(std::sqrt(norm), j);
+                distances[i][j].first = std::sqrt(norm);
+                distances[i][j].second = j;
             }
 
-            std::sort(dist_vec.begin(), dist_vec.end());
-            distances[i] = dist_vec;
+            std::sort(distances[i].begin(), distances[i].end());
         }
     }
 };
