@@ -1,10 +1,11 @@
 #include <algorithm>
-#include <chrono>
 #include <cmath>
 #include <fstream>
 #include <iostream>
 #include <sstream>
 #include <vector>
+
+#include "timer.hpp"
 
 class Dataset
 {
@@ -78,7 +79,7 @@ public:
             distances[i].resize(n);
         }
 
-        #pragma omp parallel for
+#pragma omp parallel for
         for (int i = 0; i < n; i++) {
             for (int j = 0; j < n; j++) {
                 float norm = 0.0f;
@@ -91,7 +92,10 @@ public:
                 distances[i][j].first = std::sqrt(norm);
                 distances[i][j].second = j;
             }
+        }
 
+#pragma omp parallel for
+        for (int i = 0; i < n; i++) {
             std::sort(distances[i].begin(), distances[i].end());
         }
     }
@@ -107,8 +111,12 @@ int main(int argc, char *argv[])
     const int tau = 1;
     const int E_max = 20;
 
+    Timer timer;
+
     for (int i = 0; i < ds.n_cols; i++) {
         std::cout << "Processing column #" << i << std::endl;
+
+        timer.start();
 
         for (int E = 2; E <= E_max; E++) {
             Block block(ds, i, E, tau);
@@ -116,6 +124,13 @@ int main(int argc, char *argv[])
 
             block.calc_distances(distances);
         }
+
+        timer.stop();
+
+        std::cout << "Column #" << i << " processed in " << timer.elapsed()
+                  << " [ms]" << std::endl;
+
+        timer.reset();
     }
 
     return 0;
