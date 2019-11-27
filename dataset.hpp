@@ -29,12 +29,14 @@ public:
             std::string cell;
 
             for (int i = 0; std::getline(ss, cell, ','); i++) {
+                // Read header
                 if (n_rows == 0) {
                     cols.push_back(std::vector<float>());
                     n_cols++;
                     continue;
                 }
 
+                // Read body
                 cols[i].push_back(std::stof(cell));
             }
         }
