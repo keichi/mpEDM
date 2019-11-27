@@ -11,16 +11,17 @@
 class LUT
 {
 public:
-    // distances[i][j]: Eucledian distance between point i and j
-    std::vector<std::vector<float>> distances;
-    // indices[i][j]: Index of the j-th closest point from point i
-    std::vector<std::vector<int>> indices;
+    // distances[i * n + j]: Eucledian distance between point i and j
+    std::vector<float> distances;
+    // indices[i * n + j]: Index of the j-th closest point from point i
+    std::vector<int> indices;
+    int n;
 
     void print_distance_matrix() const
     {
-        for (int i = 0; i < distances.size(); i++) {
-            for (int j = 0; j < distances[i].size(); j++) {
-                std::cout << distances[i][j] << ", ";
+        for (int i = 0; i < n; i++) {
+            for (int j = 0; j < n; j++) {
+                std::cout << distances[i * n + j] << ", ";
             }
             std::cout << std::endl;
         }
@@ -28,10 +29,10 @@ public:
 
     void print() const
     {
-        for (int i = 0; i < indices.size(); i++) {
-            for (int j = 0; j < indices[i].size(); j++) {
-                int idx = indices[i][j];
-                std::cout << idx << " (" << distances[i][idx] << "), ";
+        for (int i = 0; i < n; i++) {
+            for (int j = 0; j < n; j++) {
+                int idx = indices[i * n + j];
+                std::cout << idx << " (" << distances[i * n + idx] << "), ";
             }
             std::cout << std::endl;
         }
@@ -76,8 +77,9 @@ public:
 
     void compute_lut(LUT &lut) const
     {
-        lut.distances.resize(n, std::vector<float>(n));
-        lut.indices.resize(n, std::vector<int>(n));
+        lut.n = n;
+        lut.distances.resize(n * n);
+        lut.indices.resize(n * n);
 
         // Compute distances between all points
         for (int i = 0; i < n; i++) {
@@ -89,21 +91,22 @@ public:
                     norm += diff * diff;
                 }
 
-                lut.distances[i][j] = std::sqrt(norm);
-                lut.indices[i][j] = j;
+                lut.distances[i * n + j] = std::sqrt(norm);
+                lut.indices[i * n + j] = j;
             }
         }
 
         for (int i = 0; i < n; i++) {
-            lut.distances[i][i] = std::numeric_limits<float>::max();
+            lut.distances[i * n + i] = std::numeric_limits<float>::max();
         }
 
-        // Perform sorting
+        // Sort indices
         for (int i = 0; i < n; i++) {
-            std::sort(lut.indices[i].begin(), lut.indices[i].end(),
-                      [&](int x, int y) -> int {
-                          return lut.distances[i][x] < lut.distances[i][y];
-                      });
+            std::sort(
+                lut.indices.begin() + i * n, lut.indices.begin() + (i + 1) * n,
+                [&](int a, int b) -> int {
+                    return lut.distances[i * n + a] < lut.distances[i * n + b];
+                });
         }
     }
 };
