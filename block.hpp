@@ -15,6 +15,27 @@ public:
     std::vector<std::vector<float>> distances;
     // indices[i][j]: Index of the j-th closest point from point i
     std::vector<std::vector<int>> indices;
+
+    void print_distance_matrix() const
+    {
+        for (int i = 0; i < distances.size(); i++) {
+            for (int j = 0; j < distances[i].size(); j++) {
+                std::cout << distances[i][j] << ", ";
+            }
+            std::cout << std::endl;
+        }
+    }
+
+    void print() const
+    {
+        for (int i = 0; i < indices.size(); i++) {
+            for (int j = 0; j < indices[i].size(); j++) {
+                int idx = indices[i][j];
+                std::cout << idx << " (" << distances[i][idx] << "), ";
+            }
+            std::cout << std::endl;
+        }
+    }
 };
 
 class Block
