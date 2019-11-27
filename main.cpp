@@ -35,6 +35,8 @@ int main(int argc, char *argv[])
             LUT lut;
 
             block.compute_lut(lut);
+
+            // lut.print_distance_matrix();
         }
 
         timer.stop();

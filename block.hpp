@@ -42,10 +42,9 @@ public:
 class Block
 {
 public:
-    // Columns of a block
-    // Note that we do NOT own memory. The pointers are pointing to the
-    // vectors held by Dataset.
-    std::vector<const float *> cols;
+    // Pointer to the timeseries we are working on
+    // Note that we do NOT own memory, Dataset holds it
+    const float *col;
     // Embedding dimension (number of columns)
     int E;
     // Lag
@@ -55,13 +54,7 @@ public:
 
     Block(const Dataset &ds, int col_idx, int E, int tau) : E(E), tau(tau)
     {
-        cols.resize(E);
-
-        // Perform embedding
-        for (int i = 0; i < E; i++) {
-            cols[i] = ds.cols[col_idx].data() + (E - i - 1) * tau;
-        }
-
+        col = ds.cols[col_idx].data();
         n = ds.n_rows - (E - 1) * tau;
     }
 
@@ -69,7 +62,7 @@ public:
     {
         for (int i = 0; i < n; i++) {
             for (int j = 0; j < E; j++) {
-                std::cout << cols[j][i] << ", ";
+                std::cout << col[(E - j - 1) * tau + i] << ", ";
             }
             std::cout << std::endl;
         }
@@ -87,7 +80,8 @@ public:
                 float norm = 0.0f;
 
                 for (int k = 0; k < E; k++) {
-                    float diff = cols[k][i] - cols[k][j];
+                    // Perform embedding on-the-fly
+                    float diff = col[i + k * tau] - col[j + k * tau];
                     norm += diff * diff;
                 }
 
