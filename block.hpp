@@ -3,9 +3,17 @@
 
 #include <cmath>
 #include <iostream>
+#include <limits>
 #include <vector>
 
 #include "dataset.hpp"
+
+class LUT
+{
+public:
+    std::vector<std::vector<float>> distances;
+    std::vector<std::vector<int>> indices;
+};
 
 class Block
 {
@@ -26,7 +34,7 @@ public:
         n = ds.n_rows - (E - 1) * tau;
     }
 
-    void print()
+    void print() const
     {
         for (int i = 0; i < n; i++) {
             for (int j = 0; j < E; j++) {
@@ -36,32 +44,34 @@ public:
         }
     }
 
-    void
-    calc_distances(std::vector<std::vector<std::pair<float, int>>> &distances)
+    void compute_lut(LUT &lut) const
     {
-        distances.resize(n);
-        for (int i = 0; i < n; i++) {
-            distances[i].resize(n);
-        }
+        lut.distances.resize(n, std::vector<float>(n));
+        lut.indices.resize(n, std::vector<int>(n));
 
-        #pragma omp parallel for
         for (int i = 0; i < n; i++) {
             for (int j = 0; j < n; j++) {
                 float norm = 0.0f;
 
                 for (int k = 0; k < E; k++) {
-                    norm +=
-                        (cols[k][i] - cols[k][j]) * (cols[k][i] - cols[k][j]);
+                    float diff = cols[k][i] - cols[k][j];
+                    norm += diff * diff;
                 }
 
-                distances[i][j].first = std::sqrt(norm);
-                distances[i][j].second = j;
+                lut.distances[i][j] = std::sqrt(norm);
+                lut.indices[i][j] = j;
             }
         }
 
-        #pragma omp parallel for
         for (int i = 0; i < n; i++) {
-            std::sort(distances[i].begin(), distances[i].end());
+            lut.distances[i][i] = std::numeric_limits<float>::max();
+        }
+
+        for (int i = 0; i < n; i++) {
+            std::sort(lut.indices[i].begin(), lut.indices[i].end(),
+                      [&](int x, int y) -> int {
+                          return lut.distances[i][x] < lut.distances[i][y];
+                      });
         }
     }
 };

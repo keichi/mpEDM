@@ -5,8 +5,8 @@
 #include <sstream>
 #include <vector>
 
-#include "timer.hpp"
 #include "block.hpp"
+#include "timer.hpp"
 
 int main(int argc, char *argv[])
 {
@@ -21,21 +21,21 @@ int main(int argc, char *argv[])
     Timer timer;
 
     for (int i = 0; i < ds.n_cols; i++) {
-        std::cout << "Processing column #" << i << std::endl;
+        std::cout << "Computing LUT for column #" << i << std::endl;
 
         timer.start();
 
         for (int E = 2; E <= E_max; E++) {
             Block block(ds, i, E, tau);
-            std::vector<std::vector<std::pair<float, int>>> distances;
+            LUT lut;
 
-            block.calc_distances(distances);
+            block.compute_lut(lut);
         }
 
         timer.stop();
 
-        std::cout << "Column #" << i << " processed in " << timer.elapsed()
-                  << " [ms]" << std::endl;
+        std::cout << "LUT computed in " << timer.elapsed() << " [ms]"
+                  << std::endl;
 
         timer.reset();
     }
