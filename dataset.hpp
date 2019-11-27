@@ -19,10 +19,9 @@ public:
     {
         n_rows = -1;
         std::ifstream ifs(fname);
+        std::string line;
 
-        while (!ifs.eof()) {
-            std::string line;
-            ifs >> line;
+        while (ifs >> line) {
             n_rows++;
 
             std::stringstream ss(line);
