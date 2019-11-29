@@ -1,12 +1,14 @@
 #ifndef __BLOCK_HPP__
 #define __BLOCK_HPP__
 
+#include <algorithm>
 #include <cmath>
 #include <iostream>
 #include <limits>
 #include <vector>
 
 #include "dataset.hpp"
+#include "timer.hpp"
 
 class LUT
 {
@@ -68,40 +70,80 @@ public:
         }
     }
 
-    void compute_lut(LUT &lut) const
+    void compute_lut(LUT &out, int top_k, LUT &cache) const
     {
-        lut.n = n;
-        lut.distances.resize(n * n);
-        lut.indices.resize(n * n);
+        const int N = n;
+
+        cache.n = n;
+        cache.distances.resize(n * n);
+        cache.indices.resize(n * n);
+
+        Timer timer;
+        timer.start();
 
         // Compute distances between all points
-        for (int i = 0; i < n; i++) {
-            for (int j = 0; j < n; j++) {
-                float norm = 0.0f;
+        #pragma omp parallel for
+        for (int i = 0; i < N; i++) {
+            std::vector<float> norms(n);
 
-                for (int k = 0; k < E; k++) {
+            for (int k = 0; k < E; k++) {
+                for (int j = 0; j < N; j++) {
                     // Perform embedding on-the-fly
                     float diff = col[i + k * tau] - col[j + k * tau];
-                    norm += diff * diff;
+                    norms[j] += diff * diff;
                 }
+            }
 
-                lut.distances[i * n + j] = std::sqrt(norm);
-                lut.indices[i * n + j] = j;
+            #pragma ivdep
+            for (int j = 0; j < N; j++) {
+                cache.distances[i * N + j] = std::sqrt(norms[j]);
+                cache.indices[i * N + j] = j;
             }
         }
 
-        for (int i = 0; i < n; i++) {
-            lut.distances[i * n + i] = std::numeric_limits<float>::max();
+        #pragma ivdep
+        for (int i = 0; i < N; i++) {
+            cache.distances[i * N + i] = std::numeric_limits<float>::max();
         }
 
+        timer.stop();
+        // std::cout << "Distance calculated in " << timer.elapsed() << " [ms]"
+        //           << std::endl;
+        timer.reset();
+
+        timer.start();
+
         // Sort indices
-        for (int i = 0; i < n; i++) {
-            std::sort(
-                lut.indices.begin() + i * n, lut.indices.begin() + (i + 1) * n,
+        #pragma omp parallel for
+        for (int i = 0; i < N; i++) {
+            std::partial_sort(
+                cache.indices.begin() + i * n,
+                cache.indices.begin() + i * n + top_k,
+                cache.indices.begin() + (i + 1) * n,
                 [&](int a, int b) -> int {
-                    return lut.distances[i * n + a] < lut.distances[i * n + b];
+                    return cache.distances[i * n + a] < cache.distances[i * n + b];
                 });
         }
+
+        timer.stop();
+        // std::cout << "Sorted in " << timer.elapsed() << " [ms]" << std::endl;
+
+        out.n = n;
+        out.distances.resize(top_k * n);
+        out.indices.resize(top_k * n);
+
+        #pragma omp parallel for
+        for (int i = 0; i < N; i++) {
+            std::copy(cache.distances.begin() + i * n,
+                      cache.distances.begin() + i * n + top_k,
+                      out.distances.begin() + i * top_k
+                      );
+            std::copy(cache.indices.begin() + i * n,
+                      cache.indices.begin() + i * n + top_k,
+                      out.indices.begin() + i * top_k
+                      );
+        }
+
     }
 };
 

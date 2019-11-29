@@ -22,21 +22,22 @@ int main(int argc, char *argv[])
 
     const int tau = 1;
     const int E_max = 20;
+    const int k = 100;
 
     Timer timer;
+
+    LUT cache;
 
     for (int i = 0; i < ds.n_cols; i++) {
         std::cout << "Computing LUT for column #" << i << std::endl;
 
         timer.start();
 
-        for (int E = 2; E <= E_max; E++) {
+        for (int E = 1; E <= E_max; E++) {
             Block block(ds, i, E, tau);
-            LUT lut;
+            LUT result;
 
-            block.compute_lut(lut);
-
-            // lut.print_distance_matrix();
+            block.compute_lut(result, k, cache);
         }
 
         timer.stop();
