@@ -54,10 +54,10 @@ public:
     // Number of rows
     int n;
 
-    Block(const Dataset &ds, int col_idx, int E, int tau) : E(E), tau(tau)
+    Block(const Dataset &ds, int col_idx, int E, int tau)
+        : col(ds.cols[col_idx].data()), E(E), tau(tau),
+          n(ds.n_rows - (E - 1) * tau)
     {
-        col = ds.cols[col_idx].data();
-        n = ds.n_rows - (E - 1) * tau;
     }
 
     void print() const
@@ -72,8 +72,6 @@ public:
 
     void compute_lut(LUT &out, int top_k, LUT &cache) const
     {
-        const int N = n;
-
         cache.n = n;
         cache.distances.resize(n * n);
         cache.indices.resize(n * n);
@@ -83,27 +81,28 @@ public:
 
         // Compute distances between all points
         #pragma omp parallel for
-        for (int i = 0; i < N; i++) {
+        for (int i = 0; i < n; i++) {
             std::vector<float> norms(n);
 
             for (int k = 0; k < E; k++) {
-                for (int j = 0; j < N; j++) {
+                #pragma omp simd
+                #pragma code_align 32
+                for (int j = 0; j < n; j++) {
                     // Perform embedding on-the-fly
                     float diff = col[i + k * tau] - col[j + k * tau];
                     norms[j] += diff * diff;
                 }
             }
 
-            #pragma ivdep
-            for (int j = 0; j < N; j++) {
-                cache.distances[i * N + j] = std::sqrt(norms[j]);
-                cache.indices[i * N + j] = j;
+            #pragma omp simd
+            for (int j = 0; j < n; j++) {
+                cache.distances[i * n + j] = norms[j];
+                cache.indices[i * n + j] = j;
             }
         }
 
-        #pragma ivdep
-        for (int i = 0; i < N; i++) {
-            cache.distances[i * N + i] = std::numeric_limits<float>::max();
+        for (int i = 0; i < n; i++) {
+            cache.distances[i * n + i] = std::numeric_limits<float>::max();
         }
 
         timer.stop();
@@ -115,14 +114,14 @@ public:
 
         // Sort indices
         #pragma omp parallel for
-        for (int i = 0; i < N; i++) {
-            std::partial_sort(
-                cache.indices.begin() + i * n,
-                cache.indices.begin() + i * n + top_k,
-                cache.indices.begin() + (i + 1) * n,
-                [&](int a, int b) -> int {
-                    return cache.distances[i * n + a] < cache.distances[i * n + b];
-                });
+        for (int i = 0; i < n; i++) {
+            std::partial_sort(cache.indices.begin() + i * n,
+                              cache.indices.begin() + i * n + top_k,
+                              cache.indices.begin() + (i + 1) * n,
+                              [&](int a, int b) -> int {
+                                  return cache.distances[i * n + a] <
+                                         cache.distances[i * n + b];
+                              });
         }
 
         timer.stop();
@@ -133,17 +132,16 @@ public:
         out.indices.resize(top_k * n);
 
         #pragma omp parallel for
-        for (int i = 0; i < N; i++) {
-            std::copy(cache.distances.begin() + i * n,
-                      cache.distances.begin() + i * n + top_k,
-                      out.distances.begin() + i * top_k
-                      );
+        for (int i = 0; i < n; i++) {
+            #pragma omp simd
+            for (int j = 0; j < top_k; j++) {
+                cache.distances[i * n + j] =
+                    std::sqrt(cache.distances[i * n + j]);
+            }
             std::copy(cache.indices.begin() + i * n,
                       cache.indices.begin() + i * n + top_k,
-                      out.indices.begin() + i * top_k
-                      );
+                      out.indices.begin() + i * top_k);
         }
-
     }
 };
 
