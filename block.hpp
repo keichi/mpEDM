@@ -14,16 +14,6 @@
 class Block
 {
 public:
-    // Pointer to the timeseries we are working on
-    // Note that we do NOT own memory, Dataset holds it
-    const float *col;
-    // Embedding dimension (number of columns)
-    int E;
-    // Lag
-    int tau;
-    // Number of rows
-    int n;
-
     Block(const Dataset &ds, int col_idx, int E, int tau)
         : col(ds.cols[col_idx].data()), E(E), tau(tau),
           n(ds.n_rows - (E - 1) * tau)
@@ -42,9 +32,7 @@ public:
 
     void compute_lut(LUT &out, int top_k, LUT &cache) const
     {
-        cache.n = n;
-        cache.distances.resize(n * n);
-        cache.indices.resize(n * n);
+        cache.resize(n, n);
 
         Timer timer;
         timer.start();
@@ -97,15 +85,13 @@ public:
         timer.stop();
         // std::cout << "Sorted in " << timer.elapsed() << " [ms]" << std::endl;
 
-        out.n = n;
-        out.distances.resize(top_k * n);
-        out.indices.resize(top_k * n);
+        out.resize(n, top_k);
 
         #pragma omp parallel for
         for (int i = 0; i < n; i++) {
             #pragma omp simd
             for (int j = 0; j < top_k; j++) {
-                cache.distances[i * n + j] =
+                out.distances[i * n + j] =
                     std::sqrt(cache.distances[i * n + j]);
             }
             std::copy(cache.indices.begin() + i * n,
@@ -113,6 +99,17 @@ public:
                       out.indices.begin() + i * top_k);
         }
     }
+
+protected:
+    // Pointer to the timeseries we are working on
+    // Note that we do NOT own memory, Dataset holds it
+    const float *col;
+    // Embedding dimension (number of columns)
+    int E;
+    // Lag
+    int tau;
+    // Number of rows
+    int n;
 };
 
 #endif
