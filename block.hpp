@@ -89,14 +89,15 @@ public:
 
         #pragma omp parallel for
         for (int i = 0; i < n; i++) {
+
             #pragma omp simd
+            #pragma nounroll
             for (int j = 0; j < top_k; j++) {
-                out.distances[i * n + j] =
-                    std::sqrt(cache.distances[i * n + j]);
+                int idx = cache.indices[i * n + j];
+                out.distances[i * top_k + j] =
+                    std::sqrt(cache.distances[i * n + idx]);
+                out.indices[i * top_k + j] = idx;
             }
-            std::copy(cache.indices.begin() + i * n,
-                      cache.indices.begin() + i * n + top_k,
-                      out.indices.begin() + i * top_k);
         }
     }
 
