@@ -35,6 +35,12 @@ int main(int argc, char *argv[])
         return 0;
     }
 
+    if (result["input"].count() != 1) {
+        std::cerr << "No input file" << std::endl;
+        std::cout << options.help() << std::endl;
+        return 1;
+    }
+
     const std::string fname = result["input"].as<std::string>();
     const int tau = result["tau"].as<int>();
     const int E_max = result["emax"].as<int>();
