@@ -15,9 +15,11 @@ public:
 
     Dataset() : n_rows(0), n_cols(0) {}
 
-    void load_csv(const std::string &fname)
+    Dataset(const std::string &fname)
     {
         n_rows = -1;
+        n_cols = 0;
+
         std::ifstream ifs(fname);
         std::string line;
 
