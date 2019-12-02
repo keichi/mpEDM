@@ -40,11 +40,19 @@ int main(int argc, char *argv[])
     const int E_max = result["emax"].as<int>();
     const int k = result["topk"].as<int>();
 
+    Timer timer_tot;
+
     std::cout << "Reading input dataset from " << fname << std::endl;
+
+    timer_tot.start();
 
     Dataset ds(fname);
 
-    std::cout << ds.n_rows << " rows read" << std::endl;
+    timer_tot.stop();
+
+    std::cout << ds.n_rows << " rows read in " << timer_tot.elapsed() << " [ms]" << std::endl;
+
+    timer_tot.start();
 
     int lut_n = ds.n_rows - (E_max - 1) * tau;
     if (lut_n <= 0) {
@@ -56,13 +64,12 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-    Timer timer;
-
     LUT cache;
 
     for (int i = 0; i < ds.n_cols; i++) {
         std::cout << "Computing LUT for column #" << i << std::endl;
 
+        Timer timer;
         timer.start();
 
         for (int E = 1; E <= E_max; E++) {
@@ -76,9 +83,12 @@ int main(int argc, char *argv[])
 
         std::cout << "LUT computed in " << timer.elapsed() << " [ms]"
                   << std::endl;
-
-        timer.reset();
     }
+
+    timer_tot.stop();
+
+    std::cout << "Processed dataset in " << timer_tot.elapsed() << " [ms]"
+              << std::endl;
 
     return 0;
 }
