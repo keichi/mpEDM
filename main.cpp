@@ -12,16 +12,15 @@
 void usage(const std::string &app_name)
 {
     std::string msg =
-        app_name +
-        ": GPU-accelerated Empirical Dynamic Modeling\n"
+        app_name + ": GPU-accelerated Empirical Dynamic Modeling\n"
         "\n"
         "Usage:\n"
-        "  cuEDM [OPTION...] FILE\n"
+        "  " + app_name +" [OPTION...] FILE\n"
         "  -t, --tau arg    Lag (default: 1)\n"
         "  -e, --emax arg   Maximum embedding dimension (default: 20)\n"
         "  -k, --topk arg   Number of neighbors to find (default: 100)\n"
         "  -x, --kernel arg Kernel type {cpu|gpu} (default: cpu)\n"
-        "  -h, --help      Show help";
+        "  -h, --help       Show help";
 
     std::cout << msg << std::endl;
 }
@@ -37,7 +36,7 @@ int main(int argc, char *argv[])
         return 0;
     }
 
-    if (!cmdl(0)) {
+    if (!cmdl(1)) {
         std::cerr << "No input file" << std::endl;
         usage(cmdl[0]);
         return 1;
@@ -83,11 +82,15 @@ int main(int argc, char *argv[])
         std::cout << "Using CPU kNN kernel" << std::endl;
         kernel =
             std::unique_ptr<KNNKernel>(new KNNKernelCPU(E_max, tau, top_k));
-    } else if (kernel_type == "gpu") {
+    }
+#ifdef ENABLE_GPU_KERNEL
+    else if (kernel_type == "gpu") {
         std::cout << "Using GPU kNN kernel" << std::endl;
         kernel =
             std::unique_ptr<KNNKernel>(new KNNKernelGPU(E_max, tau, top_k));
-    } else {
+    }
+#endif
+    else {
         std::cerr << "Unknown kernel type " << kernel_type << std::endl;
         return 1;
     }

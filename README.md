@@ -3,7 +3,10 @@
 ```
 $ git clone --recursive git@github.com:keichi/cuEDM.git
 $ cd cuEDM
+$ mkdir build
+$ cd build
 
 $ module load compiler/intel/2018/1.038
-$ icc -Wall -O3 -std=c++11 -march=native -fopenmp -o cuEDM main.cpp
+$ cmake -DCMAKE_BUILD_TYPE=Release ..
+$ make
 ```
