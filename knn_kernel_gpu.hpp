@@ -11,9 +11,7 @@
 class KNNKernelGPU : public KNNKernel
 {
 public:
-    KNNKernelGPU(int E_max, int tau, int k) : KNNKernel(E_max, tau, k)
-    {
-    }
+    KNNKernelGPU(int E_max, int tau, int k) : KNNKernel(E_max, tau, k) {}
 
     void compute_lut(LUT &out, int E, int n)
     {
@@ -21,35 +19,23 @@ public:
 
         af::array idx;
         af::array dist;
-        
-        std::vector<float> embedded_array(E * n);
 
-        // Timer timerE;
-        // timerE.start();
+        std::vector<float> block_host(E * n);
 
-        // Compute distances between all points
+        // Perform embedding
         for (int i = 0; i < E; i++) {
             for (int j = 0; j < n; j++) {
-                embedded_array[i * n + j] = col[i * tau + j];
+                block_host[i * n + j] = col[i * tau + j];
             }
         }
 
-        af::array embedded_data(n, E, embedded_array.data());
+        af::array block(n, E, block_host.data());
 
-        // af_print(embedded_data);
-
-        af::nearestNeighbour(idx, dist, embedded_data, embedded_data, 1, top_k, AF_SSD);
+        af::nearestNeighbour(idx, dist, block, block, 1, top_k, AF_SSD);
         dist = af::sqrt(dist);
 
         dist.host(out.distances.data());
         idx.host(out.indices.data());
-
-        // timerE.stop();
-
-        // std::cout << "E=" << E << " computed in " << timerE.elapsed() << " [ms]" << std::endl;
-
-        // af_print(idx);
-        // af_print(dist);
     }
 
 protected:
