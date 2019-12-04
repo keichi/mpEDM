@@ -13,7 +13,7 @@ class KNNKernelGPU : public KNNKernel
 public:
     KNNKernelGPU(int E_max, int tau, int k) : KNNKernel(E_max, tau, k) {}
 
-    void compute_lut(LUT &out, int E, int n)
+    void compute_lut(LUT &out, const float *const col, int E, int n)
     {
         out.resize(n, top_k);
 

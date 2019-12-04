@@ -14,36 +14,40 @@ public:
 
     virtual ~KNNKernel() {}
 
-    void load_column(const Dataset &ds, int col_idx)
+    virtual void run(const Dataset &ds)
     {
-        col = ds.cols[col_idx].data();
-        n_rows = ds.n_rows;
-    }
+        for (int i = 0; i < ds.n_cols; i++) {
+            const float *const col = ds.cols[i].data();
 
-    void run()
-    {
-        LUT out;
+            Timer timer;
+            timer.start();
 
-        for (int E = 1; E <= E_max; E++) {
-            int n = n_rows - (E - 1) * tau;
-            compute_lut(out, E, n);
+            for (int E = 1; E <= E_max; E++) {
+                LUT out;
+                int n = ds.n_rows - (E - 1) * tau;
+                compute_lut(out, col, E, n);
+            }
+
+            timer.stop();
+
+            std::cout << "Computed LUT for column #" << i << " in "
+                      << timer.elapsed() << " [ms]" << std::endl;
         }
     }
 
-    virtual void compute_lut(LUT &lut, int E, int n) = 0;
+    virtual void compute_lut(LUT &out, const float *const col, int E,
+                             int n) = 0;
 
 protected:
     // Pointer to the timeseries we are working on
     // Note that we do NOT own memory, Dataset holds it
     const float *col;
-    // Number of rows in the input dataset
-    int n_rows;
     // Maximum embedding dimension (number of columns)
-    int E_max;
+    const int E_max;
     // Lag
-    int tau;
+    const int tau;
     // Number of neighbors to find
-    int top_k;
+    const int top_k;
 };
 
 #endif

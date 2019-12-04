@@ -8,6 +8,7 @@
 #include "knn_kernel_cpu.hpp"
 #ifdef ENABLE_GPU_KERNEL
 #include "knn_kernel_gpu.hpp"
+#include "knn_kernel_multi_gpu.hpp"
 #endif
 
 #include "timer.hpp"
@@ -15,14 +16,17 @@
 void usage(const std::string &app_name)
 {
     std::string msg =
-        app_name + ": GPU-accelerated Empirical Dynamic Modeling\n"
+        app_name +
+        ": GPU-accelerated Empirical Dynamic Modeling\n"
         "\n"
         "Usage:\n"
-        "  " + app_name +" [OPTION...] FILE\n"
+        "  " +
+        app_name +
+        " [OPTION...] FILE\n"
         "  -t, --tau arg    Lag (default: 1)\n"
         "  -e, --emax arg   Maximum embedding dimension (default: 20)\n"
         "  -k, --topk arg   Number of neighbors to find (default: 100)\n"
-        "  -x, --kernel arg Kernel type {cpu|gpu} (default: cpu)\n"
+        "  -x, --kernel arg Kernel type {cpu|gpu|multigpu} (default: cpu)\n"
         "  -h, --help       Show help";
 
     std::cout << msg << std::endl;
@@ -91,6 +95,10 @@ int main(int argc, char *argv[])
         std::cout << "Using GPU kNN kernel" << std::endl;
         kernel =
             std::unique_ptr<KNNKernel>(new KNNKernelGPU(E_max, tau, top_k));
+    } else if (kernel_type == "multigpu") {
+        std::cout << "Using Multi-GPU kNN kernel" << std::endl;
+        kernel =
+            std::unique_ptr<KNNKernel>(new KNNKernelMultiGPU(E_max, tau, top_k));
     }
 #endif
     else {
@@ -98,18 +106,7 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-    for (int i = 0; i < ds.n_cols; i++) {
-        Timer timer;
-        timer.start();
-
-        kernel->load_column(ds, i);
-        kernel->run();
-
-        timer.stop();
-
-        std::cout << "Computed LUT for column #" << i << " in "
-                  << timer.elapsed() << " [ms]" << std::endl;
-    }
+    kernel->run(ds);
 
     timer_tot.stop();
 
