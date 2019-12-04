@@ -17,7 +17,7 @@ endif()
 
 find_package(OpenMP)
 if(OpenMP_FOUND)
-  target_compile_options(cuEDM PRIVATE ${OpenMP_CXX_FLAGS})
+  target_link_libraries(cuEDM PRIVATE OpenMP::OpenMP_CXX)
 endif()
 
 find_package(ArrayFire)
