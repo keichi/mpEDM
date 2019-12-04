@@ -12,7 +12,7 @@ jobs:
     - name: Install ArrayFire
       run: |
         wget https://arrayfire.s3.amazonaws.com/3.6.4/ArrayFire-v3.6.4_Linux_x86_64.sh
-        sh ArrayFire-v3.6.4_Linux_x86_64.sh --prefix=/usr --exclude-subdir --skip-license
+        sudo sh ArrayFire-v3.6.4_Linux_x86_64.sh --prefix=/usr --exclude-subdir --skip-license
     - name: Run cmake
       run: |
         mkdir build
