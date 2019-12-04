@@ -5,46 +5,50 @@
 #include <sstream>
 #include <vector>
 
-#include "thirdparty/cxxopts/include/cxxopts.hpp"
+#include "thirdparty/argh/argh.h"
 
 #include "block.hpp"
 #include "timer.hpp"
 
+void usage(const std::string &app_name)
+{
+    std::string msg =
+        app_name +
+        ": GPU-accelerated Empirical Dynamic Modeling\n"
+        "\n"
+        "Usage:\n"
+        "  cuEDM [OPTION...] FILE\n"
+        "  -t, --tau arg   Lag (default: 1)\n"
+        "  -e, --emax arg  Maximum embedding dimension (default: 20)\n"
+        "  -k, --topk arg  Number of neighbors to find (default: 100)\n"
+        "  -h, --help      Show help";
+
+    std::cout << msg << std::endl;
+}
+
 int main(int argc, char *argv[])
 {
-    cxxopts::Options options("cuEDM", "GPU-accelerated EDM");
+    argh::parser cmdl({"-t", "--tau", "-e", "--emax", "-k", "--topk"});
+    cmdl.parse(argc, argv);
 
-    options.add_options()
-        ("t,tau", "Lag",
-         cxxopts::value<int>()->default_value("1"))
-        ("e,emax", "Maximum embedding dimension",
-         cxxopts::value<int>()->default_value("20"))
-        ("k,topk", "Number of neighbors to find per point",
-         cxxopts::value<int>()->default_value("100"))
-        ("i,input", "Input CSV file", cxxopts::value<std::string>())
-        ("h,help", "Show help");
-
-    options.parse_positional("input");
-
-    options.positional_help("FILE");
-
-    auto result = options.parse(argc, argv);
-
-    if (result["help"].as<bool>()) {
-        std::cout << options.help() << std::endl;
+    if (cmdl[{"-h", "--help"}]) {
+        usage(cmdl[0]);
         return 0;
     }
 
-    if (result["input"].count() != 1) {
+    if (!cmdl(0)) {
         std::cerr << "No input file" << std::endl;
-        std::cout << options.help() << std::endl;
+        usage(cmdl[0]);
         return 1;
     }
 
-    const std::string fname = result["input"].as<std::string>();
-    const int tau = result["tau"].as<int>();
-    const int E_max = result["emax"].as<int>();
-    const int k = result["topk"].as<int>();
+    std::string fname = cmdl[1];
+    int tau;
+    cmdl({"t", "tau"}, 1) >> tau;
+    int E_max;
+    cmdl({"e", "emax"}, 20) >> E_max;
+    int k;
+    cmdl({"k", "topk"}, 100) >> k;
 
     Timer timer_tot;
 
@@ -56,7 +60,8 @@ int main(int argc, char *argv[])
 
     timer_tot.stop();
 
-    std::cout << ds.n_rows << " rows read in " << timer_tot.elapsed() << " [ms]" << std::endl;
+    std::cout << ds.n_rows << " rows read in " << timer_tot.elapsed() << " [ms]"
+              << std::endl;
 
     timer_tot.start();
 
