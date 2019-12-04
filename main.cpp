@@ -1,13 +1,11 @@
-#include <algorithm>
-#include <cmath>
-#include <fstream>
 #include <iostream>
-#include <sstream>
-#include <vector>
+#include <memory>
+#include <string>
 
 #include "thirdparty/argh/argh.h"
 
-#include "block.hpp"
+#include "knn_kernel.hpp"
+#include "knn_kernel_cpu.hpp"
 #include "timer.hpp"
 
 void usage(const std::string &app_name)
@@ -47,13 +45,12 @@ int main(int argc, char *argv[])
     cmdl({"t", "tau"}, 1) >> tau;
     int E_max;
     cmdl({"e", "emax"}, 20) >> E_max;
-    int k;
-    cmdl({"k", "topk"}, 100) >> k;
-
-    Timer timer_tot;
+    int top_k;
+    cmdl({"k", "topk"}, 100) >> top_k;
 
     std::cout << "Reading input dataset from " << fname << std::endl;
 
+    Timer timer_tot;
     timer_tot.start();
 
     Dataset ds(fname);
@@ -70,30 +67,25 @@ int main(int argc, char *argv[])
         std::cerr << "E or tau is too large" << std::endl;
         return 1;
     }
-    if (lut_n < k) {
+    if (lut_n < top_k) {
         std::cerr << "k is too large" << std::endl;
         return 1;
     }
 
-    LUT cache;
+    std::unique_ptr<KNNKernel> kernel =
+        std::unique_ptr<KNNKernel>(new KNNKernelCPU(E_max, tau, top_k));
 
     for (int i = 0; i < ds.n_cols; i++) {
-        std::cout << "Computing LUT for column #" << i << std::endl;
-
         Timer timer;
         timer.start();
 
-        for (int E = 1; E <= E_max; E++) {
-            Block block(ds, i, E, tau);
-            LUT result;
-
-            block.compute_lut(result, k, cache);
-        }
+        kernel->load_column(ds, i);
+        kernel->run();
 
         timer.stop();
 
-        std::cout << "LUT computed in " << timer.elapsed() << " [ms]"
-                  << std::endl;
+        std::cout << "Computed LUT for column #" << i << " in "
+                  << timer.elapsed() << " [ms]" << std::endl;
     }
 
     timer_tot.stop();

@@ -1,5 +1,5 @@
-#ifndef __BLOCK_HPP__
-#define __BLOCK_HPP__
+#ifndef __KNN_KERNEL_CPU_HPP__
+#define __KNN_KERNEL_CPU_HPP__
 
 #include <algorithm>
 #include <cmath>
@@ -8,29 +8,18 @@
 #include <vector>
 
 #include "dataset.hpp"
+#include "knn_kernel.hpp"
 #include "lut.hpp"
 #include "timer.hpp"
 
-class Block
+class KNNKernelCPU : public KNNKernel
 {
 public:
-    Block(const Dataset &ds, int col_idx, int E, int tau)
-        : col(ds.cols[col_idx].data()), E(E), tau(tau),
-          n(ds.n_rows - (E - 1) * tau)
+    KNNKernelCPU(int E_max, int tau, int k) : KNNKernel(E_max, tau, k)
     {
     }
 
-    void print() const
-    {
-        for (int i = 0; i < n; i++) {
-            for (int j = 0; j < E; j++) {
-                std::cout << col[(E - j - 1) * tau + i] << ", ";
-            }
-            std::cout << std::endl;
-        }
-    }
-
-    void compute_lut(LUT &out, int top_k, LUT &cache) const
+    void compute_lut(LUT &out, int E, int n)
     {
         cache.resize(n, n);
 
@@ -102,15 +91,7 @@ public:
     }
 
 protected:
-    // Pointer to the timeseries we are working on
-    // Note that we do NOT own memory, Dataset holds it
-    const float *col;
-    // Embedding dimension (number of columns)
-    int E;
-    // Lag
-    int tau;
-    // Number of rows
-    int n;
+    LUT cache;
 };
 
 #endif
