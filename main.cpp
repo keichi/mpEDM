@@ -6,7 +6,10 @@
 
 #include "knn_kernel.hpp"
 #include "knn_kernel_cpu.hpp"
+#ifdef ENABLE_GPU_KERNEL
 #include "knn_kernel_gpu.hpp"
+#endif
+
 #include "timer.hpp"
 
 void usage(const std::string &app_name)
