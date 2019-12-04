@@ -6,6 +6,7 @@
 
 #include "knn_kernel.hpp"
 #include "knn_kernel_cpu.hpp"
+#include "knn_kernel_gpu.hpp"
 #include "timer.hpp"
 
 void usage(const std::string &app_name)
@@ -16,9 +17,10 @@ void usage(const std::string &app_name)
         "\n"
         "Usage:\n"
         "  cuEDM [OPTION...] FILE\n"
-        "  -t, --tau arg   Lag (default: 1)\n"
-        "  -e, --emax arg  Maximum embedding dimension (default: 20)\n"
-        "  -k, --topk arg  Number of neighbors to find (default: 100)\n"
+        "  -t, --tau arg    Lag (default: 1)\n"
+        "  -e, --emax arg   Maximum embedding dimension (default: 20)\n"
+        "  -k, --topk arg   Number of neighbors to find (default: 100)\n"
+        "  -x, --kernel arg Kernel type {cpu|gpu} (default: cpu)\n"
         "  -h, --help      Show help";
 
     std::cout << msg << std::endl;
@@ -26,7 +28,8 @@ void usage(const std::string &app_name)
 
 int main(int argc, char *argv[])
 {
-    argh::parser cmdl({"-t", "--tau", "-e", "--emax", "-k", "--topk"});
+    argh::parser cmdl(
+        {"-t", "--tau", "-e", "--emax", "-k", "--topk", "-x", "kernel"});
     cmdl.parse(argc, argv);
 
     if (cmdl[{"-h", "--help"}]) {
@@ -47,6 +50,8 @@ int main(int argc, char *argv[])
     cmdl({"e", "emax"}, 20) >> E_max;
     int top_k;
     cmdl({"k", "topk"}, 100) >> top_k;
+    std::string kernel_type;
+    cmdl({"x", "kernel"}, "cpu") >> kernel_type;
 
     std::cout << "Reading input dataset from " << fname << std::endl;
 
@@ -57,8 +62,8 @@ int main(int argc, char *argv[])
 
     timer_tot.stop();
 
-    std::cout << ds.n_rows << " rows read in " << timer_tot.elapsed() << " [ms]"
-              << std::endl;
+    std::cout << "Read " << ds.n_rows << " rows in " << timer_tot.elapsed()
+              << " [ms]" << std::endl;
 
     timer_tot.start();
 
@@ -72,8 +77,20 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-    std::unique_ptr<KNNKernel> kernel =
-        std::unique_ptr<KNNKernel>(new KNNKernelCPU(E_max, tau, top_k));
+    std::unique_ptr<KNNKernel> kernel;
+
+    if (kernel_type == "cpu") {
+        std::cout << "Using CPU kNN kernel" << std::endl;
+        kernel =
+            std::unique_ptr<KNNKernel>(new KNNKernelCPU(E_max, tau, top_k));
+    } else if (kernel_type == "gpu") {
+        std::cout << "Using GPU kNN kernel" << std::endl;
+        kernel =
+            std::unique_ptr<KNNKernel>(new KNNKernelGPU(E_max, tau, top_k));
+    } else {
+        std::cerr << "Unknown kernel type " << kernel_type << std::endl;
+        return 1;
+    }
 
     for (int i = 0; i < ds.n_cols; i++) {
         Timer timer;

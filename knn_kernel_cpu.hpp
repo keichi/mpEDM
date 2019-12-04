@@ -7,7 +7,6 @@
 #include <limits>
 #include <vector>
 
-#include "dataset.hpp"
 #include "knn_kernel.hpp"
 #include "lut.hpp"
 #include "timer.hpp"
