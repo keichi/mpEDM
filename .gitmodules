@@ -4,3 +4,6 @@
 [submodule "thirdparty/argh"]
 	path = thirdparty/argh
 	url = https://github.com/adishavit/argh.git
+[submodule "thirdparty/concurrentqueue"]
+	path = thirdparty/concurrentqueue
+	url = https://github.com/cameron314/concurrentqueue.git
