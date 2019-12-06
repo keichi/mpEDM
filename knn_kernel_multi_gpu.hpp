@@ -25,6 +25,8 @@ public:
     {
         af::info();
 
+        n_rows = ds.n_rows;
+
         for (int i = 0; i < ds.n_cols; i++) {
             work_queue.enqueue(i);
         }
