@@ -27,13 +27,21 @@ public:
         af::array idx;
         af::array dist;
 
+        // We actually only need n rows, but we allocate n_rows rows. Fixed
+        // array size allows ArrayFire to recycle previously allocated buffers
+        // and greatly reduces memory allocations on the GPU.
         std::vector<float> block_host(E * n_rows);
 
         // Perform embedding
         for (int i = 0; i < E; i++) {
+
+            // Populate the first n with input data
             for (int j = 0; j < n; j++) {
                 block_host[i * n_rows + j] = col[i * tau + j];
             }
+
+            // Populate the rest with dummy data
+            // We put infinity so that they are be ignored in the sorting
             for (int j = n; j < n_rows; j++) {
                 block_host[i * n_rows + j] =
                     std::numeric_limits<float>::infinity();

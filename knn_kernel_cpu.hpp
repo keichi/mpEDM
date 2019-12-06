@@ -23,9 +23,6 @@ public:
     {
         cache.resize(n, n);
 
-        Timer timer;
-        timer.start();
-
         // Compute distances between all points
         #pragma omp parallel for
         for (int i = 0; i < n; i++) {
@@ -52,13 +49,6 @@ public:
             cache.distances[i * n + i] = std::numeric_limits<float>::max();
         }
 
-        timer.stop();
-        // std::cout << "Distance calculated in " << timer.elapsed() << " [ms]"
-        //           << std::endl;
-        timer.reset();
-
-        timer.start();
-
         // Sort indices
         #pragma omp parallel for
         for (int i = 0; i < n; i++) {
@@ -70,9 +60,6 @@ public:
                                          cache.distances[i * n + b];
                               });
         }
-
-        timer.stop();
-        // std::cout << "Sorted in " << timer.elapsed() << " [ms]" << std::endl;
 
         out.resize(n, top_k);
 
