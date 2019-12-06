@@ -7,6 +7,8 @@
 
 #include <arrayfire.h>
 
+#include "thirdparty/concurrentqueue/concurrentqueue.h"
+
 #include "dataset.hpp"
 #include "knn_kernel.hpp"
 #include "lut.hpp"
@@ -23,13 +25,19 @@ public:
     {
         af::info();
 
+        n_rows = ds.n_rows;
+
+        for (int i = 0; i < ds.n_cols; i++) {
+            work_queue.enqueue(i);
+        }
+
         std::vector<std::thread> threads;
 
         int dev_count = af::getDeviceCount();
 
         for (int dev = 0; dev < dev_count; dev++) {
             threads.push_back(std::thread(&KNNKernelMultiGPU::run_thread, this,
-                                          ds, dev, dev_count));
+                                          ds, dev));
         }
 
         for (int i = 0; i < threads.size(); i++) {
@@ -38,15 +46,17 @@ public:
     }
 
 protected:
-    void run_thread(const Dataset &ds, int dev, int dev_count)
+    moodycamel::ConcurrentQueue<int> work_queue;
+    std::mutex mtx;
+
+    void run_thread(const Dataset &ds, int dev)
     {
-        std::mutex mtx;
 
         af::setDevice(dev);
 
-        for (int i = 0; i < ds.n_cols; i++) {
-            if (i % dev_count != dev) continue;
+        int i;
 
+        while (work_queue.try_dequeue(i)) {
             Timer timer;
             timer.start();
 

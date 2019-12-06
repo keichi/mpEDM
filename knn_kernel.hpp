@@ -16,6 +16,8 @@ public:
 
     virtual void run(const Dataset &ds)
     {
+        n_rows = ds.n_rows;
+        
         for (int i = 0; i < ds.n_cols; i++) {
             const float *const col = ds.cols[i].data();
 
@@ -48,6 +50,8 @@ protected:
     const int tau;
     // Number of neighbors to find
     const int top_k;
+    // Number of rows in the original dataset
+    int n_rows;
 };
 
 #endif
