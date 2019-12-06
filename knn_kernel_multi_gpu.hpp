@@ -17,7 +17,7 @@
 class KNNKernelMultiGPU : public KNNKernelGPU
 {
 public:
-    KNNKernelMultiGPU(int E_max, int tau, int k) : KNNKernelGPU(E_max, tau, k)
+    KNNKernelMultiGPU(int E_max, int tau, int k, bool verbose) : KNNKernelGPU(E_max, tau, k, verbose)
     {
     }
 
@@ -68,7 +68,7 @@ protected:
 
             timer.stop();
 
-            {
+            if (verbose) {
                 std::lock_guard<std::mutex> lock(mtx);
                 std::cout << "Computed LUT for column #" << i << " in "
                           << timer.elapsed() << " [ms]" << std::endl;
