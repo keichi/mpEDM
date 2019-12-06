@@ -46,9 +46,6 @@ public:
                              int n) = 0;
 
 protected:
-    // Pointer to the timeseries we are working on
-    // Note that we do NOT own memory, Dataset holds it
-    const float *col;
     // Maximum embedding dimension (number of columns)
     const int E_max;
     // Lag
