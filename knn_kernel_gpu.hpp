@@ -13,7 +13,12 @@
 class KNNKernelGPU : public KNNKernel
 {
 public:
-    KNNKernelGPU(int E_max, int tau, int k, bool verbose) : KNNKernel(E_max, tau, k, verbose) {}
+    KNNKernelGPU(int E_max, int tau, int k, bool verbose)
+        : KNNKernel(E_max, tau, k, verbose)
+    {
+        af::setBackend(AF_BACKEND_CUDA);
+        af::info();
+    }
 
     void compute_lut(LUT &out, const float *const col, int E, int n)
     {
@@ -30,7 +35,8 @@ public:
                 block_host[i * n_rows + j] = col[i * tau + j];
             }
             for (int j = n; j < n_rows; j++) {
-                block_host[i * n_rows + j] = std::numeric_limits<float>::infinity();
+                block_host[i * n_rows + j] =
+                    std::numeric_limits<float>::infinity();
             }
         }
 

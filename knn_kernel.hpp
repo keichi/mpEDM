@@ -10,14 +10,17 @@
 class KNNKernel
 {
 public:
-    KNNKernel(int E_max, int tau, int k, bool verbose) : E_max(E_max), tau(tau), top_k(k), verbose(verbose) {}
+    KNNKernel(int E_max, int tau, int k, bool verbose)
+        : E_max(E_max), tau(tau), top_k(k), verbose(verbose)
+    {
+    }
 
     virtual ~KNNKernel() {}
 
     virtual void run(const Dataset &ds)
     {
         n_rows = ds.n_rows;
-        
+
         for (int i = 0; i < ds.n_cols; i++) {
             const float *const col = ds.cols[i].data();
 

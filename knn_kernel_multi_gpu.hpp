@@ -17,14 +17,13 @@
 class KNNKernelMultiGPU : public KNNKernelGPU
 {
 public:
-    KNNKernelMultiGPU(int E_max, int tau, int k, bool verbose) : KNNKernelGPU(E_max, tau, k, verbose)
+    KNNKernelMultiGPU(int E_max, int tau, int k, bool verbose)
+        : KNNKernelGPU(E_max, tau, k, verbose)
     {
     }
 
     void run(const Dataset &ds)
     {
-        af::info();
-
         n_rows = ds.n_rows;
 
         for (int i = 0; i < ds.n_cols; i++) {
@@ -36,8 +35,8 @@ public:
         int dev_count = af::getDeviceCount();
 
         for (int dev = 0; dev < dev_count; dev++) {
-            threads.push_back(std::thread(&KNNKernelMultiGPU::run_thread, this,
-                                          ds, dev));
+            threads.push_back(
+                std::thread(&KNNKernelMultiGPU::run_thread, this, ds, dev));
         }
 
         for (int i = 0; i < threads.size(); i++) {

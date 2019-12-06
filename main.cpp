@@ -35,8 +35,8 @@ void usage(const std::string &app_name)
 
 int main(int argc, char *argv[])
 {
-    argh::parser cmdl(
-        {"-t", "--tau", "-e", "--emax", "-k", "--topk", "-x", "kernel", "-v", "--verbose"});
+    argh::parser cmdl({"-t", "--tau", "-e", "--emax", "-k", "--topk", "-x",
+                       "--kernel", "-v", "--verbose"});
     cmdl.parse(argc, argv);
 
     if (cmdl[{"-h", "--help"}]) {
@@ -89,18 +89,18 @@ int main(int argc, char *argv[])
 
     if (kernel_type == "cpu") {
         std::cout << "Using CPU kNN kernel" << std::endl;
-        kernel =
-            std::unique_ptr<KNNKernel>(new KNNKernelCPU(E_max, tau, top_k, verbose));
+        kernel = std::unique_ptr<KNNKernel>(
+            new KNNKernelCPU(E_max, tau, top_k, verbose));
     }
 #ifdef ENABLE_GPU_KERNEL
     else if (kernel_type == "gpu") {
         std::cout << "Using GPU kNN kernel" << std::endl;
-        kernel =
-            std::unique_ptr<KNNKernel>(new KNNKernelGPU(E_max, tau, top_k, verbose));
+        kernel = std::unique_ptr<KNNKernel>(
+            new KNNKernelGPU(E_max, tau, top_k, verbose));
     } else if (kernel_type == "multigpu") {
         std::cout << "Using Multi-GPU kNN kernel" << std::endl;
-        kernel =
-            std::unique_ptr<KNNKernel>(new KNNKernelMultiGPU(E_max, tau, top_k, verbose));
+        kernel = std::unique_ptr<KNNKernel>(
+            new KNNKernelMultiGPU(E_max, tau, top_k, verbose));
     }
 #endif
     else {
