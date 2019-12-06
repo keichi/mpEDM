@@ -10,7 +10,7 @@
 class KNNKernel
 {
 public:
-    KNNKernel(int E_max, int tau, int k) : E_max(E_max), tau(tau), top_k(k) {}
+    KNNKernel(int E_max, int tau, int k, bool verbose) : E_max(E_max), tau(tau), top_k(k), verbose(verbose) {}
 
     virtual ~KNNKernel() {}
 
@@ -32,8 +32,10 @@ public:
 
             timer.stop();
 
-            std::cout << "Computed LUT for column #" << i << " in "
-                      << timer.elapsed() << " [ms]" << std::endl;
+            if (verbose) {
+                std::cout << "Computed LUT for column #" << i << " in "
+                          << timer.elapsed() << " [ms]" << std::endl;
+            }
         }
     }
 
@@ -52,6 +54,8 @@ protected:
     const int top_k;
     // Number of rows in the original dataset
     int n_rows;
+    // Enable verbose logging
+    const bool verbose;
 };
 
 #endif

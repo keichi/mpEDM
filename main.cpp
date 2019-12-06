@@ -27,6 +27,7 @@ void usage(const std::string &app_name)
         "  -e, --emax arg   Maximum embedding dimension (default: 20)\n"
         "  -k, --topk arg   Number of neighbors to find (default: 100)\n"
         "  -x, --kernel arg Kernel type {cpu|gpu|multigpu} (default: cpu)\n"
+        "  -v, --verbose    Enable verbose logging (default: false)\n"
         "  -h, --help       Show help";
 
     std::cout << msg << std::endl;
@@ -35,7 +36,7 @@ void usage(const std::string &app_name)
 int main(int argc, char *argv[])
 {
     argh::parser cmdl(
-        {"-t", "--tau", "-e", "--emax", "-k", "--topk", "-x", "kernel"});
+        {"-t", "--tau", "-e", "--emax", "-k", "--topk", "-x", "kernel", "-v", "--verbose"});
     cmdl.parse(argc, argv);
 
     if (cmdl[{"-h", "--help"}]) {
@@ -58,6 +59,7 @@ int main(int argc, char *argv[])
     cmdl({"k", "topk"}, 100) >> top_k;
     std::string kernel_type;
     cmdl({"x", "kernel"}, "cpu") >> kernel_type;
+    bool verbose = cmdl[{"v", "verbose"}];
 
     std::cout << "Reading input dataset from " << fname << std::endl;
 
@@ -88,17 +90,17 @@ int main(int argc, char *argv[])
     if (kernel_type == "cpu") {
         std::cout << "Using CPU kNN kernel" << std::endl;
         kernel =
-            std::unique_ptr<KNNKernel>(new KNNKernelCPU(E_max, tau, top_k));
+            std::unique_ptr<KNNKernel>(new KNNKernelCPU(E_max, tau, top_k, verbose));
     }
 #ifdef ENABLE_GPU_KERNEL
     else if (kernel_type == "gpu") {
         std::cout << "Using GPU kNN kernel" << std::endl;
         kernel =
-            std::unique_ptr<KNNKernel>(new KNNKernelGPU(E_max, tau, top_k));
+            std::unique_ptr<KNNKernel>(new KNNKernelGPU(E_max, tau, top_k, verbose));
     } else if (kernel_type == "multigpu") {
         std::cout << "Using Multi-GPU kNN kernel" << std::endl;
         kernel =
-            std::unique_ptr<KNNKernel>(new KNNKernelMultiGPU(E_max, tau, top_k));
+            std::unique_ptr<KNNKernel>(new KNNKernelMultiGPU(E_max, tau, top_k, verbose));
     }
 #endif
     else {
