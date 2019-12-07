@@ -2,11 +2,16 @@ include(CheckCXXCompilerFlag)
 
 cmake_minimum_required(VERSION 3.10)
 
-set (CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD 11)
 
 project(cuEDM CXX)
 
 add_executable(cuEDM main.cpp)
+
+add_subdirectory(thirdparty/argh)
+target_link_libraries(cuEDM PRIVATE argh)
+
+target_include_directories(cuEDM PRIVATE thirdparty/concurrentqueue)
 
 if(CMAKE_BUILD_TYPE STREQUAL "Release")
   check_cxx_compiler_flag(-march=native COMPILER_SUPPORTS_MARCH)
@@ -22,6 +27,9 @@ endif()
 
 find_package(ArrayFire)
 if (ArrayFire_FOUND)
+  message(STATUS "ArrayFire found, building GPU backend")
   add_definitions(-DENABLE_GPU_KERNEL)
   target_link_libraries(cuEDM PRIVATE ArrayFire::af)
+else()
+  message(WARNING "ArrayFire was NOT found, will not build GPU backend")
 endif()

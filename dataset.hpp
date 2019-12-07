@@ -15,12 +15,12 @@ public:
 
     Dataset() : n_rows(0), n_cols(0) {}
 
-    Dataset(const std::string &fname)
+    Dataset(const std::string &path)
     {
         n_rows = -1;
         n_cols = 0;
 
-        std::ifstream ifs(fname);
+        std::ifstream ifs(path);
         std::string line;
 
         while (ifs >> line) {

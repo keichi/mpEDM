@@ -6,8 +6,7 @@
 #include <vector>
 
 #include <arrayfire.h>
-
-#include "thirdparty/concurrentqueue/concurrentqueue.h"
+#include <concurrentqueue.h>
 
 #include "dataset.hpp"
 #include "knn_kernel.hpp"

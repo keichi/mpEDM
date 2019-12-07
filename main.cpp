@@ -2,7 +2,7 @@
 #include <memory>
 #include <string>
 
-#include "thirdparty/argh/argh.h"
+#include <argh.h>
 
 #include "knn_kernel.hpp"
 #include "knn_kernel_cpu.hpp"
