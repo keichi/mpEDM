@@ -3,9 +3,9 @@
 
 #include <iostream>
 
-#include "dataset.hpp"
-#include "lut.hpp"
-#include "timer.hpp"
+#include "dataset.h"
+#include "lut.h"
+#include "timer.h"
 
 class NearestNeighbors
 {

@@ -5,10 +5,10 @@
 
 #include <arrayfire.h>
 
-#include "dataset.hpp"
-#include "nearest_neighbors.hpp"
-#include "lut.hpp"
-#include "timer.hpp"
+#include "dataset.h"
+#include "nearest_neighbors.h"
+#include "lut.h"
+#include "timer.h"
 
 class NearestNeighborsGPU : public NearestNeighbors
 {

@@ -8,10 +8,10 @@
 #include <arrayfire.h>
 #include <concurrentqueue.h>
 
-#include "dataset.hpp"
-#include "lut.hpp"
-#include "nearest_neighbors.hpp"
-#include "timer.hpp"
+#include "dataset.h"
+#include "lut.h"
+#include "nearest_neighbors.h"
+#include "timer.h"
 
 class NearestNeighborsMultiGPU : public NearestNeighborsGPU
 {

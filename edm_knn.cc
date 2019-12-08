@@ -4,14 +4,14 @@
 
 #include <argh.h>
 
-#include "nearest_neighbors.hpp"
-#include "nearest_neighbors_cpu.hpp"
+#include "nearest_neighbors.h"
+#include "nearest_neighbors_cpu.h"
 #ifdef ENABLE_GPU_KERNEL
-#include "nearest_neighbors_gpu.hpp"
-#include "nearest_neighbors_multi_gpu.hpp"
+#include "nearest_neighbors_gpu.h"
+#include "nearest_neighbors_multi_gpu.h"
 #endif
 
-#include "timer.hpp"
+#include "timer.h"
 
 void usage(const std::string &app_name)
 {

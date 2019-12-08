@@ -7,9 +7,9 @@
 #include <limits>
 #include <vector>
 
-#include "nearest_neighbors.hpp"
-#include "lut.hpp"
-#include "timer.hpp"
+#include "nearest_neighbors.h"
+#include "lut.h"
+#include "timer.h"
 
 class NearestNeighborsCPU : public NearestNeighbors
 {
