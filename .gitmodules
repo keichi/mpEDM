@@ -2,8 +2,8 @@
 	path = thirdparty/cxxopts
 	url = https://github.com/jarro2783/cxxopts.git
 [submodule "thirdparty/argh"]
-	path = thirdparty/argh
+	path = src/argh
 	url = https://github.com/adishavit/argh.git
 [submodule "thirdparty/concurrentqueue"]
-	path = thirdparty/concurrentqueue
+	path = src/concurrentqueue
 	url = https://github.com/cameron314/concurrentqueue.git
