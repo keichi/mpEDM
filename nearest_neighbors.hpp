@@ -7,15 +7,15 @@
 #include "lut.hpp"
 #include "timer.hpp"
 
-class KNNKernel
+class NearestNeighbors
 {
 public:
-    KNNKernel(int E_max, int tau, int k, bool verbose)
+    NearestNeighbors(int E_max, int tau, int k, bool verbose)
         : E_max(E_max), tau(tau), top_k(k), verbose(verbose)
     {
     }
 
-    virtual ~KNNKernel() {}
+    virtual ~NearestNeighbors() {}
 
     virtual void run(const Dataset &ds)
     {

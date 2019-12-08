@@ -9,15 +9,15 @@
 #include <concurrentqueue.h>
 
 #include "dataset.hpp"
-#include "knn_kernel.hpp"
 #include "lut.hpp"
+#include "nearest_neighbors.hpp"
 #include "timer.hpp"
 
-class KNNKernelMultiGPU : public KNNKernelGPU
+class NearestNeighborsMultiGPU : public NearestNeighborsGPU
 {
 public:
-    KNNKernelMultiGPU(int E_max, int tau, int k, bool verbose)
-        : KNNKernelGPU(E_max, tau, k, verbose)
+    NearestNeighborsMultiGPU(int E_max, int tau, int k, bool verbose)
+        : NearestNeighborsGPU(E_max, tau, k, verbose)
     {
     }
 
@@ -32,8 +32,8 @@ public:
         auto dev_count = af::getDeviceCount();
 
         for (auto dev = 0; dev < dev_count; dev++) {
-            threads.push_back(
-                std::thread(&KNNKernelMultiGPU::run_thread, this, ds, dev));
+            threads.push_back(std::thread(&NearestNeighborsMultiGPU::run_thread,
+                                          this, ds, dev));
         }
 
         for (auto &thread : threads) {

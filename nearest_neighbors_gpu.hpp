@@ -6,15 +6,15 @@
 #include <arrayfire.h>
 
 #include "dataset.hpp"
-#include "knn_kernel.hpp"
+#include "nearest_neighbors.hpp"
 #include "lut.hpp"
 #include "timer.hpp"
 
-class KNNKernelGPU : public KNNKernel
+class NearestNeighborsGPU : public NearestNeighbors
 {
 public:
-    KNNKernelGPU(int E_max, int tau, int k, bool verbose)
-        : KNNKernel(E_max, tau, k, verbose)
+    NearestNeighborsGPU(int E_max, int tau, int k, bool verbose)
+        : NearestNeighbors(E_max, tau, k, verbose)
     {
         af::setBackend(AF_BACKEND_CUDA);
         af::info();

@@ -4,11 +4,11 @@
 
 #include <argh.h>
 
-#include "knn_kernel.hpp"
-#include "knn_kernel_cpu.hpp"
+#include "nearest_neighbors.hpp"
+#include "nearest_neighbors_cpu.hpp"
 #ifdef ENABLE_GPU_KERNEL
-#include "knn_kernel_gpu.hpp"
-#include "knn_kernel_multi_gpu.hpp"
+#include "nearest_neighbors_gpu.hpp"
+#include "nearest_neighbors_multi_gpu.hpp"
 #endif
 
 #include "timer.hpp"
@@ -85,22 +85,22 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-    std::unique_ptr<KNNKernel> kernel;
+    std::unique_ptr<NearestNeighbors> kernel;
 
     if (kernel_type == "cpu") {
         std::cout << "Using CPU kNN kernel" << std::endl;
-        kernel = std::unique_ptr<KNNKernel>(
-            new KNNKernelCPU(E_max, tau, top_k, verbose));
+        kernel = std::unique_ptr<NearestNeighbors>(
+            new NearestNeighborsCPU(E_max, tau, top_k, verbose));
     }
 #ifdef ENABLE_GPU_KERNEL
     else if (kernel_type == "gpu") {
         std::cout << "Using GPU kNN kernel" << std::endl;
-        kernel = std::unique_ptr<KNNKernel>(
-            new KNNKernelGPU(E_max, tau, top_k, verbose));
+        kernel = std::unique_ptr<NearestNeighbors>(
+            new NearestNeighborsGPU(E_max, tau, top_k, verbose));
     } else if (kernel_type == "multigpu") {
         std::cout << "Using Multi-GPU kNN kernel" << std::endl;
-        kernel = std::unique_ptr<KNNKernel>(
-            new KNNKernelMultiGPU(E_max, tau, top_k, verbose));
+        kernel = std::unique_ptr<NearestNeighbors>(
+            new NearestNeighborsMultiGPU(E_max, tau, top_k, verbose));
     }
 #endif
     else {

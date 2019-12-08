@@ -7,15 +7,15 @@
 #include <limits>
 #include <vector>
 
-#include "knn_kernel.hpp"
+#include "nearest_neighbors.hpp"
 #include "lut.hpp"
 #include "timer.hpp"
 
-class KNNKernelCPU : public KNNKernel
+class NearestNeighborsCPU : public NearestNeighbors
 {
 public:
-    KNNKernelCPU(int E_max, int tau, int k, bool verbose)
-        : KNNKernel(E_max, tau, k, verbose)
+    NearestNeighborsCPU(int E_max, int tau, int k, bool verbose)
+        : NearestNeighbors(E_max, tau, k, verbose)
     {
     }
 
