@@ -1,6 +1,9 @@
 #include <iostream>
 #include <memory>
 #include <string>
+#ifdef ENABLE_GPU_KERNEL
+#include <mutex>
+#endif
 
 #include <argh.h>
 #ifdef ENABLE_GPU_KERNEL
