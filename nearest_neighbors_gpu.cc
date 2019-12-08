@@ -4,9 +4,8 @@
 
 #include "nearest_neighbors_gpu.h"
 
-NearestNeighborsGPU::NearestNeighborsGPU(int E_max, int tau, int k,
-                                         bool verbose)
-    : NearestNeighbors(E_max, tau, k, verbose)
+NearestNeighborsGPU::NearestNeighborsGPU(int tau, int k, bool verbose)
+    : NearestNeighbors(tau, k, verbose)
 {
     af::setBackend(AF_BACKEND_CUDA);
     af::info();

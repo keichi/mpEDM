@@ -7,7 +7,7 @@
 class NearestNeighborsCPU : public NearestNeighbors
 {
 public:
-    NearestNeighborsCPU(int E_max, int tau, int k, bool verbose);
+    NearestNeighborsCPU(int tau, int k, bool verbose);
 
     void compute_lut(LUT &out, const Timeseries &ts, int E);
 

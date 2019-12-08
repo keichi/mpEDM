@@ -3,15 +3,100 @@
 #include <string>
 
 #include <argh.h>
+#ifdef ENABLE_GPU_KERNEL
+#include <arrayfire.h>
+#include <concurrentqueue.h>
+#endif
 
 #include "nearest_neighbors.h"
 #include "nearest_neighbors_cpu.h"
 #ifdef ENABLE_GPU_KERNEL
 #include "nearest_neighbors_gpu.h"
-#include "nearest_neighbors_multi_gpu.h"
 #endif
-
 #include "timer.h"
+
+template <class T>
+void run_common(const Dataset &ds, int E_max, int tau, int top_k, bool verbose)
+{
+    auto kernel = std::unique_ptr<NearestNeighbors>(new T(tau, top_k, verbose));
+
+    auto i = 0;
+
+    for (const auto &ts : ds.timeseries) {
+        Timer timer;
+        timer.start();
+
+        for (auto E = 1; E <= E_max; E++) {
+            LUT out;
+            kernel->compute_lut(out, ts, E);
+        }
+
+        timer.stop();
+
+        i++;
+        if (verbose) {
+            std::cout << "Computed LUT for column #" << i << " in "
+                      << timer.elapsed() << " [ms]" << std::endl;
+        }
+    }
+}
+
+#ifdef ENABLE_GPU_KERNEL
+
+moodycamel::ConcurrentQueue<int> work_queue;
+std::mutex mtx;
+
+void worker(int dev, const Dataset &ds, int E_max, int tau, int top_k,
+            bool verbose)
+{
+    auto kernel = std::unique_ptr<NearestNeighbors>(
+        new NearestNeighborsCPU(tau, top_k, verbose));
+
+    af::setDevice(dev);
+
+    auto i = 0;
+
+    while (work_queue.try_dequeue(i)) {
+        Timer timer;
+        timer.start();
+
+        for (auto E = 1; E <= E_max; E++) {
+            LUT out;
+            kernel->compute_lut(out, ds.timeseries[i], E);
+        }
+
+        timer.stop();
+
+        if (verbose) {
+            std::lock_guard<std::mutex> lock(mtx);
+            std::cout << "Computed LUT for column #" << i << " in "
+                      << timer.elapsed() << " [ms]" << std::endl;
+        }
+    }
+}
+
+void run_multi_gpu(const Dataset &ds, int E_max, int tau, int top_k,
+                   bool verbose)
+{
+    for (auto i = 0; i < ds.timeseries.size(); i++) {
+        work_queue.enqueue(i);
+    }
+
+    std::vector<std::thread> threads;
+
+    auto dev_count = af::getDeviceCount();
+
+    for (auto dev = 0; dev < dev_count; dev++) {
+        threads.push_back(
+            std::thread(worker, dev, ds, E_max, tau, top_k, verbose));
+    }
+
+    for (auto &thread : threads) {
+        thread.join();
+    }
+}
+
+#endif
 
 void usage(const std::string &app_name)
 {
@@ -85,30 +170,26 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-    std::unique_ptr<NearestNeighbors> kernel;
-
     if (kernel_type == "cpu") {
         std::cout << "Using CPU kNN kernel" << std::endl;
-        kernel = std::unique_ptr<NearestNeighbors>(
-            new NearestNeighborsCPU(E_max, tau, top_k, verbose));
+
+        run_common<NearestNeighborsCPU>(ds, E_max, tau, top_k, verbose);
     }
 #ifdef ENABLE_GPU_KERNEL
     else if (kernel_type == "gpu") {
         std::cout << "Using GPU kNN kernel" << std::endl;
-        kernel = std::unique_ptr<NearestNeighbors>(
-            new NearestNeighborsGPU(E_max, tau, top_k, verbose));
+
+        run_common<NearestNeighborsGPU>(ds, E_max, tau, top_k, verbose);
     } else if (kernel_type == "multigpu") {
         std::cout << "Using Multi-GPU kNN kernel" << std::endl;
-        kernel = std::unique_ptr<NearestNeighbors>(
-            new NearestNeighborsMultiGPU(E_max, tau, top_k, verbose));
+
+        run_multi_gpu(ds, E_max, tau, top_k, verbose);
     }
 #endif
     else {
         std::cerr << "Unknown kernel type " << kernel_type << std::endl;
         return 1;
     }
-
-    kernel->run(ds);
 
     timer_tot.stop();
 

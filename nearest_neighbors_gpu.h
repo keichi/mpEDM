@@ -8,7 +8,7 @@
 class NearestNeighborsGPU : public NearestNeighbors
 {
 public:
-    NearestNeighborsGPU(int E_max, int tau, int k, bool verbose);
+    NearestNeighborsGPU(int tau, int k, bool verbose);
 
     void compute_lut(LUT &out, const Timeseries &ts, int E);
 

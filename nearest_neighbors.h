@@ -7,15 +7,15 @@
 class NearestNeighbors
 {
 public:
-    NearestNeighbors(int E_max, int tau, int k, bool verbose);
-    virtual ~NearestNeighbors();
+    NearestNeighbors(int tau, int k, bool verbose)
+        : tau(tau), top_k(k), verbose(verbose)
+    {
+    }
+    virtual ~NearestNeighbors(){};
 
-    virtual void run(const Dataset &ds);
     virtual void compute_lut(LUT &out, const Timeseries &ts, int E) = 0;
 
 protected:
-    // Maximum embedding dimension (number of columns)
-    const int E_max;
     // Lag
     const int tau;
     // Number of neighbors to find

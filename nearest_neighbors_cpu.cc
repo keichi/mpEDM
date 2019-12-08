@@ -6,9 +6,8 @@
 
 #include "nearest_neighbors_cpu.h"
 
-NearestNeighborsCPU::NearestNeighborsCPU(int E_max, int tau, int k,
-                                         bool verbose)
-    : NearestNeighbors(E_max, tau, k, verbose)
+NearestNeighborsCPU::NearestNeighborsCPU(int tau, int k, bool verbose)
+    : NearestNeighbors(tau, k, verbose)
 {
 }
 
