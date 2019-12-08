@@ -8,10 +8,10 @@ project(cuEDM CXX)
 
 add_executable(cuEDM_kNN)
 
-target_sources(cuEDM_kNN PRIVATE edm_nearest_neighbors.cc dataset.cc
-               nearest_neighbors_cpu.cc)
+target_sources(cuEDM_kNN PRIVATE src/edm_nearest_neighbors.cc src/dataset.cc
+               src/nearest_neighbors_cpu.cc)
 
-add_subdirectory(thirdparty/argh)
+add_subdirectory(src/argh)
 target_link_libraries(cuEDM_kNN PRIVATE argh)
 
 if(CMAKE_BUILD_TYPE STREQUAL "Release")
@@ -33,9 +33,9 @@ if (ArrayFire_FOUND)
   add_definitions(-DENABLE_GPU_KERNEL)
 
   target_link_libraries(cuEDM_kNN PRIVATE ArrayFire::af)
-  target_include_directories(cuEDM_kNN PRIVATE thirdparty/concurrentqueue)
+  target_include_directories(cuEDM_kNN PRIVATE src/concurrentqueue)
 
-  target_sources(cuEDM_kNN PRIVATE nearest_neighbors_gpu.cc)
+  target_sources(cuEDM_kNN PRIVATE src/nearest_neighbors_gpu.cc)
 else()
   message(WARNING "ArrayFire was NOT found, will not build GPU backend")
 endif()
