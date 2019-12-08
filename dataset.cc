@@ -8,7 +8,7 @@
 
 #include "dataset.h"
 
-Dataset::Dataset(const std::string &path)
+Dataset::Dataset(const std::string &path) : Dataset()
 {
     std::ifstream ifs(path);
     std::string line;
