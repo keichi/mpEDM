@@ -19,22 +19,20 @@ public:
 
     virtual void run(const Dataset &ds)
     {
-        n_rows = ds.n_rows;
+        auto i = 0;
 
-        for (int i = 0; i < ds.n_cols; i++) {
-            const float *const col = ds.cols[i].data();
-
+        for (const auto &ts : ds.timeseries) {
             Timer timer;
             timer.start();
 
-            for (int E = 1; E <= E_max; E++) {
+            for (auto E = 1; E <= E_max; E++) {
                 LUT out;
-                int n = ds.n_rows - (E - 1) * tau;
-                compute_lut(out, col, E, n);
+                compute_lut(out, ts, E);
             }
 
             timer.stop();
 
+            i++;
             if (verbose) {
                 std::cout << "Computed LUT for column #" << i << " in "
                           << timer.elapsed() << " [ms]" << std::endl;
@@ -42,8 +40,7 @@ public:
         }
     }
 
-    virtual void compute_lut(LUT &out, const float *const col, int E,
-                             int n) = 0;
+    virtual void compute_lut(LUT &out, const Timeseries &ts, int E) = 0;
 
 protected:
     // Maximum embedding dimension (number of columns)
@@ -52,8 +49,6 @@ protected:
     const int tau;
     // Number of neighbors to find
     const int top_k;
-    // Number of rows in the original dataset
-    int n_rows;
     // Enable verbose logging
     const bool verbose;
 };

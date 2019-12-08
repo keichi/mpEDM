@@ -23,23 +23,21 @@ public:
 
     void run(const Dataset &ds)
     {
-        n_rows = ds.n_rows;
-
-        for (int i = 0; i < ds.n_cols; i++) {
+        for (auto i = 0; i < ds.timeseries.size(); i++) {
             work_queue.enqueue(i);
         }
 
         std::vector<std::thread> threads;
 
-        int dev_count = af::getDeviceCount();
+        auto dev_count = af::getDeviceCount();
 
-        for (int dev = 0; dev < dev_count; dev++) {
+        for (auto dev = 0; dev < dev_count; dev++) {
             threads.push_back(
                 std::thread(&KNNKernelMultiGPU::run_thread, this, ds, dev));
         }
 
-        for (int i = 0; i < threads.size(); i++) {
-            threads[i].join();
+        for (auto &thread : threads) {
+            thread.join();
         }
     }
 
@@ -52,16 +50,15 @@ protected:
 
         af::setDevice(dev);
 
-        int i;
+        auto i = 0;
 
         while (work_queue.try_dequeue(i)) {
             Timer timer;
             timer.start();
 
-            for (int E = 1; E <= E_max; E++) {
+            for (auto E = 1; E <= E_max; E++) {
                 LUT out;
-                int n = ds.n_rows - (E - 1) * tau;
-                compute_lut(out, ds.cols[i].data(), E, n);
+                compute_lut(out, ds.timeseries[i], E);
             }
 
             timer.stop();
