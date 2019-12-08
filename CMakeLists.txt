@@ -6,7 +6,10 @@ set(CMAKE_CXX_STANDARD 11)
 
 project(cuEDM CXX)
 
-add_executable(cuEDM_kNN edm_knn.cc)
+add_executable(cuEDM_kNN)
+
+target_sources(cuEDM_kNN PRIVATE edm_nearest_neighbors.cc dataset.cc
+               nearest_neighbors.cc nearest_neighbors_cpu.cc)
 
 add_subdirectory(thirdparty/argh)
 target_link_libraries(cuEDM_kNN PRIVATE argh)
@@ -26,9 +29,14 @@ endif()
 find_package(ArrayFire)
 if (ArrayFire_FOUND)
   message(STATUS "ArrayFire found, building GPU backend")
+
   add_definitions(-DENABLE_GPU_KERNEL)
+
   target_link_libraries(cuEDM_kNN PRIVATE ArrayFire::af)
   target_include_directories(cuEDM_kNN PRIVATE thirdparty/concurrentqueue)
+
+  target_sources(cuEDM_kNN PRIVATE nearest_neighbors_gpu.cc
+                 nearest_neighbors_multi_gpu.cc)
 else()
   message(WARNING "ArrayFire was NOT found, will not build GPU backend")
 endif()
