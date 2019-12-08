@@ -35,8 +35,8 @@ public:
         for (int i = 0; i < n_rows; i++) {
             for (int j = 0; j < n_cols; j++) {
                 int idx = indices[i * n_cols + j];
-                std::cout << idx << " (" << distances[i * n_cols + idx]
-                          << "), ";
+                float dist = distances[i * n_cols + j];
+                std::cout << idx << " (" << dist << "), ";
             }
             std::cout << std::endl;
         }

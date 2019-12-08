@@ -58,6 +58,8 @@ public:
 
         dist.host(out.distances.data());
         idx.host(out.indices.data());
+
+        out.resize(n, top_k);
     }
 
 protected:

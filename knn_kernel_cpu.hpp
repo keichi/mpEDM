@@ -49,10 +49,6 @@ public:
             }
         }
 
-        for (auto i = 0; i < n; i++) {
-            cache.distances[i * n + i] = std::numeric_limits<float>::max();
-        }
-
         // Sort indices
         #pragma omp parallel for
         for (auto i = 0; i < n; i++) {
