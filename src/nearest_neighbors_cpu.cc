@@ -17,16 +17,16 @@ void NearestNeighborsCPU::compute_lut(LUT &out, const Timeseries &ts, int E)
 
     cache.resize(n, n);
 
-// Compute distances between all points
-#pragma omp parallel for
+    // Compute distances between all points
+    #pragma omp parallel for
     for (auto i = 0; i < n; i++) {
         std::vector<float> norms(n);
 
         for (auto k = 0; k < E; k++) {
             auto p = ts.data();
 
-#pragma omp simd
-#pragma code_align 32
+            #pragma omp simd
+            #pragma code_align 32
             for (auto j = 0; j < n; j++) {
                 // Perform embedding on-the-fly
                 float diff = p[i + k * tau] - p[j + k * tau];
@@ -34,15 +34,15 @@ void NearestNeighborsCPU::compute_lut(LUT &out, const Timeseries &ts, int E)
             }
         }
 
-#pragma omp simd
+        #pragma omp simd
         for (auto j = 0; j < n; j++) {
             cache.distances[i * n + j] = norms[j];
             cache.indices[i * n + j] = j;
         }
     }
 
-// Sort indices
-#pragma omp parallel for
+    // Sort indices
+    #pragma omp parallel for
     for (auto i = 0; i < n; i++) {
         std::partial_sort(
             cache.indices.begin() + i * n,
@@ -54,10 +54,10 @@ void NearestNeighborsCPU::compute_lut(LUT &out, const Timeseries &ts, int E)
 
     out.resize(n, top_k);
 
-#pragma omp parallel for
+    #pragma omp parallel for
     for (auto i = 0; i < n; i++) {
-#pragma omp simd
-#pragma nounroll
+        #pragma omp simd
+        #pragma nounroll
         for (auto j = 0; j < top_k; j++) {
             auto idx = cache.indices[i * n + j];
             out.distances[i * top_k + j] =
