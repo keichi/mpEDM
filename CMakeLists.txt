@@ -45,3 +45,16 @@ if (ArrayFire_FOUND)
 else()
   message(WARNING "ArrayFire was NOT found, will not build GPU backend")
 endif()
+
+find_package(MPI)
+
+if (MPI_CXX_FOUND)
+  set(JSON_BuildTests OFF CACHE INTERNAL "")
+  add_subdirectory(src/json)
+
+  add_executable(mpi_test)
+  target_sources(mpi_test PRIVATE src/mpi_test.cc src/mpi_master.cc
+                 src/mpi_worker.cc)
+  target_link_libraries(mpi_test PRIVATE MPI::MPI_CXX)
+  target_link_libraries(mpi_test PRIVATE nlohmann_json::nlohmann_json)
+endif()
