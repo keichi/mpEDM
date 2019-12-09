@@ -105,7 +105,7 @@ void usage(const std::string &app_name)
 {
     std::string msg =
         app_name +
-        ": GPU-accelerated Empirical Dynamic Modeling\n"
+        ": k-Nearest Neighbors Benchmark\n"
         "\n"
         "Usage:\n"
         "  " +
