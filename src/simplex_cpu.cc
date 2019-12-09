@@ -29,7 +29,6 @@ float SimplexCPU::predict(const Timeseries &library,
 
         for (auto j = 0; j < E + 1; j++) {
             const auto idx = lut.index(i, j) + Tp;
-
             auto weight = 1.0f;
 
             if (min_dist > 0.0f) {

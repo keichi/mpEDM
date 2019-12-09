@@ -19,7 +19,7 @@ void simplex_projection(Simplex &simplex, const Timeseries &ts)
         rhos.push_back(rho);
     }
 
-    const auto it  = std::max_element(rhos.begin(), rhos.end());
+    const auto it = std::max_element(rhos.begin(), rhos.end());
     const auto maxE = it - rhos.begin();
     const auto maxRho = *it;
 
