@@ -68,5 +68,6 @@ void NearestNeighborsGPU::compute_lut(LUT &out, const Timeseries &library,
     dist.host(out.distances.data());
     idx.host(out.indices.data());
 
+    // Trim the last (E-1)*tau invalid rows
     out.resize(n_predictee, top_k);
 }

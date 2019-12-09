@@ -24,21 +24,21 @@ void NearestNeighborsCPU::compute_lut(LUT &out, const Timeseries &library,
     // Compute distances between all library and predictee points
     #pragma omp parallel for
     for (auto i = 0; i < n_predictee; i++) {
-        std::vector<float> norms(n_predictee);
+        std::vector<float> ssd(n_library);
 
         for (auto k = 0; k < E; k++) {
             #pragma omp simd
             #pragma code_align 32
             for (auto j = 0; j < n_library; j++) {
                 // Perform embedding on-the-fly
-                float diff = p_library[i + k * tau] - p_predictee[j + k * tau];
-                norms[j] += diff * diff;
+                auto diff = p_predictee[i + k * tau] - p_library[j + k * tau];
+                ssd[j] += diff * diff;
             }
         }
 
         #pragma omp simd
-        for (auto j = 0; j < n_predictee; j++) {
-            cache.distances[i * n_predictee + j] = norms[j];
+        for (auto j = 0; j < n_library; j++) {
+            cache.distances[i * n_predictee + j] = ssd[j];
             cache.indices[i * n_predictee + j] = j;
         }
     }
@@ -55,8 +55,10 @@ void NearestNeighborsCPU::compute_lut(LUT &out, const Timeseries &library,
                           });
     }
 
+    // Allocate buffer in LUT
     out.resize(n_predictee, top_k);
 
+    // Compute L2 norms from SSDs and reorder them to match the indices
     #pragma omp parallel for
     for (auto i = 0; i < n_predictee; i++) {
         #pragma omp simd
