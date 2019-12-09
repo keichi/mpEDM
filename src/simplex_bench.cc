@@ -1,3 +1,4 @@
+#include <algorithm>
 #include <iostream>
 
 #include "dataset.h"
@@ -10,12 +11,18 @@ void simplex_projection(Simplex &simplex, const Timeseries &ts)
     Timeseries library(ts.data(), ts.size() / 2);
     Timeseries predictee(ts.data() + ts.size() / 2, ts.size() / 2);
 
-    std::cout << "E\trho" << std::endl;
-    for (int E = 1; E <= 20; E++) {
-        float rho = simplex.predict(library, predictee, E);
+    std::vector<float> rhos;
 
-        std::cout << E << "\t" << rho << std::endl;
+    for (auto E = 1; E <= 20; E++) {
+        const auto rho = simplex.predict(library, predictee, E);
+        rhos.push_back(rho);
     }
+
+    const auto it  = std::max_element(rhos.begin(), rhos.end());
+    const auto maxE = it - rhos.begin();
+    const auto maxRho = *it;
+
+    std::cout << "best E=" << maxE << " rho=" << maxRho << std::endl;
 }
 
 int main(int argc, char *argv[])
@@ -27,9 +34,7 @@ int main(int argc, char *argv[])
 
     auto i = 0;
     for (const auto &ts : ds.timeseries) {
-        std::cout << "----------------------------------------" << std::endl;
-        std::cout << "Simplex projection for timeseries #" << (i++)
-                  << std::endl;
+        std::cout << "Simplex projection for timeseries #" << (i++) << ": ";
 
         simplex_projection(simplex, ts);
     }
