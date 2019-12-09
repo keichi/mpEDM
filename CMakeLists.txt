@@ -7,9 +7,12 @@ set(CMAKE_CXX_STANDARD 11)
 project(cuEDM CXX)
 
 add_executable(knn_bench)
+add_executable(simplex_bench)
 
 target_sources(knn_bench PRIVATE src/knn_bench.cc src/dataset.cc src/lut.cc
                src/nearest_neighbors_cpu.cc)
+target_sources(simplex_bench PRIVATE src/simplex_bench.cc src/dataset.cc
+               src/lut.cc src/simplex_cpu.cc src/nearest_neighbors_cpu.cc)
 
 add_subdirectory(src/argh)
 target_link_libraries(knn_bench PRIVATE argh)
