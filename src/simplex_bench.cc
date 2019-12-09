@@ -20,7 +20,7 @@ void simplex_projection(Simplex &simplex, const Timeseries &ts)
     }
 
     const auto it = std::max_element(rhos.begin(), rhos.end());
-    const auto maxE = it - rhos.begin();
+    const auto maxE = it - rhos.begin() + 1;
     const auto maxRho = *it;
 
     std::cout << "best E=" << maxE << " rho=" << maxRho << std::endl;

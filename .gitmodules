@@ -7,3 +7,6 @@
 [submodule "thirdparty/concurrentqueue"]
 	path = src/concurrentqueue
 	url = https://github.com/cameron314/concurrentqueue.git
+[submodule "src/json"]
+	path = src/json
+	url = https://github.com/nlohmann/json.git
