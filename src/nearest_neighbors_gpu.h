@@ -10,7 +10,8 @@ class NearestNeighborsGPU : public NearestNeighbors
 public:
     NearestNeighborsGPU(int tau, int k, bool verbose);
 
-    void compute_lut(LUT &out, const Timeseries &ts, int E);
+    void compute_lut(LUT &out, const Timeseries &library,
+                     const Timeseries &predictee, int E);
 
 protected:
 };

@@ -8,7 +8,7 @@ project(cuEDM CXX)
 
 add_executable(knn_bench)
 
-target_sources(knn_bench PRIVATE src/knn_bench.cc src/dataset.cc
+target_sources(knn_bench PRIVATE src/knn_bench.cc src/dataset.cc src/lut.cc
                src/nearest_neighbors_cpu.cc)
 
 add_subdirectory(src/argh)

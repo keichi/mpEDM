@@ -11,44 +11,63 @@ NearestNeighborsGPU::NearestNeighborsGPU(int tau, int k, bool verbose)
     af::info();
 }
 
-void NearestNeighborsGPU::compute_lut(LUT &out, const Timeseries &ts, int E)
+void NearestNeighborsGPU::compute_lut(LUT &out, const Timeseries &library,
+                                      const Timeseries &predictee, int E)
 {
-    auto n = ts.size() - (E - 1) * tau;
+    const auto n_library = library.size() - (E - 1) * tau;
+    const auto n_predictee = predictee.size() - (E - 1) * tau;
+    const auto p_library = library.data();
+    const auto p_predictee = predictee.data();
 
-    out.resize(ts.size(), top_k);
+    out.resize(predictee.size(), top_k);
 
     af::array idx;
     af::array dist;
 
-    // We actually only need n rows, but we allocate n_rows rows. Fixed
-    // array size allows ArrayFire to recycle previously allocated buffers
-    // and greatly reduces memory allocations on the GPU.
-    std::vector<float> block_host(E * ts.size());
+    // We actually only need n_library rows, but we allocate library.size()
+    // rows. Fixed array size allows ArrayFire to recycle previously allocated
+    // buffers and greatly reduces memory allocations on the GPU.
+    std::vector<float> library_block_host(E * library.size());
+    std::vector<float> predictee_block_host(E * predictee.size());
 
     // Perform embedding
     for (auto i = 0; i < E; i++) {
-
         // Populate the first n with input data
-        for (auto j = 0; j < n; j++) {
-            auto p = ts.data();
-            block_host[i * ts.size() + j] = p[i * tau + j];
+        for (auto j = 0; j < n_library; j++) {
+            library_block_host[i * library.size() + j] = p_library[i * tau + j];
         }
 
         // Populate the rest with dummy data
         // We put infinity so that they are be ignored in the sorting
-        for (auto j = n; j < ts.size(); j++) {
-            block_host[i * ts.size() + j] =
+        for (auto j = n_library; j < library.size(); j++) {
+            library_block_host[i * library.size() + j] =
+                std::numeric_limits<float>::infinity();
+        }
+
+        // Populate the first n with input data
+        for (auto j = 0; j < n_predictee; j++) {
+            predictee_block_host[i * predictee.size() + j] =
+                p_predictee[i * tau + j];
+        }
+
+        // Populate the rest with dummy data
+        // We put infinity so that they are be ignored in the sorting
+        for (auto j = n_predictee; j < predictee.size(); j++) {
+            predictee_block_host[i * predictee.size() + j] =
                 std::numeric_limits<float>::infinity();
         }
     }
 
-    af::array block(ts.size(), E, block_host.data());
+    af::array library_block(library.size(), E, library_block_host.data());
+    af::array predictee_block(predictee.size(), E, predictee_block_host.data());
 
-    af::nearestNeighbour(idx, dist, block, block, 1, top_k, AF_SSD);
+    af::nearestNeighbour(idx, dist, predictee_block, library_block, 1, top_k,
+                         AF_SSD);
     dist = af::sqrt(dist);
 
     dist.host(out.distances.data());
     idx.host(out.indices.data());
 
-    out.resize(n, top_k);
+    // Trim the last (E-1)*tau invalid rows
+    out.resize(n_predictee, top_k);
 }
