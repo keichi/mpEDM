@@ -31,7 +31,9 @@ void run_common(const Dataset &ds, int E_max, int tau, int top_k, bool verbose)
 
         for (auto E = 1; E <= E_max; E++) {
             LUT out;
-            kernel->compute_lut(out, ts, E);
+            kernel->compute_lut(out, ts, ts, E);
+
+            out.print_distance_matrix();
         }
 
         timer.stop();
@@ -65,7 +67,7 @@ void worker(int dev, const Dataset &ds, int E_max, int tau, int top_k,
 
         for (auto E = 1; E <= E_max; E++) {
             LUT out;
-            kernel->compute_lut(out, ds.timeseries[i], E);
+            kernel->compute_lut(out, ds.timeseries[i], ds.timeseries[i], E);
         }
 
         timer.stop();

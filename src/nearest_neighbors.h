@@ -13,7 +13,8 @@ public:
     }
     virtual ~NearestNeighbors(){};
 
-    virtual void compute_lut(LUT &out, const Timeseries &ts, int E) = 0;
+    virtual void compute_lut(LUT &out, const Timeseries &library,
+                             const Timeseries &predictee, int E) = 0;
 
 protected:
     // Lag
