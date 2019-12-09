@@ -5,7 +5,7 @@
 #include "nearest_neighbors_cpu.h"
 #include "simplex.h"
 
-class SimplexCPU : Simplex
+class SimplexCPU : public Simplex
 {
 public:
     SimplexCPU(int tau, int k, int Tp, bool verbose)
