@@ -11,7 +11,7 @@ class SimplexMPIMaster : public MPIMaster
 {
 public:
     SimplexMPIMaster(const std::string fname, MPI_Comm comm)
-        : MPIMaster(comm), dataset(fname)
+        : MPIMaster(comm), dataset(fname), current_id(0)
     {
     }
     ~SimplexMPIMaster() {}
