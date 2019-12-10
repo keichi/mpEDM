@@ -45,6 +45,17 @@ void NearestNeighborsCPU::compute_lut(LUT &out, const Timeseries &library,
         }
     }
 
+    for (auto i = 0u; i < n_target; i++) {
+        for (auto j = 0u; j < n_library; j++) {
+            if (p_target + i != p_library + j) {
+                continue;
+            }
+
+            cache.distances[i * n_target + j] =
+                std::numeric_limits<float>::infinity();
+        }
+    }
+
     // Sort indices
     #pragma omp parallel for
     for (auto i = 0ul; i < n_target; i++) {

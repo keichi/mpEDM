@@ -8,10 +8,13 @@ project(cuEDM CXX)
 
 add_executable(knn_bench)
 add_executable(simplex_bench)
+add_executable(ccm_bench)
 
 target_sources(knn_bench PRIVATE src/knn_bench.cc src/dataset.cc src/lut.cc
                src/nearest_neighbors_cpu.cc)
 target_sources(simplex_bench PRIVATE src/simplex_bench.cc src/dataset.cc
+               src/lut.cc src/simplex_cpu.cc src/nearest_neighbors_cpu.cc)
+target_sources(ccm_bench PRIVATE src/ccm_bench.cc src/dataset.cc
                src/lut.cc src/simplex_cpu.cc src/nearest_neighbors_cpu.cc)
 
 add_subdirectory(src/thirdparty/argh)
@@ -72,6 +75,7 @@ if(OpenMP_FOUND)
   target_link_libraries(knn_bench PRIVATE OpenMP::OpenMP_CXX)
   target_link_libraries(simplex_bench PRIVATE OpenMP::OpenMP_CXX)
   target_link_libraries(simplex_mpi_bench PRIVATE OpenMP::OpenMP_CXX)
+  target_link_libraries(ccm_bench PRIVATE OpenMP::OpenMP_CXX)
 endif()
 
 # Tests
