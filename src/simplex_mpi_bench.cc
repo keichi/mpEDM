@@ -5,6 +5,7 @@
 #include "mpi_worker.h"
 #include "simplex.h"
 #include "simplex_cpu.h"
+#include "timer.h"
 
 class SimplexMPIMaster : public MPIMaster
 {
@@ -88,8 +89,14 @@ int main(int argc, char *argv[])
 
     if (!rank) {
         SimplexMPIMaster master(argv[1], MPI_COMM_WORLD);
+        Timer timer;
 
+        timer.start();
         master.run();
+        timer.stop();
+
+        std::cout << "Processed dataset in " << timer.elapsed() << " [ms]"
+                  << std::endl;
     } else {
         SimplexMPIWorker worker(argv[1], MPI_COMM_WORLD);
 
