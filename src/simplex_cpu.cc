@@ -43,22 +43,29 @@ float SimplexCPU::predict(const Timeseries &library,
     return corrcoef(ts1, ts2);
 }
 
-// Based on https://www.geeksforgeeks.org/program-find-correlation-coefficient/
-float SimplexCPU::corrcoef(const Timeseries &ts1, const Timeseries &ts2)
+// Welford's algorithm
+float SimplexCPU::corrcoef(const Timeseries &x, const Timeseries &y)
 {
-    auto sum_x = 0.0f, sum_y = 0.0f, sum_xy = 0.0f;
-    auto sum_x2 = 0.0f, sum_y2 = 0.0f;
-    const auto n = std::min(ts1.size(), ts2.size());
+    const auto n = std::min(x.size(), y.size());
+    auto avg_x = 0.0f;
+    auto avg_y = 0.0f;
+    auto ssd_x = 0.0f;
+    auto ssd_y = 0.0f;
+    auto ssd_xy = 0.0f;
 
     for (auto i = 0; i < n; i++) {
-        sum_x += ts1[i];
-        sum_y += ts2[i];
-        sum_xy += ts1[i] * ts2[i];
-        sum_x2 += ts1[i] * ts1[i];
-        sum_y2 += ts2[i] * ts2[i];
+        const auto xi = x[i];
+        const auto yi = y[i];
+        const auto avg_x_new = avg_x + (xi - avg_x) / (i + 1);
+        const auto avg_y_new = avg_y + (yi - avg_y) / (i + 1);
+
+        ssd_x += (xi - avg_x) * (xi - avg_x_new);
+        ssd_y += (yi - avg_y) * (yi - avg_y_new);
+        ssd_xy += i * (xi - avg_x) * (yi - avg_y) / (i + 1);
+
+        avg_x = avg_x_new;
+        avg_y = avg_y_new;
     }
 
-    return (n * sum_xy - sum_x * sum_y) /
-           std::sqrt((n * sum_x2 - sum_x * sum_x) *
-                     (n * sum_y2 - sum_y * sum_y));
+    return ssd_xy / (std::sqrt(ssd_x) * std::sqrt(ssd_y));
 }
