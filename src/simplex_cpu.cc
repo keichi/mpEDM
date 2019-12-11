@@ -4,14 +4,11 @@
 
 #include "simplex_cpu.h"
 
-float min_weight = 1e-6f;
-
 float SimplexCPU::predict(const Timeseries &library,
                           const Timeseries &predictee, int E)
 {
-    // Set offset to zero for forwardTau prediction
-    const auto offset = (E - 1) * tau;
-    const auto n_prediction = predictee.size() - offset - Tp;
+    const auto offset = (E - 1) * tau + Tp;
+    const auto n_prediction = predictee.size() - offset;
 
     std::vector<float> prediction(n_prediction);
     LUT lut;
@@ -27,7 +24,7 @@ float SimplexCPU::predict(const Timeseries &library,
         }
 
         for (auto j = 0; j < E + 1; j++) {
-            const auto idx = lut.index(i, j) + Tp;
+            const auto idx = lut.index(i, j);
             const auto dist = lut.distance(i, j);
             const auto weighted_dist =
                 min_dist > 0.0f ? std::exp(-dist / min_dist) : 1.0f;
@@ -41,7 +38,7 @@ float SimplexCPU::predict(const Timeseries &library,
     }
 
     const Timeseries ts1(prediction);
-    const Timeseries ts2(predictee.data() + offset + Tp, n_prediction);
+    const Timeseries ts2(predictee.data() + offset, n_prediction);
 
     return corrcoef(ts1, ts2);
 }
