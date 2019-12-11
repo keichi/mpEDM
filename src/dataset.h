@@ -17,7 +17,7 @@ public:
     const float *data() const { return _data; }
     size_t size() const { return _size; }
 
-    const float& operator[](size_t i) const { return _data[i]; };
+    const float &operator[](size_t i) const { return _data[i]; };
 
 protected:
     const float *_data;
@@ -28,13 +28,15 @@ class Dataset
 {
 public:
     std::vector<Timeseries> timeseries;
-    size_t n_rows;
 
-    Dataset() : n_rows(0), is_header(true) {}
+    Dataset() : _n_rows(0), is_header(true) {}
     Dataset(const std::string &path);
+
+    size_t n_rows() const { return _n_rows; }
 
 protected:
     std::vector<std::vector<float>> columns;
+    size_t _n_rows;
     bool is_header;
 };
 

@@ -32,7 +32,7 @@ Dataset::Dataset(const std::string &path) : Dataset()
             is_header = false;
             continue;
         }
-        n_rows++;
+        _n_rows++;
     }
 
     for (const auto &column : columns) {

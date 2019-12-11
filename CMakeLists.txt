@@ -17,13 +17,14 @@ target_sources(simplex_bench PRIVATE src/simplex_bench.cc src/dataset.cc
 add_subdirectory(src/argh)
 target_link_libraries(knn_bench PRIVATE argh)
 
+# Enable ArrayFire backend if available
 find_package(ArrayFire)
 if (ArrayFire_FOUND)
   message(STATUS "ArrayFire found, building GPU backend")
 
   add_definitions(-DENABLE_GPU_KERNEL)
 
-  target_link_libraries(knn_bench PRIVATE ArrayFire::af)
+  target_link_libraries(knn_bench PRIVATE ArrayFire::afcuda)
   target_include_directories(knn_bench PRIVATE src/concurrentqueue)
 
   target_sources(knn_bench PRIVATE src/nearest_neighbors_gpu.cc)
@@ -31,6 +32,7 @@ else()
   message(WARNING "ArrayFire was NOT found, will not build GPU backend")
 endif()
 
+# Enable MPI if available
 find_package(MPI)
 if (MPI_CXX_FOUND)
   set(JSON_BuildTests OFF CACHE INTERNAL "")
@@ -44,6 +46,7 @@ if (MPI_CXX_FOUND)
   target_link_libraries(simplex_mpi_bench PRIVATE nlohmann_json::nlohmann_json)
 endif()
 
+# Build for native CPU architecture
 if(CMAKE_BUILD_TYPE STREQUAL "Release" OR CMAKE_BUILD_TYPE STREQUAL
    "RelWithDebInfo")
   check_cxx_compiler_flag(-march=native COMPILER_SUPPORTS_MARCH)
@@ -54,6 +57,8 @@ if(CMAKE_BUILD_TYPE STREQUAL "Release" OR CMAKE_BUILD_TYPE STREQUAL
   endif()
 endif()
 
+# Enable OpenMP if available
+# For some reason, CMake fails to detect OpenMP on clang (macOS)
 find_package(OpenMP)
 if(OpenMP_FOUND)
   target_link_libraries(knn_bench PRIVATE OpenMP::OpenMP_CXX)
@@ -61,3 +66,23 @@ if(OpenMP_FOUND)
   target_link_libraries(simplex_mpi_bench PRIVATE OpenMP::OpenMP_CXX)
 endif()
 
+# Tests
+
+enable_testing()
+
+add_subdirectory(src/catch2)
+include(CTest)
+
+include(src/catch2/contrib/Catch.cmake)
+
+# k-nearest neighbors test
+add_executable(knn_test)
+target_sources(knn_test PRIVATE test/knn_test.cc src/lut.cc src/dataset.cc
+               src/nearest_neighbors_cpu.cc)
+target_link_libraries(knn_test PRIVATE Catch2::Catch2)
+if (ArrayFire_FOUND)
+  target_link_libraries(knn_test PRIVATE ArrayFire::afcpu)
+  target_sources(knn_test PRIVATE src/nearest_neighbors_gpu.cc)
+endif()
+catch_discover_tests(knn_test
+                     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/test)

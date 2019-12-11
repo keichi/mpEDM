@@ -7,7 +7,6 @@
 NearestNeighborsGPU::NearestNeighborsGPU(int tau, int k, bool verbose)
     : NearestNeighbors(tau, k, verbose)
 {
-    af::setBackend(AF_BACKEND_CUDA);
     af::info();
 }
 

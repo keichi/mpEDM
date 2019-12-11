@@ -40,7 +40,7 @@ int main(int argc, char *argv[])
 
     timer_tot.stop();
 
-    std::cout << "Read " << ds.n_rows << " rows in " << timer_tot.elapsed()
+    std::cout << "Read " << ds.n_rows() << " rows in " << timer_tot.elapsed()
               << " [ms]" << std::endl;
 
     timer_tot.start();
