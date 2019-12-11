@@ -19,12 +19,18 @@ target_link_libraries(knn_bench PRIVATE argh)
 
 # Enable ArrayFire backend if available
 find_package(ArrayFire)
-if (ArrayFire_FOUND)
+if(ArrayFire_FOUND)
   message(STATUS "ArrayFire found, building GPU backend")
 
   add_definitions(-DENABLE_GPU_KERNEL)
 
-  target_link_libraries(knn_bench PRIVATE ArrayFire::afcuda)
+  if(APPLE)
+    # Need to force CPU backend since OpenCL backend on macOS has bugs
+    # See: https://github.com/arrayfire/arrayfire/issues/2687
+    target_link_libraries(knn_bench PRIVATE ArrayFire::afcpu)
+  else()
+    target_link_libraries(knn_bench PRIVATE ArrayFire::af)
+  endif()
   target_include_directories(knn_bench PRIVATE src/concurrentqueue)
 
   target_sources(knn_bench PRIVATE src/nearest_neighbors_gpu.cc)
@@ -34,7 +40,7 @@ endif()
 
 # Enable MPI if available
 find_package(MPI)
-if (MPI_CXX_FOUND)
+if(MPI_CXX_FOUND)
   set(JSON_BuildTests OFF CACHE INTERNAL "")
   add_subdirectory(src/json)
 
@@ -50,7 +56,7 @@ endif()
 if(CMAKE_BUILD_TYPE STREQUAL "Release" OR CMAKE_BUILD_TYPE STREQUAL
    "RelWithDebInfo")
   check_cxx_compiler_flag(-march=native COMPILER_SUPPORTS_MARCH)
-  if (COMPILER_SUPPORTS_MARCH)
+  if(COMPILER_SUPPORTS_MARCH)
     target_compile_options(knn_bench PRIVATE "-march=native")
     target_compile_options(simplex_bench PRIVATE "-march=native")
     target_compile_options(simplex_mpi_bench PRIVATE "-march=native")
@@ -80,8 +86,13 @@ add_executable(knn_test)
 target_sources(knn_test PRIVATE test/knn_test.cc src/lut.cc src/dataset.cc
                src/nearest_neighbors_cpu.cc)
 target_link_libraries(knn_test PRIVATE Catch2::Catch2)
-if (ArrayFire_FOUND)
-  target_link_libraries(knn_test PRIVATE ArrayFire::afcpu)
+if(ArrayFire_FOUND)
+  if(APPLE)
+    target_link_libraries(knn_test PRIVATE ArrayFire::afcpu)
+  else()
+    target_link_libraries(knn_test PRIVATE ArrayFire::af)
+  endif()
+
   target_sources(knn_test PRIVATE src/nearest_neighbors_gpu.cc)
 endif()
 catch_discover_tests(knn_test
