@@ -158,12 +158,12 @@ int main(int argc, char *argv[])
 
     timer_tot.stop();
 
-    std::cout << "Read " << ds.n_rows << " rows in " << timer_tot.elapsed()
+    std::cout << "Read " << ds.n_rows() << " rows in " << timer_tot.elapsed()
               << " [ms]" << std::endl;
 
     timer_tot.start();
 
-    auto n = ds.n_rows - (E_max - 1) * tau;
+    auto n = ds.n_rows() - (E_max - 1) * tau;
     if (n <= 0) {
         std::cerr << "E or tau is too large" << std::endl;
         return 1;
