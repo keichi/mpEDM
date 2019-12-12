@@ -38,8 +38,6 @@ protected:
     const int Tp;
     // Enable verbose logging
     const bool verbose;
-    // Minimum weight
-    const float min_weight = 1e-6f;
 };
 
 #endif

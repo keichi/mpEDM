@@ -81,6 +81,13 @@ include(CTest)
 
 include(src/thirdparty/catch2/contrib/Catch.cmake)
 
+# Lookup table test
+add_executable(lut_test)
+target_sources(lut_test PRIVATE test/lut_test.cc src/lut.cc)
+target_link_libraries(lut_test PRIVATE Catch2::Catch2)
+catch_discover_tests(lut_test
+                     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/test)
+
 # k-nearest neighbors test
 add_executable(knn_test)
 target_sources(knn_test PRIVATE test/knn_test.cc src/lut.cc src/dataset.cc
