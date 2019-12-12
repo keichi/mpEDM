@@ -2,8 +2,8 @@
 #define __NEAREST_NEIGHBORS_GPU_H__
 
 #include "dataset.h"
-#include "nearest_neighbors.h"
 #include "lut.h"
+#include "nearest_neighbors.h"
 
 class NearestNeighborsGPU : public NearestNeighbors
 {

@@ -11,6 +11,7 @@ NearestNeighborsCPU::NearestNeighborsCPU(int tau, int k, bool verbose)
 {
 }
 
+// clang-format off
 void NearestNeighborsCPU::compute_lut(LUT &out, const Timeseries &library,
                                       const Timeseries &predictee, int E)
 {
@@ -71,3 +72,4 @@ void NearestNeighborsCPU::compute_lut(LUT &out, const Timeseries &library,
         }
     }
 }
+// clang-format on

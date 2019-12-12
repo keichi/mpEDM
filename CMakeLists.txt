@@ -14,7 +14,7 @@ target_sources(knn_bench PRIVATE src/knn_bench.cc src/dataset.cc src/lut.cc
 target_sources(simplex_bench PRIVATE src/simplex_bench.cc src/dataset.cc
                src/lut.cc src/simplex_cpu.cc src/nearest_neighbors_cpu.cc)
 
-add_subdirectory(src/argh)
+add_subdirectory(src/thirdparty/argh)
 target_link_libraries(knn_bench PRIVATE argh)
 
 # Enable ArrayFire backend if available
@@ -31,7 +31,7 @@ if(ArrayFire_FOUND)
   else()
     target_link_libraries(knn_bench PRIVATE ArrayFire::af)
   endif()
-  target_include_directories(knn_bench PRIVATE src/concurrentqueue)
+  target_include_directories(knn_bench PRIVATE src/thirdparty/concurrentqueue)
 
   target_sources(knn_bench PRIVATE src/nearest_neighbors_gpu.cc)
 else()
@@ -42,7 +42,7 @@ endif()
 find_package(MPI)
 if(MPI_CXX_FOUND)
   set(JSON_BuildTests OFF CACHE INTERNAL "")
-  add_subdirectory(src/json)
+  add_subdirectory(src/thirdparty/json)
 
   add_executable(simplex_mpi_bench)
   target_sources(simplex_mpi_bench PRIVATE src/simplex_mpi_bench.cc
@@ -76,10 +76,10 @@ endif()
 
 enable_testing()
 
-add_subdirectory(src/catch2)
+add_subdirectory(src/thirdparty/catch2)
 include(CTest)
 
-include(src/catch2/contrib/Catch.cmake)
+include(src/thirdparty/catch2/contrib/Catch.cmake)
 
 # k-nearest neighbors test
 add_executable(knn_test)

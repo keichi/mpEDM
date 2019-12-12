@@ -2,14 +2,14 @@
 	path = thirdparty/cxxopts
 	url = https://github.com/jarro2783/cxxopts.git
 [submodule "thirdparty/argh"]
-	path = src/argh
+	path = src/thirdparty/argh
 	url = https://github.com/adishavit/argh.git
 [submodule "thirdparty/concurrentqueue"]
-	path = src/concurrentqueue
+	path = src/thirdparty/concurrentqueue
 	url = https://github.com/cameron314/concurrentqueue.git
 [submodule "src/json"]
-	path = src/json
+	path = src/thirdparty/json
 	url = https://github.com/nlohmann/json.git
 [submodule "src/catch2"]
-	path = src/catch2
+	path = src/thirdparty/catch2
 	url = https://github.com/catchorg/Catch2.git
