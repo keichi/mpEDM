@@ -3,8 +3,10 @@
 #include "dataset.h"
 #include "mpi_master.h"
 #include "mpi_worker.h"
+#include "nearest_neighbors_cpu.h"
 #include "simplex.h"
 #include "simplex_cpu.h"
+#include "stats.h"
 #include "timer.h"
 
 class SimplexMPIMaster : public MPIMaster
@@ -60,6 +62,8 @@ protected:
         // Split input into two halves
         Timeseries library(ts.data(), ts.size() / 2);
         Timeseries target(ts.data() + ts.size() / 2, ts.size() / 2);
+        Timeseries prediction;
+        Timeseries adjusted_target;
 
         std::vector<float> rhos;
 
@@ -67,7 +71,11 @@ protected:
 
         for (auto E = 1; E <= 20; E++) {
             knn->compute_lut(lut, library, target, E);
-            const auto rho = simplex->predict(lut, library, target, E);
+            simplex->predict(prediction, lut, library, E);
+            simplex->adjust_target(adjusted_target, target, E);
+
+            const float rho = corrcoef(prediction, adjusted_target);
+
             rhos.push_back(rho);
         }
 

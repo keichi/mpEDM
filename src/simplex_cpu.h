@@ -3,26 +3,20 @@
 
 #include "dataset.h"
 #include "lut.h"
-#include "nearest_neighbors_cpu.h"
 #include "simplex.h"
 
 class SimplexCPU : public Simplex
 {
 public:
-    SimplexCPU(int tau, int Tp, bool verbose)
-        : Simplex(tau, Tp, verbose), knn(new NearestNeighborsCPU(tau, verbose))
-    {
-    }
+    SimplexCPU(int tau, int Tp, bool verbose) : Simplex(tau, Tp, verbose) {}
     ~SimplexCPU(){};
 
-    float predict(const LUT &lut, const Timeseries &library,
-                  const Timeseries &prediction, int E);
+    void predict(Timeseries &prediction, const LUT &lut,
+                 const Timeseries &target, int E);
 
 protected:
-    std::unique_ptr<NearestNeighbors> knn;
-
-    // Compute Pearson correlation coefficient between two Timeseries
-    float corrcoef(const Timeseries &ts1, const Timeseries &ts2);
+    // Predicted result
+    std::vector<float> _prediction;
 };
 
 #endif
