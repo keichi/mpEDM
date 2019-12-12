@@ -31,44 +31,44 @@ template <class T> void knn_test_common(int E)
     }
 }
 
-TEST_CASE("Computed k-NN lookup table is correct (CPU, E=2)", "[knn][cpu]")
+TEST_CASE("Compute k-NN lookup table (CPU, E=2)", "[knn][cpu]")
 {
     knn_test_common<NearestNeighborsCPU>(2);
 }
 
-TEST_CASE("Computed k-NN lookup table is correct (CPU, E=3)", "[knn][cpu]")
+TEST_CASE("Compute k-NN lookup table (CPU, E=3)", "[knn][cpu]")
 {
     knn_test_common<NearestNeighborsCPU>(3);
 }
 
-TEST_CASE("Computed k-NN lookup table is correct (CPU, E=4)", "[knn][cpu]")
+TEST_CASE("Compute k-NN lookup table (CPU, E=4)", "[knn][cpu]")
 {
     knn_test_common<NearestNeighborsCPU>(4);
 }
 
-TEST_CASE("Computed k-NN lookup table is correct (CPU, E=5)", "[knn][cpu]")
+TEST_CASE("Compute k-NN lookup table (CPU, E=5)", "[knn][cpu]")
 {
     knn_test_common<NearestNeighborsCPU>(5);
 }
 
 #ifdef ENABLE_GPU_KERNEL
 
-TEST_CASE("Computed k-NN lookup table is correct (GPU, E=2)", "[knn][cpu]")
+TEST_CASE("Compute k-NN lookup table (GPU, E=2)", "[knn][cpu]")
 {
     knn_test_common<NearestNeighborsGPU>(2);
 }
 
-TEST_CASE("Computed k-NN lookup table is correct (GPU, E=3)", "[knn][cpu]")
+TEST_CASE("Compute k-NN lookup table (GPU, E=3)", "[knn][cpu]")
 {
     knn_test_common<NearestNeighborsGPU>(3);
 }
 
-TEST_CASE("Computed k-NN lookup table is correct (GPU, E=4)", "[knn][cpu]")
+TEST_CASE("Compute k-NN lookup table (GPU, E=4)", "[knn][cpu]")
 {
     knn_test_common<NearestNeighborsGPU>(4);
 }
 
-TEST_CASE("Computed k-NN lookup table is correct (GPU, E=5)", "[knn][cpu]")
+TEST_CASE("Compute k-NN lookup table (GPU, E=5)", "[knn][cpu]")
 {
     knn_test_common<NearestNeighborsGPU>(5);
 }

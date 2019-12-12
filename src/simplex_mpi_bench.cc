@@ -71,6 +71,8 @@ protected:
 
         for (auto E = 1; E <= 20; E++) {
             knn->compute_lut(lut, library, target, E);
+            lut.normalize();
+
             simplex->predict(prediction, lut, library, E);
             simplex->adjust_target(adjusted_target, target, E);
 
