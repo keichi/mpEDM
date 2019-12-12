@@ -39,7 +39,7 @@ class SimplexMPIWorker : public MPIWorker
 {
 public:
     SimplexMPIWorker(const std::string fname, MPI_Comm comm)
-        : MPIWorker(comm), dataset(fname), simplex(1, 30, 1, true)
+        : MPIWorker(comm), dataset(fname), simplex(1, 1, true)
     {
     }
     ~SimplexMPIWorker() {}

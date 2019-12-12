@@ -4,14 +4,15 @@
 
 #include "nearest_neighbors_gpu.h"
 
-NearestNeighborsGPU::NearestNeighborsGPU(int tau, int k, bool verbose)
-    : NearestNeighbors(tau, k, verbose)
+NearestNeighborsGPU::NearestNeighborsGPU(int tau, bool verbose)
+    : NearestNeighbors(tau, verbose)
 {
     af::info();
 }
 
 void NearestNeighborsGPU::compute_lut(LUT &out, const Timeseries &library,
-                                      const Timeseries &predictee, int E)
+                                      const Timeseries &predictee, int E,
+                                      int top_k)
 {
     const auto n_library = library.size() - (E - 1) * tau;
     const auto n_predictee = predictee.size() - (E - 1) * tau;

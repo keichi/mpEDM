@@ -7,20 +7,21 @@
 class NearestNeighbors
 {
 public:
-    NearestNeighbors(int tau, int k, bool verbose)
-        : tau(tau), top_k(k), verbose(verbose)
-    {
-    }
+    NearestNeighbors(int tau, bool verbose) : tau(tau), verbose(verbose) {}
     virtual ~NearestNeighbors(){};
 
     virtual void compute_lut(LUT &out, const Timeseries &library,
-                             const Timeseries &predictee, int E) = 0;
+                             const Timeseries &predictee, int E)
+    {
+        compute_lut(out, library, predictee, E, E + 1);
+    }
+
+    virtual void compute_lut(LUT &out, const Timeseries &library,
+                             const Timeseries &predictee, int E, int top_k) = 0;
 
 protected:
     // Lag
     const int tau;
-    // Number of neighbors to find
-    const int top_k;
     // Enable verbose logging
     const bool verbose;
 };

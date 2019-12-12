@@ -8,8 +8,8 @@
 class SimplexCPU : public Simplex
 {
 public:
-    SimplexCPU(int tau, int k, int Tp, bool verbose)
-        : Simplex(tau, k, Tp, verbose), knn(tau, k, verbose)
+    SimplexCPU(int tau, int Tp, bool verbose)
+        : Simplex(tau, Tp, verbose), knn(new NearestNeighborsCPU(tau, verbose))
     {
     }
     ~SimplexCPU(){};
@@ -18,7 +18,7 @@ public:
                   int E);
 
 protected:
-    NearestNeighborsCPU knn;
+    std::unique_ptr<NearestNeighbors> knn;
 
     // Compute Pearson correlation coefficient between two Timeseries
     float corrcoef(const Timeseries &ts1, const Timeseries &ts2);

@@ -6,8 +6,7 @@
 class Simplex
 {
 public:
-    Simplex(int tau, int k, int Tp, bool verbose)
-        : tau(tau), top_k(k), Tp(Tp), verbose(verbose)
+    Simplex(int tau, int Tp, bool verbose) : tau(tau), Tp(Tp), verbose(verbose)
     {
     }
     virtual ~Simplex(){};
@@ -18,8 +17,6 @@ public:
 protected:
     // Lag
     const int tau;
-    // Number of neighbors to find
-    const int top_k;
     // How many steps to predict in future
     const int Tp;
     // Enable verbose logging

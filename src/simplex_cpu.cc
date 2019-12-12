@@ -13,7 +13,7 @@ float SimplexCPU::predict(const Timeseries &library,
     std::vector<float> prediction(n_prediction);
     LUT lut;
 
-    knn.compute_lut(lut, library, predictee, E);
+    knn->compute_lut(lut, library, predictee, E);
 
     for (auto i = 0; i < n_prediction; i++) {
         auto sum_weights = 0.0f;

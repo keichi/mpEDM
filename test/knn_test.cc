@@ -16,10 +16,10 @@ template <class T> void knn_test_common(int E)
     Dataset ds1("knn_test_data.csv");
     Dataset ds2("knn_test_verification_E" + std::to_string(E) + ".csv");
 
-    T knn(tau, k, true);
+    auto knn = std::unique_ptr<NearestNeighbors>(new T(tau, true));
     LUT lut;
 
-    knn.compute_lut(lut, ds1.timeseries[0], ds1.timeseries[0], E);
+    knn->compute_lut(lut, ds1.timeseries[0], ds1.timeseries[0], E, k);
 
     REQUIRE(lut.n_rows() == ds1.n_rows() - (E - 1));
     REQUIRE(lut.n_cols() == k);

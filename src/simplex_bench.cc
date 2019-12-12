@@ -45,8 +45,8 @@ int main(int argc, char *argv[])
 
     timer_tot.start();
 
-    // tau=1, k=30, Tp=1
-    SimplexCPU simplex(1, 30, 1, true);
+    // tau=1, Tp=1
+    SimplexCPU simplex(1, 1, true);
 
     auto i = 0;
     for (const auto &ts : ds.timeseries) {

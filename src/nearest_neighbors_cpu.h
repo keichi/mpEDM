@@ -7,10 +7,10 @@
 class NearestNeighborsCPU : public NearestNeighbors
 {
 public:
-    NearestNeighborsCPU(int tau, int k, bool verbose);
+    NearestNeighborsCPU(int tau, bool verbose);
 
     void compute_lut(LUT &out, const Timeseries &library,
-                     const Timeseries &predictee, int E);
+                     const Timeseries &predictee, int E, int top_k);
 
 protected:
     LUT cache;

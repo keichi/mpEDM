@@ -6,14 +6,14 @@
 
 #include "nearest_neighbors_cpu.h"
 
-NearestNeighborsCPU::NearestNeighborsCPU(int tau, int k, bool verbose)
-    : NearestNeighbors(tau, k, verbose)
+NearestNeighborsCPU::NearestNeighborsCPU(int tau, bool verbose)
+    : NearestNeighbors(tau, verbose)
 {
 }
 
 // clang-format off
 void NearestNeighborsCPU::compute_lut(LUT &out, const Timeseries &library,
-                                      const Timeseries &predictee, int E)
+                                      const Timeseries &predictee, int E, int top_k)
 {
     const auto n_library = library.size() - (E - 1) * tau;
     const auto n_predictee = predictee.size() - (E - 1) * tau;
