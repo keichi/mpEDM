@@ -2,6 +2,7 @@
 #define __SIMPLEX_CPU_H__
 
 #include "dataset.h"
+#include "lut.h"
 #include "nearest_neighbors_cpu.h"
 #include "simplex.h"
 
@@ -14,8 +15,8 @@ public:
     }
     ~SimplexCPU(){};
 
-    float predict(const Timeseries &library, const Timeseries &prediction,
-                  int E);
+    float predict(const LUT &lut, const Timeseries &library,
+                  const Timeseries &prediction, int E);
 
 protected:
     std::unique_ptr<NearestNeighbors> knn;

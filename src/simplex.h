@@ -2,6 +2,7 @@
 #define __SIMPLEX_H__
 
 #include "dataset.h"
+#include "lut.h"
 
 class Simplex
 {
@@ -11,7 +12,7 @@ public:
     }
     virtual ~Simplex(){};
 
-    virtual float predict(const Timeseries &library,
+    virtual float predict(const LUT &lut, const Timeseries &library,
                           const Timeseries &predictee, int E) = 0;
 
 protected:

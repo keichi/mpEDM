@@ -39,14 +39,17 @@ class SimplexMPIWorker : public MPIWorker
 {
 public:
     SimplexMPIWorker(const std::string fname, MPI_Comm comm)
-        : MPIWorker(comm), dataset(fname), simplex(1, 1, true)
+        : MPIWorker(comm), dataset(fname),
+          knn(new NearestNeighborsCPU(1, true)),
+          simplex(new SimplexCPU(1, 1, true))
     {
     }
     ~SimplexMPIWorker() {}
 
 protected:
     Dataset dataset;
-    SimplexCPU simplex;
+    std::unique_ptr<NearestNeighbors> knn;
+    std::unique_ptr<Simplex> simplex;
 
     void do_task(nlohmann::json &result, const nlohmann::json &task)
     {
@@ -60,8 +63,11 @@ protected:
 
         std::vector<float> rhos;
 
+        LUT lut;
+
         for (auto E = 1; E <= 20; E++) {
-            const auto rho = simplex.predict(library, predictee, E);
+            knn->compute_lut(lut, library, predictee, E);
+            const auto rho = simplex->predict(lut, library, predictee, E);
             rhos.push_back(rho);
         }
 

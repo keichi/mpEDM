@@ -4,16 +4,13 @@
 
 #include "simplex_cpu.h"
 
-float SimplexCPU::predict(const Timeseries &library,
+float SimplexCPU::predict(const LUT &lut, const Timeseries &library,
                           const Timeseries &predictee, int E)
 {
     const auto offset = (E - 1) * tau + Tp;
     const auto n_prediction = predictee.size() - offset;
 
     std::vector<float> prediction(n_prediction);
-    LUT lut;
-
-    knn->compute_lut(lut, library, predictee, E);
 
     for (auto i = 0; i < n_prediction; i++) {
         auto sum_weights = 0.0f;
