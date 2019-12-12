@@ -5,10 +5,10 @@
 #include "simplex_cpu.h"
 
 float SimplexCPU::predict(const LUT &lut, const Timeseries &library,
-                          const Timeseries &predictee, int E)
+                          const Timeseries &target, int E)
 {
     const auto offset = (E - 1) * tau + Tp;
-    const auto n_prediction = predictee.size() - offset;
+    const auto n_prediction = target.size() - offset;
 
     std::vector<float> prediction(n_prediction);
 
@@ -35,7 +35,7 @@ float SimplexCPU::predict(const LUT &lut, const Timeseries &library,
     }
 
     const Timeseries ts1(prediction);
-    const Timeseries ts2(predictee.data() + offset, n_prediction);
+    const Timeseries ts2(target.data() + offset, n_prediction);
 
     return corrcoef(ts1, ts2);
 }

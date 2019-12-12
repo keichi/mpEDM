@@ -15,13 +15,13 @@ void simplex_projection(NearestNeighbors &knn, Simplex &simplex,
 
     // Split input into two halves
     Timeseries library(ts.data(), ts.size() / 2);
-    Timeseries predictee(ts.data() + ts.size() / 2, ts.size() / 2);
+    Timeseries target(ts.data() + ts.size() / 2, ts.size() / 2);
 
     std::vector<float> rhos;
 
     for (auto E = 1; E <= 20; E++) {
-        knn.compute_lut(lut, library, predictee, E);
-        const auto rho = simplex.predict(lut, library, predictee, E);
+        knn.compute_lut(lut, library, target, E);
+        const auto rho = simplex.predict(lut, library, target, E);
         rhos.push_back(rho);
     }
 

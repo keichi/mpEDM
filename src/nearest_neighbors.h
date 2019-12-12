@@ -11,13 +11,13 @@ public:
     virtual ~NearestNeighbors(){};
 
     virtual void compute_lut(LUT &out, const Timeseries &library,
-                             const Timeseries &predictee, int E)
+                             const Timeseries &target, int E)
     {
-        compute_lut(out, library, predictee, E, E + 1);
+        compute_lut(out, library, target, E, E + 1);
     }
 
     virtual void compute_lut(LUT &out, const Timeseries &library,
-                             const Timeseries &predictee, int E, int top_k) = 0;
+                             const Timeseries &target, int E, int top_k) = 0;
 
 protected:
     // Lag

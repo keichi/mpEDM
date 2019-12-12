@@ -11,7 +11,7 @@ public:
     NearestNeighborsGPU(int tau, bool verbose);
 
     void compute_lut(LUT &out, const Timeseries &library,
-                     const Timeseries &predictee, int E, int top_k);
+                     const Timeseries &target, int E, int top_k);
 
 protected:
 };

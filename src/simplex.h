@@ -13,7 +13,7 @@ public:
     virtual ~Simplex(){};
 
     virtual float predict(const LUT &lut, const Timeseries &library,
-                          const Timeseries &predictee, int E) = 0;
+                          const Timeseries &target, int E) = 0;
 
 protected:
     // Lag
