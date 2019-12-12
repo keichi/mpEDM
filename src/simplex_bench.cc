@@ -2,20 +2,33 @@
 #include <iostream>
 
 #include "dataset.h"
+#include "nearest_neighbors.h"
+#include "nearest_neighbors_cpu.h"
 #include "simplex.h"
 #include "simplex_cpu.h"
+#include "stats.h"
 #include "timer.h"
 
-void simplex_projection(Simplex &simplex, const Timeseries &ts)
+void simplex_projection(NearestNeighbors &knn, Simplex &simplex,
+                        const Timeseries &ts)
 {
+    LUT lut;
+
     // Split input into two halves
     Timeseries library(ts.data(), ts.size() / 2);
-    Timeseries predictee(ts.data() + ts.size() / 2, ts.size() / 2);
+    Timeseries target(ts.data() + ts.size() / 2, ts.size() / 2);
+    Timeseries prediction;
+    Timeseries adjusted_target;
 
     std::vector<float> rhos;
 
     for (auto E = 1; E <= 20; E++) {
-        const auto rho = simplex.predict(library, predictee, E);
+        knn.compute_lut(lut, library, target, E);
+        simplex.predict(prediction, lut, library, E);
+        simplex.adjust_target(adjusted_target, target, E);
+
+        const float rho = corrcoef(prediction, adjusted_target);
+
         rhos.push_back(rho);
     }
 
@@ -45,14 +58,17 @@ int main(int argc, char *argv[])
 
     timer_tot.start();
 
-    // tau=1, k=30, Tp=1
-    SimplexCPU simplex(1, 30, 1, true);
+    // tau=1, verbose=true
+    NearestNeighborsCPU knn(1, true);
+
+    // tau=1, Tp=1, verbose=true
+    SimplexCPU simplex(1, 1, true);
 
     auto i = 0;
     for (const auto &ts : ds.timeseries) {
         std::cout << "Simplex projection for timeseries #" << (i++) << ": ";
 
-        simplex_projection(simplex, ts);
+        simplex_projection(knn, simplex, ts);
     }
 
     timer_tot.stop();

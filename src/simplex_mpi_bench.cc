@@ -3,8 +3,10 @@
 #include "dataset.h"
 #include "mpi_master.h"
 #include "mpi_worker.h"
+#include "nearest_neighbors_cpu.h"
 #include "simplex.h"
 #include "simplex_cpu.h"
+#include "stats.h"
 #include "timer.h"
 
 class SimplexMPIMaster : public MPIMaster
@@ -39,14 +41,17 @@ class SimplexMPIWorker : public MPIWorker
 {
 public:
     SimplexMPIWorker(const std::string fname, MPI_Comm comm)
-        : MPIWorker(comm), dataset(fname), simplex(1, 30, 1, true)
+        : MPIWorker(comm), dataset(fname),
+          knn(new NearestNeighborsCPU(1, true)),
+          simplex(new SimplexCPU(1, 1, true))
     {
     }
     ~SimplexMPIWorker() {}
 
 protected:
     Dataset dataset;
-    SimplexCPU simplex;
+    std::unique_ptr<NearestNeighbors> knn;
+    std::unique_ptr<Simplex> simplex;
 
     void do_task(nlohmann::json &result, const nlohmann::json &task)
     {
@@ -56,12 +61,21 @@ protected:
 
         // Split input into two halves
         Timeseries library(ts.data(), ts.size() / 2);
-        Timeseries predictee(ts.data() + ts.size() / 2, ts.size() / 2);
+        Timeseries target(ts.data() + ts.size() / 2, ts.size() / 2);
+        Timeseries prediction;
+        Timeseries adjusted_target;
 
         std::vector<float> rhos;
 
+        LUT lut;
+
         for (auto E = 1; E <= 20; E++) {
-            const auto rho = simplex.predict(library, predictee, E);
+            knn->compute_lut(lut, library, target, E);
+            simplex->predict(prediction, lut, library, E);
+            simplex->adjust_target(adjusted_target, target, E);
+
+            const float rho = corrcoef(prediction, adjusted_target);
+
             rhos.push_back(rho);
         }
 

@@ -4,21 +4,22 @@
 
 #include "nearest_neighbors_gpu.h"
 
-NearestNeighborsGPU::NearestNeighborsGPU(int tau, int k, bool verbose)
-    : NearestNeighbors(tau, k, verbose)
+NearestNeighborsGPU::NearestNeighborsGPU(int tau, bool verbose)
+    : NearestNeighbors(tau, verbose)
 {
     af::info();
 }
 
 void NearestNeighborsGPU::compute_lut(LUT &out, const Timeseries &library,
-                                      const Timeseries &predictee, int E)
+                                      const Timeseries &target, int E,
+                                      int top_k)
 {
     const auto n_library = library.size() - (E - 1) * tau;
-    const auto n_predictee = predictee.size() - (E - 1) * tau;
+    const auto n_target = target.size() - (E - 1) * tau;
     const auto p_library = library.data();
-    const auto p_predictee = predictee.data();
+    const auto p_target = target.data();
 
-    out.resize(predictee.size(), top_k);
+    out.resize(target.size(), top_k);
 
     af::array idx;
     af::array dist;
@@ -28,7 +29,7 @@ void NearestNeighborsGPU::compute_lut(LUT &out, const Timeseries &library,
     // buffers and greatly reduces memory allocations on the GPU.
     std::vector<float> library_block_host(E * library.size());
     // Same with library
-    std::vector<float> predictee_block_host(E * predictee.size());
+    std::vector<float> target_block_host(E * target.size());
 
     // Perform embedding
     for (auto i = 0; i < E; i++) {
@@ -45,23 +46,22 @@ void NearestNeighborsGPU::compute_lut(LUT &out, const Timeseries &library,
         }
 
         // Same with library
-        for (auto j = 0; j < n_predictee; j++) {
-            predictee_block_host[i * predictee.size() + j] =
-                p_predictee[i * tau + j];
+        for (auto j = 0; j < n_target; j++) {
+            target_block_host[i * target.size() + j] = p_target[i * tau + j];
         }
 
-        for (auto j = n_predictee; j < predictee.size(); j++) {
-            predictee_block_host[i * predictee.size() + j] =
+        for (auto j = n_target; j < target.size(); j++) {
+            target_block_host[i * target.size() + j] =
                 std::numeric_limits<float>::infinity();
         }
     }
 
     // Copy embedded blocks to GPU
     af::array library_block(library.size(), E, library_block_host.data());
-    af::array predictee_block(predictee.size(), E, predictee_block_host.data());
+    af::array target_block(target.size(), E, target_block_host.data());
 
     // Compute k-nearest neighbors
-    af::nearestNeighbour(idx, dist, predictee_block, library_block, 1, top_k,
+    af::nearestNeighbour(idx, dist, target_block, library_block, 1, top_k,
                          AF_SSD);
     // Compute L2 norms from SSDs
     dist = af::sqrt(dist);
@@ -71,5 +71,5 @@ void NearestNeighborsGPU::compute_lut(LUT &out, const Timeseries &library,
     idx.host(out.indices.data());
 
     // Trim the last (E-1)*tau invalid rows
-    out.resize(n_predictee, top_k);
+    out.resize(n_target, top_k);
 }

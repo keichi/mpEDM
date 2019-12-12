@@ -21,7 +21,7 @@
 template <class T>
 void run_common(const Dataset &ds, int E_max, int tau, int top_k, bool verbose)
 {
-    auto kernel = std::unique_ptr<NearestNeighbors>(new T(tau, top_k, verbose));
+    auto kernel = std::unique_ptr<NearestNeighbors>(new T(tau, verbose));
 
     auto i = 0;
 
@@ -29,9 +29,10 @@ void run_common(const Dataset &ds, int E_max, int tau, int top_k, bool verbose)
         Timer timer;
         timer.start();
 
+        LUT out;
+
         for (auto E = 1; E <= E_max; E++) {
-            LUT out;
-            kernel->compute_lut(out, ts, ts, E);
+            kernel->compute_lut(out, ts, ts, E, top_k);
         }
 
         timer.stop();
@@ -53,7 +54,7 @@ void worker(int dev, const Dataset &ds, int E_max, int tau, int top_k,
             bool verbose)
 {
     auto kernel = std::unique_ptr<NearestNeighbors>(
-        new NearestNeighborsCPU(tau, top_k, verbose));
+        new NearestNeighborsCPU(tau, verbose));
 
     af::setDevice(dev);
 
@@ -63,9 +64,11 @@ void worker(int dev, const Dataset &ds, int E_max, int tau, int top_k,
         Timer timer;
         timer.start();
 
+        LUT out;
+
         for (auto E = 1; E <= E_max; E++) {
-            LUT out;
-            kernel->compute_lut(out, ds.timeseries[i], ds.timeseries[i], E);
+            kernel->compute_lut(out, ds.timeseries[i], ds.timeseries[i], E,
+                                top_k);
         }
 
         timer.stop();
