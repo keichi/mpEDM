@@ -14,12 +14,12 @@ TEST_CASE("Normalize lookup table", "[lut][cpu]")
                             0.73450598, 0.78722765, 0.80511738});
 
     const auto indices =
-        std::vector<int>({0, 1, 2, //
-                          0, 1, 2, //
-                          0, 1, 2, //
-                          0, 1, 2, //
-                          0, 1, 2, //
-                          0, 1, 2});
+        std::vector<size_t>({0, 1, 2, //
+                             0, 1, 2, //
+                             0, 1, 2, //
+                             0, 1, 2, //
+                             0, 1, 2, //
+                             0, 1, 2});
 
     const auto normalized =
         std::vector<float>({0.403114158, 0.379333097, 0.217552745, //
