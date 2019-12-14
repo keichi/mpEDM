@@ -4,7 +4,7 @@
 
 #include "lut.h"
 
-void LUT::resize(int nr, int nc)
+void LUT::resize(size_t nr, size_t nc)
 {
     _n_rows = nr;
     _n_cols = nc;
