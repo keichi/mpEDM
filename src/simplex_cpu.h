@@ -8,11 +8,14 @@
 class SimplexCPU : public Simplex
 {
 public:
-    SimplexCPU(int tau, int Tp, bool verbose) : Simplex(tau, Tp, verbose) {}
+    SimplexCPU(uint32_t tau, uint32_t Tp, bool verbose)
+        : Simplex(tau, Tp, verbose)
+    {
+    }
     ~SimplexCPU(){};
 
     void predict(Timeseries &prediction, const LUT &lut,
-                 const Timeseries &target, int E);
+                 const Timeseries &target, uint32_t E);
 
 protected:
     // Predicted result

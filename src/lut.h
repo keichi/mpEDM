@@ -21,7 +21,7 @@ public:
 
     // Eucledian distance between point i and j
     std::vector<float> distances;
-    // Index of the j-th closest posize_t from point i
+    // Index of the j-th closest point from point i
     std::vector<size_t> indices;
 
     float distance(size_t i, size_t j) const
