@@ -25,10 +25,10 @@ public:
     virtual void adjust_target(Timeseries &adjusted_target,
                                const Timeseries &target, int E)
     {
-        const auto offset = (E - 1) * tau + Tp;
-        const auto n_prediction = target.size() - offset;
+        const auto shift = (E - 1) * tau + Tp;
+        const auto n_prediction = target.size() - shift;
 
-        adjusted_target = Timeseries(target.data() + offset, n_prediction);
+        adjusted_target = Timeseries(target.data() + shift, n_prediction);
     }
 
 protected:

@@ -12,7 +12,7 @@ void LUT::resize(int nr, int nc)
     indices.resize(nr * nc);
 }
 
-void LUT::print_distance_matrix() const
+void LUT::print_distances() const
 {
     for (auto i = 0; i < _n_rows; i++) {
         for (auto j = 0; j < _n_cols; j++) {
@@ -22,11 +22,11 @@ void LUT::print_distance_matrix() const
     }
 }
 
-void LUT::print() const
+void LUT::print_indices() const
 {
     for (auto i = 0; i < _n_rows; i++) {
         for (auto j = 0; j < _n_cols; j++) {
-            std::cout << index(i, j) << " (" << distance(i, j) << "), ";
+            std::cout << index(i, j) << ", ";
         }
         std::cout << std::endl;
     }
@@ -43,8 +43,14 @@ void LUT::normalize()
 
         for (auto j = 0; j < _n_cols; j++) {
             const auto dist = distances[i * _n_cols + j];
-            const auto weighted_dist =
-                min_dist > 0.0f ? std::exp(-dist / min_dist) : 1.0f;
+            auto weighted_dist = 0.0f;
+
+            if (min_dist > 0.0f) {
+                weighted_dist = std::exp(-dist / min_dist);
+            } else {
+                weighted_dist = dist > 0.0f ? 0.0f : 1.0f;
+            }
+
             const auto weight = std::max(weighted_dist, min_weight);
 
             distances[i * _n_cols + j] = weight;

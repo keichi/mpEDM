@@ -30,8 +30,8 @@ public:
     int n_cols() const { return _n_cols; }
 
     void resize(int nr, int nc);
-    void print_distance_matrix() const;
-    void print() const;
+    void print_distances() const;
+    void print_indices() const;
     void normalize();
 
 protected:
