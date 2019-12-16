@@ -17,6 +17,10 @@ target_sources(simplex_bench PRIVATE src/simplex_bench.cc src/dataset.cc
 add_subdirectory(src/thirdparty/argh)
 target_link_libraries(knn_bench PRIVATE argh)
 
+# Enable all warnings
+# TODO Check if this works across all compilers we are using
+add_compile_options(-Wall -Werror -Wno-unknown-pragmas)
+
 # Enable ArrayFire backend if available
 find_package(ArrayFire)
 if(ArrayFire_FOUND)
@@ -57,9 +61,7 @@ if(CMAKE_BUILD_TYPE STREQUAL "Release" OR CMAKE_BUILD_TYPE STREQUAL
    "RelWithDebInfo")
   check_cxx_compiler_flag(-march=native COMPILER_SUPPORTS_MARCH)
   if(COMPILER_SUPPORTS_MARCH)
-    target_compile_options(knn_bench PRIVATE "-march=native")
-    target_compile_options(simplex_bench PRIVATE "-march=native")
-    target_compile_options(simplex_mpi_bench PRIVATE "-march=native")
+    add_compile_options("-march=native")
   endif()
 endif()
 

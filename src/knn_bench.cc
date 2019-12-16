@@ -19,7 +19,8 @@
 #include "timer.h"
 
 template <class T>
-void run_common(const Dataset &ds, int E_max, int tau, int top_k, bool verbose)
+void run_common(const Dataset &ds, uint32_t E_max, uint32_t tau, uint32_t top_k,
+                bool verbose)
 {
     auto kernel = std::unique_ptr<NearestNeighbors>(new T(tau, verbose));
 
@@ -47,11 +48,11 @@ void run_common(const Dataset &ds, int E_max, int tau, int top_k, bool verbose)
 
 #ifdef ENABLE_GPU_KERNEL
 
-moodycamel::ConcurrentQueue<int> work_queue;
+moodycamel::ConcurrentQueue<uint32_t> work_queue;
 std::mutex mtx;
 
-void worker(int dev, const Dataset &ds, int E_max, int tau, int top_k,
-            bool verbose)
+void worker(uint32_t dev, const Dataset &ds, uint32_t E_max, uint32_t tau,
+            uint32_t top_k, bool verbose)
 {
     auto kernel = std::unique_ptr<NearestNeighbors>(
         new NearestNeighborsCPU(tau, verbose));
@@ -81,8 +82,8 @@ void worker(int dev, const Dataset &ds, int E_max, int tau, int top_k,
     }
 }
 
-void run_multi_gpu(const Dataset &ds, int E_max, int tau, int top_k,
-                   bool verbose)
+void run_multi_gpu(const Dataset &ds, uint32_t E_max, uint32_t tau,
+                   uint32_t top_k, bool verbose)
 {
     for (auto i = 0; i < ds.timeseries.size(); i++) {
         work_queue.enqueue(i);

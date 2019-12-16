@@ -6,14 +6,15 @@
 
 #include "nearest_neighbors_cpu.h"
 
-NearestNeighborsCPU::NearestNeighborsCPU(int tau, bool verbose)
+NearestNeighborsCPU::NearestNeighborsCPU(uint32_t tau, bool verbose)
     : NearestNeighbors(tau, verbose)
 {
 }
 
 // clang-format off
 void NearestNeighborsCPU::compute_lut(LUT &out, const Timeseries &library,
-                                      const Timeseries &target, int E, int top_k)
+                                      const Timeseries &target, uint32_t E,
+                                      uint32_t top_k)
 {
     const auto n_library = library.size() - (E - 1) * tau;
     const auto n_target = target.size() - (E - 1) * tau;
@@ -24,13 +25,13 @@ void NearestNeighborsCPU::compute_lut(LUT &out, const Timeseries &library,
 
     // Compute distances between all library and target points
     #pragma omp parallel for
-    for (auto i = 0; i < n_target; i++) {
+    for (auto i = 0ul; i < n_target; i++) {
         std::vector<float> ssd(n_library);
 
-        for (auto k = 0; k < E; k++) {
+        for (auto k = 0ul; k < E; k++) {
             #pragma omp simd
             #pragma code_align 32
-            for (auto j = 0; j < n_library; j++) {
+            for (auto j = 0ul; j < n_library; j++) {
                 // Perform embedding on-the-fly
                 auto diff = p_target[i + k * tau] - p_library[j + k * tau];
                 ssd[j] += diff * diff;
@@ -38,7 +39,7 @@ void NearestNeighborsCPU::compute_lut(LUT &out, const Timeseries &library,
         }
 
         #pragma omp simd
-        for (auto j = 0; j < n_library; j++) {
+        for (auto j = 0ul; j < n_library; j++) {
             cache.distances[i * n_target + j] = ssd[j];
             cache.indices[i * n_target + j] = j;
         }
@@ -46,7 +47,7 @@ void NearestNeighborsCPU::compute_lut(LUT &out, const Timeseries &library,
 
     // Sort indices
     #pragma omp parallel for
-    for (auto i = 0; i < n_target; i++) {
+    for (auto i = 0ul; i < n_target; i++) {
         std::partial_sort(cache.indices.begin() + i * n_target,
                           cache.indices.begin() + i * n_target + top_k,
                           cache.indices.begin() + (i + 1) * n_target,
@@ -61,10 +62,10 @@ void NearestNeighborsCPU::compute_lut(LUT &out, const Timeseries &library,
 
     // Compute L2 norms from SSDs and reorder them to match the indices
     #pragma omp parallel for
-    for (auto i = 0; i < n_target; i++) {
+    for (auto i = 0ul; i < n_target; i++) {
         #pragma omp simd
         #pragma nounroll
-        for (auto j = 0; j < top_k; j++) {
+        for (auto j = 0ul; j < top_k; j++) {
             auto idx = cache.indices[i * n_target + j];
             out.distances[i * top_k + j] =
                 std::sqrt(cache.distances[i * n_target + idx]);

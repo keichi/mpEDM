@@ -5,19 +5,18 @@
 #include "simplex_cpu.h"
 
 void SimplexCPU::predict(Timeseries &prediction, const LUT &lut,
-                         const Timeseries &target, int E)
+                         const Timeseries &target, uint32_t E)
 {
-    const auto offset = (E - 1) * tau + Tp;
-    const auto n_prediction = target.size() - offset;
+    const auto shift = (E - 1) * tau + Tp;
 
     std::fill(_prediction.begin(), _prediction.end(), 0);
-    _prediction.resize(n_prediction);
+    _prediction.resize(lut.n_rows());
 
-    for (auto i = 0; i < n_prediction; i++) {
-        for (auto j = 0; j < E + 1; j++) {
+    for (auto i = 0ul; i < lut.n_rows(); i++) {
+        for (auto j = 0ul; j < E + 1; j++) {
             const auto idx = lut.index(i, j);
             const auto dist = lut.distance(i, j);
-            _prediction[i] += target[idx + offset] * dist;
+            _prediction[i] += target[idx + shift] * dist;
         }
     }
 
