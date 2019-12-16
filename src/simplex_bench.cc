@@ -18,7 +18,7 @@ void simplex_projection(NearestNeighbors &knn, Simplex &simplex,
     Timeseries library(ts.data(), ts.size() / 2);
     Timeseries target(ts.data() + ts.size() / 2, ts.size() / 2);
     Timeseries prediction;
-    Timeseries adjusted_target;
+    Timeseries shifted_target;
 
     std::vector<float> rhos;
 
@@ -27,9 +27,9 @@ void simplex_projection(NearestNeighbors &knn, Simplex &simplex,
         lut.normalize();
 
         simplex.predict(prediction, lut, library, E);
-        simplex.adjust_target(adjusted_target, target, E);
+        simplex.shift_target(shifted_target, target, E);
 
-        const float rho = corrcoef(prediction, adjusted_target);
+        const float rho = corrcoef(prediction, shifted_target);
 
         rhos.push_back(rho);
     }
