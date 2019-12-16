@@ -77,7 +77,7 @@ void NearestNeighborsGPU::compute_lut(LUT &out, const Timeseries &library,
     out.resize(n_target, top_k);
 
     // Remove degenerate neighbors
-    #pragma omp parallel for
+    // TODO Use OpenMP?
     for (auto i = 0u; i < n_target; i++) {
         auto shift = 0u;
         if (p_library + idx_host[i * (top_k + 1)] == p_target + i) {
@@ -87,8 +87,7 @@ void NearestNeighborsGPU::compute_lut(LUT &out, const Timeseries &library,
         for (auto j = 0u; j < top_k; j++) {
             out.distances[i * top_k + j] =
                 dist_host[i * (top_k + 1) + j + shift];
-            out.indices[i * top_k + j] =
-                idx_host[i * (top_k + 1) + j + shift];
+            out.indices[i * top_k + j] = idx_host[i * (top_k + 1) + j + shift];
         }
     }
 }
