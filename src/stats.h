@@ -12,7 +12,7 @@ float corrcoef(const Timeseries &x, const Timeseries &y)
     auto ssd_y = 0.0f;
     auto ssd_xy = 0.0f;
 
-    for (auto i = 0ul; i < n; i++) {
+    for (auto i = 0u; i < n; i++) {
         const auto xi = x[i];
         const auto yi = y[i];
         const auto avg_x_new = avg_x + (xi - avg_x) / (i + 1);

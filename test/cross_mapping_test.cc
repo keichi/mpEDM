@@ -44,7 +44,7 @@ TEST_CASE("Cross mapping (E=3)", "[ccm][cpu]")
     REQUIRE(prediction.size() == valid_prediction.size());
 
     auto mae = 0.0f;
-    for (auto i = 0; i < prediction.size(); i++) {
+    for (auto i = 0u; i < prediction.size(); i++) {
         mae += std::abs(prediction[i] - valid_prediction[i]);
     }
 

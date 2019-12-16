@@ -32,9 +32,9 @@ void NearestNeighborsGPU::compute_lut(LUT &out, const Timeseries &library,
     std::vector<float> target_block_host(E * target.size());
 
     // Perform embedding
-    for (auto i = 0ul; i < E; i++) {
+    for (auto i = 0u; i < E; i++) {
         // Populate the first n with input data
-        for (auto j = 0ul; j < n_library; j++) {
+        for (auto j = 0u; j < n_library; j++) {
             library_block_host[i * library.size() + j] = p_library[i * tau + j];
         }
 
@@ -46,7 +46,7 @@ void NearestNeighborsGPU::compute_lut(LUT &out, const Timeseries &library,
         }
 
         // Same with library
-        for (auto j = 0ul; j < n_target; j++) {
+        for (auto j = 0u; j < n_target; j++) {
             target_block_host[i * target.size() + j] = p_target[i * tau + j];
         }
 

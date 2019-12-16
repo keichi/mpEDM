@@ -20,7 +20,7 @@ public:
 
 protected:
     Dataset dataset;
-    size_t current_id;
+    uint32_t current_id;
 
     void next_task(nlohmann::json &task)
     {
