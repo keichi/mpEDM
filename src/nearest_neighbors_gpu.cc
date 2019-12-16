@@ -1,3 +1,4 @@
+#include <iostream>
 #include <limits>
 
 #include <arrayfire.h>
@@ -19,19 +20,19 @@ void NearestNeighborsGPU::compute_lut(LUT &out, const Timeseries &library,
     const auto p_library = library.data();
     const auto p_target = target.data();
 
-    out.resize(target.size(), top_k);
-
     af::array idx;
     af::array dist;
 
-    // We actually only need n_library rows, but we allocate library.size()
-    // rows. Fixed array size allows ArrayFire to recycle previously allocated
-    // buffers and greatly reduces memory allocations on the GPU.
+    // We only need library.size() - (E - 1) * tau rows, but we allocate
+    // library.size() rows. Using the same array size across all E allows
+    // ArrayFire to recycle previously allocated buffers and greatly reduces
+    // memory allocations on the GPU.
     std::vector<float> library_block_host(E * library.size());
     // Same with library
     std::vector<float> target_block_host(E * target.size());
 
     // Perform embedding
+    // TODO Use OpenMP?
     for (auto i = 0u; i < E; i++) {
         // Populate the first n with input data
         for (auto j = 0u; j < n_library; j++) {
@@ -61,15 +62,33 @@ void NearestNeighborsGPU::compute_lut(LUT &out, const Timeseries &library,
     af::array target_block(target.size(), E, target_block_host.data());
 
     // Compute k-nearest neighbors
-    af::nearestNeighbour(idx, dist, target_block, library_block, 1, top_k,
+    af::nearestNeighbour(idx, dist, target_block, library_block, 1, top_k + 1,
                          AF_SSD);
     // Compute L2 norms from SSDs
     dist = af::sqrt(dist);
 
-    // Copy distances and indices to CPU
-    dist.host(out.distances.data());
-    idx.host(out.indices.data());
+    std::vector<uint32_t> idx_host(target.size() * (top_k + 1));
+    std::vector<float> dist_host(target.size() * (top_k + 1));
 
-    // Trim the last (E-1)*tau invalid rows
+    // Copy distances and indices to CPU
+    idx.host(idx_host.data());
+    dist.host(dist_host.data());
+
     out.resize(n_target, top_k);
+
+    // Remove degenerate neighbors
+    #pragma omp parallel for
+    for (auto i = 0u; i < n_target; i++) {
+        auto shift = 0u;
+        if (p_library + idx_host[i * (top_k + 1)] == p_target + i) {
+            shift = 1u;
+        }
+
+        for (auto j = 0u; j < top_k; j++) {
+            out.distances[i * top_k + j] =
+                dist_host[i * (top_k + 1) + j + shift];
+            out.indices[i * top_k + j] =
+                idx_host[i * (top_k + 1) + j + shift];
+        }
+    }
 }
