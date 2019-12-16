@@ -6,11 +6,11 @@
 #include "../src/nearest_neighbors_cpu.h"
 #include "../src/simplex_cpu.h"
 
-// Validation data was generated with pyEDM 1.0.1:
+// Validation data was generated with pyEDM 1.0.1 with the following
+// parameters:
 // pyEDM.Simplex(dataFrame=pyEDM.sampleData["sardine_anchovy_sst"],
 //               E=3, Tp=1, columns="anchovy", target="np_sst", lib="1 76",
 //               pred="1 76", verbose=True)
-
 
 TEST_CASE("Cross mapping (E=3)", "[ccm][cpu]")
 {
@@ -29,9 +29,9 @@ TEST_CASE("Cross mapping (E=3)", "[ccm][cpu]")
     LUT lut;
     Timeseries library = Timeseries(ds1.timeseries[1].data(), 76);
     Timeseries target = Timeseries(ds1.timeseries[4].data(), 76);
-    std::cout << "fooo" << std::endl;
+
     Timeseries prediction;
-    Timeseries adjusted_target;
+    Timeseries shifted_target;
     Timeseries valid_prediction = ds2.timeseries[0];
 
     knn->compute_lut(lut, library, library, E);
@@ -39,9 +39,7 @@ TEST_CASE("Cross mapping (E=3)", "[ccm][cpu]")
     lut.normalize();
 
     simplex->predict(prediction, lut, target, E);
-    simplex->adjust_target(adjusted_target, target, E);
-
-    std::cout << prediction.size() << "\t" << valid_prediction.size() << std::endl;
+    simplex->shift_target(shifted_target, target, E);
 
     REQUIRE(prediction.size() == valid_prediction.size());
 
