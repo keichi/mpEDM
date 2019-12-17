@@ -37,3 +37,12 @@ jobs:
       run: sudo apt-get install -y clang-format-8
     - name: Run clang-format
       run: ./scripts/run-clang-format.py -r src --clang-format-executable $(which clang-format-8)
+
+  cppcheck:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v1
+    - name: Install cppcheck
+      run: sudo apt-get install -y cppcheck
+    - name: Run cppcheck
+      run: cppcheck --enable=all --inline-suppr -i src/thirdparty src
