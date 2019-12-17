@@ -25,7 +25,7 @@ add_compile_options(-Wall -Werror -Wno-unknown-pragmas)
 # Enable ArrayFire backend if available
 find_package(ArrayFire)
 if(ArrayFire_FOUND)
-  message(STATUS "ArrayFire found, building GPU backend")
+  message(STATUS "ArrayFire found, enabling GPU backend")
 
   add_definitions(-DENABLE_GPU_KERNEL)
 
@@ -40,12 +40,14 @@ if(ArrayFire_FOUND)
 
   target_sources(knn_bench PRIVATE src/nearest_neighbors_gpu.cc)
 else()
-  message(WARNING "ArrayFire was NOT found, will not build GPU backend")
+  message(WARNING "ArrayFire was NOT found, GPU backend is disabled")
 endif()
 
 # Enable MPI if available
 find_package(MPI)
 if(MPI_CXX_FOUND)
+  message(STATUS "MPI found, enabling multi-node benchmarks and tests")
+
   set(JSON_BuildTests OFF CACHE INTERNAL "")
   add_subdirectory(src/thirdparty/json)
 
@@ -60,8 +62,8 @@ endif()
 # Build for native CPU architecture
 if(CMAKE_BUILD_TYPE STREQUAL "Release" OR CMAKE_BUILD_TYPE STREQUAL
    "RelWithDebInfo")
-  check_cxx_compiler_flag(-march=native COMPILER_SUPPORTS_MARCH)
-  if(COMPILER_SUPPORTS_MARCH)
+  check_cxx_compiler_flag(-march=native CXX_SUPPORTS_MARCH)
+  if(CXX_SUPPORTS_MARCH)
     add_compile_options("-march=native")
   endif()
 endif()
@@ -70,9 +72,14 @@ endif()
 # For some reason, CMake fails to detect OpenMP on clang (macOS)
 find_package(OpenMP)
 if(OpenMP_FOUND)
+  message(STATUS "OpenMP found, enabling multi-threading")
+
   target_link_libraries(knn_bench PRIVATE OpenMP::OpenMP_CXX)
   target_link_libraries(simplex_bench PRIVATE OpenMP::OpenMP_CXX)
-  target_link_libraries(simplex_mpi_bench PRIVATE OpenMP::OpenMP_CXX)
+
+  if (TARGET simplex_mpi_bench)
+    target_link_libraries(simplex_mpi_bench PRIVATE OpenMP::OpenMP_CXX)
+  endif()
 endif()
 
 # Tests

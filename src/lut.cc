@@ -12,6 +12,7 @@ void LUT::resize(uint32_t nr, uint32_t nc)
     indices.resize(nr * nc);
 }
 
+// cppcheck-suppress unusedFunction
 void LUT::print_distances() const
 {
     for (auto i = 0u; i < _n_rows; i++) {
@@ -22,6 +23,7 @@ void LUT::print_distances() const
     }
 }
 
+// cppcheck-suppress unusedFunction
 void LUT::print_indices() const
 {
     for (auto i = 0u; i < _n_rows; i++) {

@@ -9,7 +9,7 @@ class Timeseries
 public:
     Timeseries() : Timeseries(nullptr, 0) {}
     Timeseries(const float *data, uint32_t size) : _data(data), _size(size) {}
-    Timeseries(const std::vector<float> &vec)
+    explicit Timeseries(const std::vector<float> &vec)
         : Timeseries(vec.data(), vec.size())
     {
     }
@@ -30,7 +30,7 @@ public:
     std::vector<Timeseries> timeseries;
 
     Dataset() : _n_rows(0), is_header(true) {}
-    Dataset(const std::string &path);
+    explicit Dataset(const std::string &path);
 
     uint32_t n_rows() const { return _n_rows; }
 

@@ -10,7 +10,8 @@ public:
     NearestNeighborsCPU(uint32_t tau, bool verbose);
 
     void compute_lut(LUT &out, const Timeseries &library,
-                     const Timeseries &target, uint32_t E, uint32_t top_k);
+                     const Timeseries &target, uint32_t E,
+                     uint32_t top_k) override;
 
 protected:
     LUT cache;

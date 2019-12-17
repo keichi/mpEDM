@@ -1,6 +1,7 @@
 #ifndef __DATASET_HPP__
 #define __DATASET_HPP__
 
+#include <algorithm>
 #include <fstream>
 #include <sstream>
 #include <string>
@@ -35,9 +36,9 @@ Dataset::Dataset(const std::string &path) : Dataset()
         _n_rows++;
     }
 
-    for (const auto &column : columns) {
-        timeseries.push_back(Timeseries(column));
-    }
+    std::transform(columns.begin(), columns.end(),
+                   std::back_inserter(timeseries),
+                   [](const std::vector<float> &c) { return Timeseries(c); });
 }
 
 #endif

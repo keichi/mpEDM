@@ -167,7 +167,7 @@ int main(int argc, char *argv[])
 
     timer_tot.start();
 
-    auto n = ds.n_rows() - (E_max - 1) * tau;
+    int n = ds.n_rows() - (E_max - 1) * tau;
     if (n <= 0) {
         std::cerr << "E or tau is too large" << std::endl;
         return 1;
