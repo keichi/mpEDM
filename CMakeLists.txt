@@ -3,6 +3,7 @@ include(CheckCXXCompilerFlag)
 cmake_minimum_required(VERSION 3.10)
 
 set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 project(cuEDM CXX)
 
@@ -105,4 +106,13 @@ if(ArrayFire_FOUND)
   target_sources(knn_test PRIVATE src/nearest_neighbors_gpu.cc)
 endif()
 catch_discover_tests(knn_test
+                     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/test)
+
+# cross mapping test
+add_executable(cross_mapping_test)
+target_sources(cross_mapping_test PRIVATE test/cross_mapping_test.cc
+               src/lut.cc src/dataset.cc src/nearest_neighbors_cpu.cc
+               src/simplex_cpu.cc)
+target_link_libraries(cross_mapping_test PRIVATE Catch2::Catch2)
+catch_discover_tests(cross_mapping_test
                      WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/test)

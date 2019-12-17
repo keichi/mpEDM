@@ -12,8 +12,8 @@ void SimplexCPU::predict(Timeseries &prediction, const LUT &lut,
     std::fill(_prediction.begin(), _prediction.end(), 0);
     _prediction.resize(lut.n_rows());
 
-    for (auto i = 0ul; i < lut.n_rows(); i++) {
-        for (auto j = 0ul; j < E + 1; j++) {
+    for (auto i = 0u; i < lut.n_rows(); i++) {
+        for (auto j = 0u; j < E + 1; j++) {
             const auto idx = lut.index(i, j);
             const auto dist = lut.distance(i, j);
             _prediction[i] += target[idx + shift] * dist;

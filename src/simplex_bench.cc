@@ -17,6 +17,9 @@ void simplex_projection(NearestNeighbors &knn, Simplex &simplex,
     // Split input into two halves
     Timeseries library(ts.data(), ts.size() / 2);
     Timeseries target(ts.data() + ts.size() / 2, ts.size() / 2);
+    // Use following to get the exact same predictions as cppEDM
+    // Timeseries target(ts.data() + ts.size() / 2 - (E - 1) * tau,
+    //                   ts.size() / 2 + (E - 1) * tau);
     Timeseries prediction;
     Timeseries shifted_target;
 
