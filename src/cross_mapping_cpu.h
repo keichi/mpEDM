@@ -1,6 +1,8 @@
 #ifndef __CROSS_MAPPING_CPU_H__
 #define __CROSS_MAPPING_CPU_H__
 
+#include <memory>
+
 #include "cross_mapping.h"
 #include "lut.h"
 #include "nearest_neighbors_cpu.h"
@@ -16,7 +18,9 @@ public:
     {
     }
 
-    void predict(const Timeseries &library, const Timeseries &target) override;
+    void predict(std::vector<float> &rhos, const Timeseries &library,
+                 const std::vector<Timeseries> &targets,
+                 const std::vector<uint32_t> &optimal_E) override;
 
 protected:
     std::unique_ptr<NearestNeighbors> knn;
