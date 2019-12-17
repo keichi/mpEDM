@@ -21,8 +21,6 @@ template <class T> void simplex_test_common(int E)
     Timeseries prediction;
 
     auto knn = std::unique_ptr<NearestNeighbors>(new T(tau, true));
-    // auto simplex = std::unique_ptr<Simplex>(new T(1, 1, true));
-    // NearestNeighborsCPU knn(1, true);
     SimplexCPU simplex(1, 1, true);
     LUT lut;
 
@@ -33,14 +31,10 @@ template <class T> void simplex_test_common(int E)
     float rmse = 0.0;
 
     for (size_t row = 0; row < prediction.size(); row++) {
-        // std::cout << prediction[row] << " | " << ds2.timeseries[0][row] << std::endl;
         rmse = pow(prediction[row] - ds2.timeseries[0][row], 2);
     }
 
-    rmse = sqrt(rmse/ds2.n_rows());
-    // std::cout << "RMSE: " << rmse << " (" << prediction.size() << ")" << std::endl;
-
-    REQUIRE(rmse < 0.0001);
+    REQUIRE(sqrt(rmse/ds2.n_rows()) < 0.0001);
 }
 
 TEST_CASE("Computed simplex is correct (CPU, E=2)", "[simplex][cpu]")
