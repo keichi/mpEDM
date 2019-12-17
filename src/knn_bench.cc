@@ -158,7 +158,8 @@ int main(int argc, char *argv[])
     Timer timer_tot;
     timer_tot.start();
 
-    Dataset ds(fname);
+    Dataset ds;
+    ds.load(fname);
 
     timer_tot.stop();
 

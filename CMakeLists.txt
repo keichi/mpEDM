@@ -115,7 +115,7 @@ endif()
 catch_discover_tests(knn_test
                      WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/test)
 
-# cross mapping test
+# Cross mapping test
 add_executable(cross_mapping_test)
 target_sources(cross_mapping_test PRIVATE test/cross_mapping_test.cc
                src/lut.cc src/dataset.cc src/nearest_neighbors_cpu.cc
@@ -124,7 +124,7 @@ target_link_libraries(cross_mapping_test PRIVATE Catch2::Catch2)
 catch_discover_tests(cross_mapping_test
                      WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/test)
 
-# simplex test
+# Simplex test
 add_executable(simplex_test)
 target_sources(simplex_test PRIVATE test/simplex_test.cc src/lut.cc src/dataset.cc
                src/nearest_neighbors_cpu.cc src/simplex_cpu.cc)
@@ -140,3 +140,24 @@ if(ArrayFire_FOUND)
 endif()
 catch_discover_tests(simplex_test
                      WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/test)
+
+# Enable HDF5 reader if available
+find_package(HDF5)
+if(HDF5_FOUND)
+  message(STATUS "HDF5 found, enabling HDF5 reader")
+
+  add_definitions(-DENABLE_HDF5_READER)
+
+  set(HIGHFIVE_UNIT_TESTS FALSE)
+  set(HIGHFIVE_EXAMPLES FALSE)
+  add_subdirectory(src/thirdparty/highfive)
+
+  target_link_libraries(knn_bench PRIVATE HighFive)
+  target_link_libraries(simplex_bench PRIVATE HighFive)
+  if (TARGET simplex_mpi_bench)
+    target_link_libraries(simplex_mpi_bench PRIVATE HighFive)
+  endif()
+  target_link_libraries(knn_test PRIVATE HighFive)
+  target_link_libraries(cross_mapping_test PRIVATE HighFive)
+  target_link_libraries(simplex_test PRIVATE HighFive)
+endif()

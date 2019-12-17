@@ -13,3 +13,6 @@
 [submodule "src/catch2"]
 	path = src/thirdparty/catch2
 	url = https://github.com/catchorg/Catch2.git
+[submodule "src/thirdparty/highfive"]
+	path = src/thirdparty/highfive
+	url = https://github.com/BlueBrain/HighFive.git
