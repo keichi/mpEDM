@@ -16,8 +16,9 @@ TEST_CASE("Cross mapping (E=3)", "[ccm][cpu]")
 {
     const uint32_t E = 3;
 
-    Dataset ds1("sardine_anchovy_sst.csv");
-    Dataset ds2("anchovy_sst_verification_E" + std::to_string(E) + ".csv");
+    Dataset ds1, ds2;
+    ds1.load("sardine_anchovy_sst.csv");
+    ds2.load("anchovy_sst_verification_E" + std::to_string(E) + ".csv");
 
     // tau=1, verbose=true
     auto knn =

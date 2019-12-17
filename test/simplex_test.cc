@@ -13,8 +13,9 @@ template <class T> void simplex_test_common(int E)
 {
     const auto tau = 1;
 
-    Dataset ds1("simplex_test_data.csv");
-    Dataset ds2("simplex_test_verification_E" + std::to_string(E) + ".csv");
+    Dataset ds1, ds2;
+    ds1.load("simplex_test_data.csv");
+    ds2.load("simplex_test_verification_E" + std::to_string(E) + ".csv");
 
     Timeseries library(ds1.timeseries[0].data(), ds1.timeseries[0].size() / 2);
     Timeseries target(ds1.timeseries[0].data() + ds1.timeseries[0].size() / 2 - (E-1)*tau, ds1.timeseries[0].size() / 2);

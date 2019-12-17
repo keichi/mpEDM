@@ -30,14 +30,21 @@ public:
     std::vector<Timeseries> timeseries;
 
     Dataset() : _n_rows(0), is_header(true) {}
-    explicit Dataset(const std::string &path);
 
+    void load(const std::string &path);
     uint32_t n_rows() const { return _n_rows; }
+    uint32_t n_cols() const { return timeseries.size(); }
 
 protected:
     std::vector<std::vector<float>> columns;
     uint32_t _n_rows;
     bool is_header;
+
+    void load_csv(const std::string &path);
+#ifdef ENABLE_HDF5_READER
+    void load_hdf5(const std::string &path);
+#endif
+    bool ends_with(const std::string &full, const std::string &ending);
 };
 
 #endif

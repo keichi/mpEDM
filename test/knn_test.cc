@@ -13,8 +13,9 @@ template <class T> void knn_test_common(int E)
     const auto tau = 1;
     const auto k = 4;
 
-    Dataset ds1("knn_test_data.csv");
-    Dataset ds2("knn_test_verification_E" + std::to_string(E) + ".csv");
+    Dataset ds1, ds2;
+    ds1.load("knn_test_data.csv");
+    ds2.load("knn_test_verification_E" + std::to_string(E) + ".csv");
 
     auto knn = std::unique_ptr<NearestNeighbors>(new T(tau, true));
     LUT lut;

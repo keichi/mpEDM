@@ -13,8 +13,9 @@ class SimplexMPIMaster : public MPIMaster
 {
 public:
     SimplexMPIMaster(const std::string &fname, MPI_Comm comm)
-        : MPIMaster(comm), dataset(fname), current_id(0)
+        : MPIMaster(comm), current_id(0)
     {
+        dataset.load(fname);
     }
     ~SimplexMPIMaster() {}
 
@@ -44,10 +45,10 @@ class SimplexMPIWorker : public MPIWorker
 {
 public:
     SimplexMPIWorker(const std::string &fname, MPI_Comm comm)
-        : MPIWorker(comm), dataset(fname),
-          knn(new NearestNeighborsCPU(1, true)),
+        : MPIWorker(comm), knn(new NearestNeighborsCPU(1, true)),
           simplex(new SimplexCPU(1, 1, true))
     {
+        dataset.load(fname);
     }
     ~SimplexMPIWorker() {}
 

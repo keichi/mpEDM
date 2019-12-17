@@ -54,7 +54,8 @@ int main(int argc, char *argv[])
 
     timer_tot.start();
 
-    Dataset ds(fname);
+    Dataset ds;
+    ds.load(fname);
 
     timer_tot.stop();
 
