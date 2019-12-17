@@ -44,8 +44,7 @@ void simplex_projection(std::vector<uint32_t> &optmal_E, const Dataset &ds)
         const auto it = std::max_element(rhos.begin(), rhos.end());
         const auto maxE = it - rhos.begin() + 1;
 
-        // std::cout << "Optimal E for column #" << i << " is " << maxE
-        // << std::endl;
+        std::cout << "Optimal E for column #" << i << " is " << maxE << std::endl;
 
         optmal_E[i] = maxE;
     }
@@ -63,8 +62,7 @@ void cross_mapping(const Dataset &ds, const std::vector<uint32_t> &optimal_E)
 
         xmap.predict(rhos, library, ds.timeseries, optimal_E);
 
-        // std::cout << "Cross mapping for column #" << i << " done" <<
-        // std::endl;
+        std::cout << "Cross mapping for column #" << i << " done" << std::endl;
     }
 }
 
