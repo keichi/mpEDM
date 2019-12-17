@@ -15,7 +15,7 @@ public:
     ~SimplexCPU(){};
 
     void predict(Timeseries &prediction, const LUT &lut,
-                 const Timeseries &target, uint32_t E);
+                 const Timeseries &target, uint32_t E) override;
 
 protected:
     // Predicted result

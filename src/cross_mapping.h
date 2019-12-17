@@ -3,6 +3,8 @@
 
 #include <cstdint>
 
+#include "dataset.h"
+
 class CrossMapping
 {
 public:
@@ -10,6 +12,9 @@ public:
         : E_max(E_max), tau(tau), Tp(Tp), verbose(verbose)
     {
     }
+
+    virtual void predict(const Timeseries &library,
+                         const Timeseries &target) = 0;
 
 protected:
     uint32_t E_max;

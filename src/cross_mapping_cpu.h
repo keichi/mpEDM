@@ -16,7 +16,7 @@ public:
     {
     }
 
-    void predict(const Timeseries &library, const Timeseries &target);
+    void predict(const Timeseries &library, const Timeseries &target) override;
 
 protected:
     std::unique_ptr<NearestNeighbors> knn;

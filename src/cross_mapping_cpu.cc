@@ -19,8 +19,8 @@ void CrossMappingCPU::predict(const Timeseries &library,
         const uint32_t E = optimal_E[i];
 
         simplex->predict(prediction, luts[E], target, E);
-        simplex->adjust_target(adjusted_target, target, E);
+        simplex->shift_target(adjusted_target, target, E);
 
-        const auto rho = corrcoef(prediction, adjusted_target);
+        corrcoef(prediction, adjusted_target);
     }
 }

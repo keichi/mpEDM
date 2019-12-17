@@ -33,11 +33,11 @@ public:
     {
         _is_running = false;
 
-        const auto elapsed = std::chrono::steady_clock::now() - _start;
+        const auto e = std::chrono::steady_clock::now() - _start;
 
-        _total += elapsed;
+        _total += e;
 
-        return _to_millis(elapsed);
+        return _to_millis(e);
     }
 
     void reset()

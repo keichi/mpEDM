@@ -12,7 +12,7 @@
 class SimplexMPIMaster : public MPIMaster
 {
 public:
-    SimplexMPIMaster(const std::string fname, MPI_Comm comm)
+    SimplexMPIMaster(const std::string &fname, MPI_Comm comm)
         : MPIMaster(comm), dataset(fname), current_id(0)
     {
     }
@@ -22,15 +22,18 @@ protected:
     Dataset dataset;
     uint32_t current_id;
 
-    void next_task(nlohmann::json &task)
+    void next_task(nlohmann::json &task) override
     {
         task["id"] = current_id;
         current_id++;
     }
 
-    bool task_left() const { return current_id < dataset.timeseries.size(); }
+    bool task_left() const override
+    {
+        return current_id < dataset.timeseries.size();
+    }
 
-    void task_done(const nlohmann::json &result)
+    void task_done(const nlohmann::json &result) override
     {
         std::cout << "Timeseries #" << result["id"] << " best E=" << result["E"]
                   << " rho=" << result["rho"] << std::endl;
@@ -40,7 +43,7 @@ protected:
 class SimplexMPIWorker : public MPIWorker
 {
 public:
-    SimplexMPIWorker(const std::string fname, MPI_Comm comm)
+    SimplexMPIWorker(const std::string &fname, MPI_Comm comm)
         : MPIWorker(comm), dataset(fname),
           knn(new NearestNeighborsCPU(1, true)),
           simplex(new SimplexCPU(1, 1, true))
@@ -53,7 +56,7 @@ protected:
     std::unique_ptr<NearestNeighbors> knn;
     std::unique_ptr<Simplex> simplex;
 
-    void do_task(nlohmann::json &result, const nlohmann::json &task)
+    void do_task(nlohmann::json &result, const nlohmann::json &task) override
     {
         const auto id = task["id"];
 
