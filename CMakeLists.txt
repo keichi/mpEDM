@@ -148,8 +148,9 @@ if(HDF5_FOUND)
 
   add_definitions(-DENABLE_HDF5_READER)
 
-  set(HIGHFIVE_UNIT_TESTS FALSE)
-  set(HIGHFIVE_EXAMPLES FALSE)
+  set(USE_BOOST OFF)
+  set(HIGHFIVE_UNIT_TESTS OFF)
+  set(HIGHFIVE_EXAMPLES OFF)
   add_subdirectory(src/thirdparty/highfive)
 
   target_link_libraries(knn_bench PRIVATE HighFive)

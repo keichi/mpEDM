@@ -27,7 +27,7 @@ jobs:
       run: |
         mkdir build
         cd build
-        cmake -DCMAKE_BUILD_TYPE=Debug ..
+        cmake -DCMAKE_BUILD_TYPE=Debug -DUSE_BOOST=OFF ..
     - name: Run make
       run: make
       working-directory: build
