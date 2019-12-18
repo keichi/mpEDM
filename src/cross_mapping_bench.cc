@@ -84,8 +84,8 @@ int main(int argc, char *argv[])
 
     timer_io.stop();
 
-    std::cout << "Read " << ds.n_rows() << " rows in " << timer_io.elapsed()
-              << " [ms]" << std::endl;
+    std::cout << "Read dataset (" << ds.n_rows() << " rows, " << ds.n_cols()
+              << " columns) in " << timer_io.elapsed() << " [ms]" << std::endl;
 
     std::vector<uint32_t> optimal_E;
 
@@ -111,6 +111,9 @@ int main(int argc, char *argv[])
 
     std::cout << "Processed dataset in " << timer_tot.elapsed() << " [ms]"
               << std::endl;
+
+    const auto xps = ds.n_cols() * ds.n_cols() * 1000 / timer_tot.elapsed();
+    std::cout << xps << " cross mappings per second" << std::endl;
 
     return 0;
 }

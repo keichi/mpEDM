@@ -42,7 +42,7 @@ void CrossMappingCPU::predict(std::vector<float> &rhos,
     }
     t2.stop();
 
-    std::cout << "LUT: " << t1.elapsed() << " [ms], Simplex: "
+    std::cout << "k-NN: " << t1.elapsed() << " [ms], Simplex: "
               << t2.elapsed() << " [ms]" << std::endl;
 }
 // clang-format on
