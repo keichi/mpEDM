@@ -28,12 +28,13 @@ void simplex_projection(std::vector<uint32_t> &optmal_E, const Dataset &ds)
         Timeseries shifted_target;
 
         std::vector<float> rhos;
+        std::vector<float> buffer;
 
         for (auto E = 1; E <= 20; E++) {
             knn.compute_lut(lut, library, target, E, E + 1);
             lut.normalize();
 
-            simplex.predict(prediction, lut, library, E);
+            simplex.predict(prediction, buffer, lut, library, E);
             simplex.shift_target(shifted_target, target, E);
 
             const float rho = corrcoef(prediction, shifted_target);
@@ -44,7 +45,8 @@ void simplex_projection(std::vector<uint32_t> &optmal_E, const Dataset &ds)
         const auto it = std::max_element(rhos.begin(), rhos.end());
         const auto maxE = it - rhos.begin() + 1;
 
-        std::cout << "Optimal E for column #" << i << " is " << maxE << std::endl;
+        std::cout << "Optimal E for column #" << i << " is " << maxE
+                  << std::endl;
 
         optmal_E[i] = maxE;
     }

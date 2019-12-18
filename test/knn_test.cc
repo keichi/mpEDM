@@ -27,7 +27,8 @@ template <class T> void knn_test_common(int E)
 
     for (auto row = 0u; row < lut.n_rows(); row++) {
         for (auto col = 0u; col < lut.n_cols(); col++) {
-            REQUIRE(lut.distance(row, col) == Approx(ds2.timeseries[col][row]));
+            REQUIRE(lut.distances[row * lut.n_cols() + col] ==
+                    Approx(ds2.timeseries[col][row]));
         }
     }
 }

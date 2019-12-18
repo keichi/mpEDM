@@ -70,6 +70,7 @@ protected:
         Timeseries shifted_target;
 
         std::vector<float> rhos;
+        std::vector<float> buffer;
 
         LUT lut;
 
@@ -77,7 +78,7 @@ protected:
             knn->compute_lut(lut, library, target, E);
             lut.normalize();
 
-            simplex->predict(prediction, lut, library, E);
+            simplex->predict(prediction, buffer, lut, library, E);
             simplex->shift_target(shifted_target, target, E);
 
             const float rho = corrcoef(prediction, shifted_target);

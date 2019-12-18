@@ -1,11 +1,10 @@
 #include <iostream>
 
-#include <omp.h>
-
 #include "cross_mapping_cpu.h"
 #include "stats.h"
 #include "timer.h"
 
+// clang-format off
 void CrossMappingCPU::predict(std::vector<float> &rhos,
                               const Timeseries &library,
                               const std::vector<Timeseries> &targets,
@@ -23,22 +22,27 @@ void CrossMappingCPU::predict(std::vector<float> &rhos,
 
     t2.start();
     // Compute Simplex projection from the library to every target
-    #pragma omp parallel for
-    for (auto i = 0; i < targets.size(); i++) {
-        const auto tid = omp_get_thread_num();
-        const auto E = optimal_E[i];
+    #pragma omp parallel
+    {
+        std::vector<float> buffer;
 
-        const Timeseries target = targets[i];
-        Timeseries prediction;
-        Timeseries shifted_target;
+        #pragma omp for
+        for (auto i = 0; i < targets.size(); i++) {
+            const auto E = optimal_E[i];
 
-        simplex[tid].predict(prediction, luts[E - 1], target, E);
-        simplex[tid].shift_target(shifted_target, target, E);
+            const Timeseries target = targets[i];
+            Timeseries prediction;
+            Timeseries shifted_target;
 
-        corrcoef(prediction, shifted_target);
+            simplex->predict(prediction, buffer, luts[E - 1], target, E);
+            simplex->shift_target(shifted_target, target, E);
+
+            corrcoef(prediction, shifted_target);
+        }
     }
     t2.stop();
 
     std::cout << "LUT: " << t1.elapsed() << " [ms], Simplex: "
               << t2.elapsed() << " [ms]" << std::endl;
 }
+// clang-format on

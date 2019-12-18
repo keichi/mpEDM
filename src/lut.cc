@@ -17,7 +17,7 @@ void LUT::print_distances() const
 {
     for (auto i = 0u; i < _n_rows; i++) {
         for (auto j = 0u; j < _n_cols; j++) {
-            std::cout << distance(i, j) << ", ";
+            std::cout << distances[i * _n_cols + j] << ", ";
         }
         std::cout << std::endl;
     }
@@ -28,7 +28,7 @@ void LUT::print_indices() const
 {
     for (auto i = 0u; i < _n_rows; i++) {
         for (auto j = 0u; j < _n_cols; j++) {
-            std::cout << index(i, j) << ", ";
+            std::cout << indices[i * _n_cols + j] << ", ";
         }
         std::cout << std::endl;
     }

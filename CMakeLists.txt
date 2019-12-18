@@ -132,8 +132,8 @@ catch_discover_tests(cross_mapping_test
 
 # Simplex test
 add_executable(simplex_test)
-target_sources(simplex_test PRIVATE test/simplex_test.cc src/lut.cc src/dataset.cc
-               src/nearest_neighbors_cpu.cc src/simplex_cpu.cc)
+target_sources(simplex_test PRIVATE test/simplex_test.cc src/lut.cc
+               src/dataset.cc src/nearest_neighbors_cpu.cc src/simplex_cpu.cc)
 target_link_libraries(simplex_test PRIVATE Catch2::Catch2)
 if(ArrayFire_FOUND)
   if(APPLE)

@@ -36,10 +36,11 @@ TEST_CASE("Cross mapping (E=3)", "[ccm][cpu]")
     Timeseries valid_prediction = ds2.timeseries[0];
 
     knn->compute_lut(lut, library, library, E);
-
     lut.normalize();
 
-    simplex->predict(prediction, lut, target, E);
+    std::vector<float> buffer;
+
+    simplex->predict(prediction, buffer, lut, target, E);
     simplex->shift_target(shifted_target, target, E);
 
     REQUIRE(prediction.size() == valid_prediction.size());

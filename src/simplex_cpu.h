@@ -14,12 +14,10 @@ public:
     }
     ~SimplexCPU(){};
 
-    void predict(Timeseries &prediction, const LUT &lut,
-                 const Timeseries &target, uint32_t E) override;
+    void predict(Timeseries &prediction, std::vector<float> &buffer,
+                 const LUT &lut, const Timeseries &target, uint32_t E) override;
 
 protected:
-    // Predicted result
-    std::vector<float> _prediction;
 };
 
 #endif
