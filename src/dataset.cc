@@ -8,7 +8,8 @@
 #include <vector>
 
 #ifdef ENABLE_HDF5_READER
-#include <highfive/H5Easy.hpp>
+#include <highfive/H5DataSet.hpp>
+#include <highfive/H5File.hpp>
 #endif
 
 #include "dataset.h"
@@ -72,14 +73,15 @@ void Dataset::load_csv(const std::string &path)
 #ifdef ENABLE_HDF5_READER
 void Dataset::load_hdf5(const std::string &path)
 {
-    HighFive::File file(path, HighFive::File::ReadOnly);
-
-    const auto shape = H5Easy::getShape(file, "/values");
+    const HighFive::File file(path, HighFive::File::ReadOnly);
+    const auto dataset = file.getDataSet("/values");
+    const auto shape = dataset.getDimensions();
 
     _n_cols = shape[0];
     _n_rows = shape[1];
 
-    _data = H5Easy::load<std::vector<float>>(file, "/values");
+    _data.resize(_n_rows * _n_cols);
+    dataset.read(_data.data());
 }
 #endif
 
