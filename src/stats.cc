@@ -2,28 +2,31 @@
 
 #include "stats.h"
 
+// clang-format off
 float corrcoef(const Timeseries &x, const Timeseries &y)
 {
     const auto n = std::min(x.size(), y.size());
-    auto avg_x = 0.0f;
-    auto avg_y = 0.0f;
-    auto ssd_x = 0.0f;
-    auto ssd_y = 0.0f;
-    auto ssd_xy = 0.0f;
+    auto mean_x = 0.0f, mean_y = 0.0f;
+    auto sum_xy = 0.0f, sum_x2 = 0.0f, sum_y2 = 0.0f;
 
+    #pragma omp simd reduction(+:mean_x,mean_y)
     for (auto i = 0u; i < n; i++) {
-        const auto xi = x[i];
-        const auto yi = y[i];
-        const auto avg_x_new = avg_x + (xi - avg_x) / (i + 1);
-        const auto avg_y_new = avg_y + (yi - avg_y) / (i + 1);
+        mean_x += x[i];
+        mean_y += y[i];
+    }
+    mean_x /= n;
+    mean_y /= n;
 
-        ssd_x += (xi - avg_x) * (xi - avg_x_new);
-        ssd_y += (yi - avg_y) * (yi - avg_y_new);
-        ssd_xy += i * (xi - avg_x) * (yi - avg_y) / (i + 1);
+    #pragma omp simd reduction(+:sum_x2,sum_y2,sum_xy)
+    for (auto i = 0u; i < n; i++) {
+        auto diff_x = x[i] - mean_x;
+        auto diff_y = y[i] - mean_y;
 
-        avg_x = avg_x_new;
-        avg_y = avg_y_new;
+        sum_xy += diff_x * diff_y;
+        sum_x2 += diff_x * diff_x;
+        sum_y2 += diff_y * diff_y;
     }
 
-    return ssd_xy / (std::sqrt(ssd_x) * std::sqrt(ssd_y));
+    return sum_xy / std::sqrt(sum_x2 * sum_y2);
 }
+// clang-format on
