@@ -26,12 +26,18 @@ void Dataset::load(const std::string &path)
     else {
         throw std::invalid_argument("Unknown file type: " + path);
     }
+
+    create_timeseries();
 }
 
 void Dataset::load_csv(const std::string &path)
 {
     std::ifstream ifs(path);
     std::string line;
+    std::vector<std::vector<float>> columns;
+
+    _n_rows = 0;
+    _n_cols = 0;
 
     while (ifs >> line) {
         std::stringstream ss(line);
@@ -41,6 +47,7 @@ void Dataset::load_csv(const std::string &path)
             // Read header
             if (is_header) {
                 columns.push_back(std::vector<float>());
+                _n_cols++;
                 continue;
             }
 
@@ -55,9 +62,11 @@ void Dataset::load_csv(const std::string &path)
         _n_rows++;
     }
 
-    std::transform(columns.begin(), columns.end(),
-                   std::back_inserter(timeseries),
-                   [](const std::vector<float> &c) { return Timeseries(c); });
+    _data.resize(_n_rows * _n_cols);
+    for (auto i = 0u; i < _n_cols; i++) {
+        std::copy(columns[i].begin(), columns[i].end(),
+                  _data.begin() + i * _n_rows);
+    }
 }
 
 #ifdef ENABLE_HDF5_READER
@@ -67,17 +76,22 @@ void Dataset::load_hdf5(const std::string &path)
 
     const auto shape = H5Easy::getShape(file, "/values");
 
+    _n_cols = shape[0];
     _n_rows = shape[1];
 
-    columns = H5Easy::load<std::vector<std::vector<float>>>(file, "/values");
-
-    std::transform(columns.begin(), columns.end(),
-                   std::back_inserter(timeseries),
-                   [](const std::vector<float> &c) { return Timeseries(c); });
+    _data = H5Easy::load<std::vector<float>>(file, "/values");
 }
 #endif
 
-bool Dataset::ends_with(const std::string &str, const std::string &suffix)
+void Dataset::create_timeseries()
+{
+    timeseries.resize(_n_cols);
+    for (auto i = 0u; i < _n_cols; i++) {
+        timeseries[i] = Timeseries(_data.data() + i * _n_rows, _n_rows);
+    }
+}
+
+bool Dataset::ends_with(const std::string &str, const std::string &suffix) const
 {
     if (str.size() < suffix.size()) {
         return false;

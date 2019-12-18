@@ -3,8 +3,6 @@
 
 #include <memory>
 
-#include <omp.h>
-
 #include "cross_mapping.h"
 #include "lut.h"
 #include "nearest_neighbors_cpu.h"
