@@ -27,7 +27,10 @@ template <class T> void simplex_test_common(int E)
 
     knn->compute_lut(lut, library, target, E, E+1);
     lut.normalize();
-    simplex.predict(prediction, lut, library, E);
+
+    std::vector<float> buffer;
+
+    simplex.predict(prediction, buffer, lut, library, E);
 
     float rmse = 0.0;
 

@@ -17,7 +17,7 @@ public:
     const float *data() const { return _data; }
     uint32_t size() const { return _size; }
 
-    const float &operator[](uint32_t i) const { return _data[i]; };
+    const float &operator[](size_t i) const { return _data[i]; };
 
 protected:
     const float *_data;
@@ -29,22 +29,26 @@ class Dataset
 public:
     std::vector<Timeseries> timeseries;
 
-    Dataset() : _n_rows(0), is_header(true) {}
+    Dataset() : _n_rows(0), _n_cols(0), is_header(true) {}
 
     void load(const std::string &path);
+    const float *data() const { return _data.data(); }
     uint32_t n_rows() const { return _n_rows; }
-    uint32_t n_cols() const { return timeseries.size(); }
+    uint32_t n_cols() const { return _n_cols; }
 
 protected:
-    std::vector<std::vector<float>> columns;
+    // raw data stored in column-major
+    std::vector<float> _data;
     uint32_t _n_rows;
+    uint32_t _n_cols;
     bool is_header;
 
     void load_csv(const std::string &path);
 #ifdef ENABLE_HDF5_READER
     void load_hdf5(const std::string &path);
 #endif
-    bool ends_with(const std::string &full, const std::string &ending);
+    void create_timeseries();
+    bool ends_with(const std::string &full, const std::string &ending) const;
 };
 
 #endif

@@ -9,11 +9,16 @@ project(cuEDM CXX)
 
 add_executable(knn_bench)
 add_executable(simplex_bench)
+add_executable(cross_mapping_bench)
 
 target_sources(knn_bench PRIVATE src/knn_bench.cc src/dataset.cc src/lut.cc
-               src/nearest_neighbors_cpu.cc)
+               src/nearest_neighbors_cpu.cc src/stats.cc)
 target_sources(simplex_bench PRIVATE src/simplex_bench.cc src/dataset.cc
-               src/lut.cc src/simplex_cpu.cc src/nearest_neighbors_cpu.cc)
+               src/lut.cc src/simplex_cpu.cc src/nearest_neighbors_cpu.cc
+               src/stats.cc)
+target_sources(cross_mapping_bench PRIVATE src/cross_mapping_bench.cc
+               src/cross_mapping_cpu.cc src/dataset.cc src/lut.cc
+               src/simplex_cpu.cc src/nearest_neighbors_cpu.cc src/stats.cc)
 
 add_subdirectory(src/thirdparty/argh)
 target_link_libraries(knn_bench PRIVATE argh)
@@ -54,7 +59,7 @@ if(MPI_CXX_FOUND)
   add_executable(simplex_mpi_bench)
   target_sources(simplex_mpi_bench PRIVATE src/simplex_mpi_bench.cc
                  src/mpi_master.cc src/mpi_worker.cc src/dataset.cc src/lut.cc
-                 src/nearest_neighbors_cpu.cc src/simplex_cpu.cc)
+                 src/nearest_neighbors_cpu.cc src/simplex_cpu.cc src/stats.cc)
   target_link_libraries(simplex_mpi_bench PRIVATE MPI::MPI_CXX)
   target_link_libraries(simplex_mpi_bench PRIVATE nlohmann_json::nlohmann_json)
 endif()
@@ -76,6 +81,7 @@ if(OpenMP_FOUND)
 
   target_link_libraries(knn_bench PRIVATE OpenMP::OpenMP_CXX)
   target_link_libraries(simplex_bench PRIVATE OpenMP::OpenMP_CXX)
+  target_link_libraries(cross_mapping_bench PRIVATE OpenMP::OpenMP_CXX)
 
   if (TARGET simplex_mpi_bench)
     target_link_libraries(simplex_mpi_bench PRIVATE OpenMP::OpenMP_CXX)
@@ -126,8 +132,8 @@ catch_discover_tests(cross_mapping_test
 
 # Simplex test
 add_executable(simplex_test)
-target_sources(simplex_test PRIVATE test/simplex_test.cc src/lut.cc src/dataset.cc
-               src/nearest_neighbors_cpu.cc src/simplex_cpu.cc)
+target_sources(simplex_test PRIVATE test/simplex_test.cc src/lut.cc
+               src/dataset.cc src/nearest_neighbors_cpu.cc src/simplex_cpu.cc)
 target_link_libraries(simplex_test PRIVATE Catch2::Catch2)
 if(ArrayFire_FOUND)
   if(APPLE)
@@ -158,6 +164,7 @@ if(HDF5_FOUND)
   if (TARGET simplex_mpi_bench)
     target_link_libraries(simplex_mpi_bench PRIVATE HighFive)
   endif()
+  target_link_libraries(cross_mapping_bench PRIVATE HighFive)
   target_link_libraries(knn_test PRIVATE HighFive)
   target_link_libraries(cross_mapping_test PRIVATE HighFive)
   target_link_libraries(simplex_test PRIVATE HighFive)

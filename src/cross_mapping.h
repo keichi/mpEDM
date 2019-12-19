@@ -13,8 +13,9 @@ public:
     {
     }
 
-    virtual void predict(const Timeseries &library,
-                         const Timeseries &target) = 0;
+    virtual void predict(std::vector<float> &rhos, const Timeseries &library,
+                         const std::vector<Timeseries> &targets,
+                         const std::vector<uint32_t> &optimal_E) = 0;
 
 protected:
     uint32_t E_max;

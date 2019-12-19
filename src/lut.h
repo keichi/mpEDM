@@ -24,14 +24,6 @@ public:
     // Index of the j-th closest point from point i
     std::vector<uint32_t> indices;
 
-    float distance(uint32_t i, uint32_t j) const
-    {
-        return distances[i * _n_cols + j];
-    }
-    uint32_t index(uint32_t i, uint32_t j) const
-    {
-        return indices[i * _n_cols + j];
-    }
     uint32_t n_rows() const { return _n_rows; }
     uint32_t n_cols() const { return _n_cols; }
 
