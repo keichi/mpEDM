@@ -15,13 +15,14 @@ target_sources(knn_bench PRIVATE src/knn_bench.cc src/dataset.cc src/lut.cc
                src/nearest_neighbors_cpu.cc src/stats.cc)
 target_sources(simplex_bench PRIVATE src/simplex_bench.cc src/dataset.cc
                src/lut.cc src/simplex_cpu.cc src/nearest_neighbors_cpu.cc
-               src/stats.cc)
+               src/simplex_gpu.cc src/nearest_neighbors_gpu.cc src/stats.cc)
 target_sources(cross_mapping_bench PRIVATE src/cross_mapping_bench.cc
                src/cross_mapping_cpu.cc src/dataset.cc src/lut.cc
                src/simplex_cpu.cc src/nearest_neighbors_cpu.cc src/stats.cc)
 
 add_subdirectory(src/thirdparty/argh)
 target_link_libraries(knn_bench PRIVATE argh)
+target_link_libraries(simplex_bench PRIVATE argh)
 
 # Enable all warnings
 # TODO Check if this works across all compilers we are using
@@ -38,12 +39,15 @@ if(ArrayFire_FOUND)
     # Need to force CPU backend since OpenCL backend on macOS has bugs
     # See: https://github.com/arrayfire/arrayfire/issues/2687
     target_link_libraries(knn_bench PRIVATE ArrayFire::afcpu)
+    target_link_libraries(simplex_bench PRIVATE ArrayFire::afcpu)
   else()
     target_link_libraries(knn_bench PRIVATE ArrayFire::af)
+    target_link_libraries(simplex_bench PRIVATE ArrayFire::afcpu)
   endif()
   target_include_directories(knn_bench PRIVATE src/thirdparty/concurrentqueue)
 
   target_sources(knn_bench PRIVATE src/nearest_neighbors_gpu.cc)
+  target_sources(simplex_bench PRIVATE src/nearest_neighbors_gpu.cc src/simplex_gpu.cc)
 else()
   message(WARNING "ArrayFire was NOT found, GPU backend is disabled")
 endif()
