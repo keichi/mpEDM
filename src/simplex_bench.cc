@@ -19,8 +19,8 @@
 #include "stats.h"
 #include "timer.h"
 
-void simplex_projection(std::unique_ptr<NearestNeighbors> &knn, 
-                        std::unique_ptr<Simplex> &simplex,
+void simplex_projection(std::shared_ptr<NearestNeighbors> knn, 
+                        std::shared_ptr<Simplex> simplex,
                         const Timeseries &ts)
 {
     LUT lut;
@@ -120,21 +120,21 @@ int main(int argc, char *argv[])
 
     timer_tot.start();
 
-    std::unique_ptr<NearestNeighbors> knn;
-    std::unique_ptr<Simplex> simplex;
+    std::shared_ptr<NearestNeighbors> knn;
+    std::shared_ptr<Simplex> simplex;
 
     if (kernel_type == "cpu") {
         std::cout << "Using CPU Simplex kernel" << std::endl;
 
-        knn = std::unique_ptr<NearestNeighbors>(new NearestNeighborsCPU(tau, verbose));
-        simplex = std::unique_ptr<Simplex>(new SimplexCPU(tau, 1, verbose));
+        knn = std::shared_ptr<NearestNeighbors>(new NearestNeighborsCPU(tau, verbose));
+        simplex = std::shared_ptr<Simplex>(new SimplexCPU(tau, 1, verbose));
     }
 #ifdef ENABLE_GPU_KERNEL
     else if (kernel_type == "gpu") {
         std::cout << "Using GPU Simplex kernel" << std::endl;
 
-        knn = std::unique_ptr<NearestNeighbors>(new NearestNeighborsGPU(tau, verbose));
-        simplex = std::unique_ptr<Simplex>(new SimplexGPU(tau, 1, verbose));
+        knn = std::shared_ptr<NearestNeighbors>(new NearestNeighborsGPU(tau, verbose));
+        simplex = std::shared_ptr<Simplex>(new SimplexGPU(tau, 1, verbose));
         
     // } else if (kernel_type == "multigpu") {
     //     std::cout << "Using Multi-GPU kNN kernel" << std::endl;

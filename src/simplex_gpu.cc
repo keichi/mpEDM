@@ -14,17 +14,15 @@ void SimplexGPU::predict(Timeseries &prediction, std::vector<float> &buffer,
     std::fill(buffer.begin(), buffer.end(), 0);
     buffer.resize(lut.n_rows());
 
-    af::array af_buffer(0, lut.n_rows());
+    af::array af_buffer = af::constant(0, lut.n_rows());
 
-    af_print(af_buffer);
+    af::array idx(E + 1, lut.n_rows(), lut.indices.data());
+    af::array dist(E + 1, lut.n_rows(), lut.distances.data());
+    af::array target_data(target.size(), 1, target.data());
 
-    for (auto i = 0u; i < lut.n_rows(); i++) {
-        for (auto j = 0u; j < E + 1; j++) {
-            const auto idx = lut.indices[i * lut.n_cols() + j];
-            const auto dist = lut.distances[i * lut.n_cols() + j];
-            buffer[i] += target[idx + shift] * dist;
-        }
-    }
+    af::array tmp = af::sum(moddims(target_data(idx + shift), E + 1, lut.n_rows()) * dist);
+
+    tmp.host(buffer.data());
 
     prediction = Timeseries(buffer);
 }
