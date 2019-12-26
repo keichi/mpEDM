@@ -35,6 +35,23 @@ jobs:
       run: ctest
       working-directory: build
 
+  cpuonly:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v1
+      with:
+        submodules: true
+    - name: Install dependencies
+      run: sudo apt-get install -y libopenmpi-dev libhdf5-dev
+    - name: Run cmake
+      run: |
+        mkdir build
+        cd build
+        cmake -DCMAKE_BUILD_TYPE=Debug -DUSE_BOOST=OFF ..
+    - name: Run make
+      run: make
+      working-directory: build
+
   format:
     runs-on: ubuntu-latest
     steps:
