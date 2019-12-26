@@ -15,7 +15,7 @@ target_sources(knn_bench PRIVATE src/knn_bench.cc src/dataset.cc src/lut.cc
                src/nearest_neighbors_cpu.cc src/stats.cc)
 target_sources(simplex_bench PRIVATE src/simplex_bench.cc src/dataset.cc
                src/lut.cc src/simplex_cpu.cc src/nearest_neighbors_cpu.cc
-               src/simplex_gpu.cc src/nearest_neighbors_gpu.cc src/stats.cc)
+               src/stats.cc)
 target_sources(cross_mapping_bench PRIVATE src/cross_mapping_bench.cc
                src/cross_mapping_cpu.cc src/dataset.cc src/lut.cc
                src/simplex_cpu.cc src/nearest_neighbors_cpu.cc src/stats.cc)
