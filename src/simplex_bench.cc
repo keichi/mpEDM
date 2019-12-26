@@ -21,7 +21,7 @@
 
 void simplex_projection(std::shared_ptr<NearestNeighbors> knn, 
                         std::shared_ptr<Simplex> simplex,
-                        const Timeseries &ts)
+                        const Timeseries &ts, uint32_t E_max)
 {
     LUT lut;
 
@@ -37,7 +37,7 @@ void simplex_projection(std::shared_ptr<NearestNeighbors> knn,
     std::vector<float> rhos;
     std::vector<float> buffer;
 
-    for (auto E = 1; E <= 20; E++) {
+    for (auto E = 1; E <= E_max; E++) {
         knn->compute_lut(lut, library, target, E);
         lut.normalize();
 
@@ -67,8 +67,7 @@ void usage(const std::string &app_name)
         app_name +
         " [OPTION...] FILE\n"
         "  -t, --tau arg    Lag (default: 1)\n"
-        // "  -e, --emax arg   Maximum embedding dimension (default: 20)\n"
-        // "  -k, --topk arg   Number of neighbors to find (default: 100)\n"
+        "  -e, --emax arg   Maximum embedding dimension (default: 20)\n"
         "  -x, --kernel arg Kernel type {cpu|gpu|multigpu} (default: cpu)\n"
         "  -v, --verbose    Enable verbose logging (default: false)\n"
         "  -h, --help       Show help";
@@ -78,7 +77,7 @@ void usage(const std::string &app_name)
 
 int main(int argc, char *argv[])
 {
-    argh::parser cmdl({"-t", "--tau", "-e", "--emax", "-k", "--topk", "-x",
+    argh::parser cmdl({"-t", "--tau", "-e", "--emax", "-x",
                        "--kernel", "-v", "--verbose"});
     cmdl.parse(argc, argv);
 
@@ -93,13 +92,11 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-    const std::string fname(argv[1]);
-    int tau;
+    std::string fname = cmdl[1];
+    uint32_t tau;
     cmdl({"t", "tau"}, 1) >> tau;
-    // int E_max;
-    // cmdl({"e", "emax"}, 20) >> E_max;
-    // int top_k;
-    // cmdl({"k", "topk"}, 100) >> top_k;
+    uint32_t E_max;
+    cmdl({"e", "emax"}, 20) >> E_max;
     std::string kernel_type;
     cmdl({"x", "kernel"}, "cpu") >> kernel_type;
     bool verbose = cmdl[{"v", "verbose"}];
@@ -151,7 +148,7 @@ int main(int argc, char *argv[])
     for (const auto &ts : ds.timeseries) {
         std::cout << "Simplex projection for timeseries #" << (i++) << ": ";
 
-        simplex_projection(knn, simplex, ts);
+        simplex_projection(knn, simplex, ts, E_max);
     }
 
     timer_tot.stop();
