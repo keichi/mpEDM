@@ -146,7 +146,7 @@ if(ArrayFire_FOUND)
     target_link_libraries(simplex_test PRIVATE ArrayFire::af)
   endif()
 
-  target_sources(simplex_test PRIVATE src/nearest_neighbors_gpu.cc)
+  target_sources(simplex_test PRIVATE src/nearest_neighbors_gpu.cc src/simplex_gpu.cc)
 endif()
 catch_discover_tests(simplex_test
                      WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/test)
