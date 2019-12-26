@@ -20,7 +20,8 @@ void SimplexGPU::predict(Timeseries &prediction, std::vector<float> &buffer,
     af::array dist(E + 1, lut.n_rows(), lut.distances.data());
     af::array target_data(target.size(), 1, target.data());
 
-    af::array tmp = af::sum(moddims(target_data(idx + shift), E + 1, lut.n_rows()) * dist);
+    af::array tmp =
+        af::sum(moddims(target_data(idx + shift), E + 1, lut.n_rows()) * dist);
 
     tmp.host(buffer.data());
 

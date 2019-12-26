@@ -18,15 +18,16 @@ template <class T, class U> void simplex_test_common(int E)
     ds1.load("simplex_test_data.csv");
     ds2.load("simplex_test_verification_E" + std::to_string(E) + ".csv");
 
-    Timeseries library(ds1.timeseries[0].data(), ds1.timeseries[0].size() / 2);
-    Timeseries target(ds1.timeseries[0].data() + ds1.timeseries[0].size() / 2 - (E-1)*tau, ds1.timeseries[0].size() / 2);
+    Timeseries ts = ds1.timeseries[0];
+    Timeseries library(ts.data(), ts.size() / 2);
+    Timeseries target(ts.data() + ts.size() / 2 - (E - 1) * tau, ts.size() / 2);
     Timeseries prediction;
 
     auto knn = std::unique_ptr<NearestNeighbors>(new T(tau, true));
     auto simplex = std::unique_ptr<Simplex>(new U(1, 1, true));
     LUT lut;
 
-    knn->compute_lut(lut, library, target, E, E+1);
+    knn->compute_lut(lut, library, target, E, E + 1);
     lut.normalize();
 
     std::vector<float> buffer;
@@ -39,7 +40,7 @@ template <class T, class U> void simplex_test_common(int E)
         rmse = pow(prediction[row] - ds2.timeseries[0][row], 2);
     }
 
-    REQUIRE(sqrt(rmse/ds2.n_rows()) < 0.0001);
+    REQUIRE(sqrt(rmse / ds2.n_rows()) < 0.0001);
 }
 
 TEST_CASE("Computed simplex is correct (CPU, E=2)", "[simplex][cpu]")
