@@ -42,7 +42,7 @@ if(ArrayFire_FOUND)
     target_link_libraries(simplex_bench PRIVATE ArrayFire::afcpu)
   else()
     target_link_libraries(knn_bench PRIVATE ArrayFire::af)
-    target_link_libraries(simplex_bench PRIVATE ArrayFire::afcpu)
+    target_link_libraries(simplex_bench PRIVATE ArrayFire::af)
   endif()
   target_include_directories(knn_bench PRIVATE src/thirdparty/concurrentqueue)
 
