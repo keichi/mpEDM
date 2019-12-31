@@ -64,7 +64,7 @@ void NearestNeighborsCPU::compute_lut(LUT &out, const Timeseries &library,
         std::partial_sort(cache.indices.begin() + i * n_library,
                           cache.indices.begin() + i * n_library + top_k,
                           cache.indices.begin() + (i + 1) * n_library,
-                          [&](int a, int b) -> int {
+                          [&](uint32_t a, uint32_t b) -> uint32_t {
                               return cache.distances[i * n_library + a] <
                                      cache.distances[i * n_library + b];
                           });
