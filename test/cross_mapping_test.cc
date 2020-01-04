@@ -12,10 +12,8 @@
 //               E=3, Tp=1, columns="anchovy", target="np_sst", lib="1 76",
 //               pred="1 76", verbose=True)
 
-TEST_CASE("Cross mapping (E=3)", "[ccm][cpu]")
+void cross_mapping_test_common(uint32_t E)
 {
-    const uint32_t E = 3;
-
     Dataset ds1, ds2;
     ds1.load("sardine_anchovy_sst.csv");
     ds2.load("anchovy_sst_verification_E" + std::to_string(E) + ".csv");
@@ -28,8 +26,10 @@ TEST_CASE("Cross mapping (E=3)", "[ccm][cpu]")
     auto simplex = std::unique_ptr<Simplex>(new SimplexCPU(1, 1, true));
 
     LUT lut;
-    Timeseries library = Timeseries(ds1.timeseries[1].data(), 76);
-    Timeseries target = Timeseries(ds1.timeseries[4].data(), 76);
+    Timeseries library = Timeseries(ds1.timeseries[1].data(),
+                                    ds1.timeseries[1].size() - (E - 1));
+    Timeseries target = Timeseries(ds1.timeseries[4].data(),
+                                   ds1.timeseries[4].size() - (E - 1));
 
     Timeseries prediction;
     Timeseries shifted_target;
@@ -46,6 +46,26 @@ TEST_CASE("Cross mapping (E=3)", "[ccm][cpu]")
     REQUIRE(prediction.size() == valid_prediction.size());
 
     for (auto i = 0u; i < prediction.size(); i++) {
-        REQUIRE(prediction[i] == Approx(valid_prediction[i]).epsilon(1e-4f));
+        REQUIRE(prediction[i] == Approx(valid_prediction[i]).margin(1e-5f));
     }
+}
+
+TEST_CASE("Compute cross mapping (CPU, E=2)", "[ccm][cpu]")
+{
+    cross_mapping_test_common(2);
+}
+
+TEST_CASE("Compute cross mapping (CPU, E=3)", "[ccm][cpu]")
+{
+    cross_mapping_test_common(3);
+}
+
+TEST_CASE("Compute cross mapping (CPU, E=4)", "[ccm][cpu]")
+{
+    cross_mapping_test_common(4);
+}
+
+TEST_CASE("Compute cross mapping (CPU, E=5)", "[ccm][cpu]")
+{
+    cross_mapping_test_common(5);
 }
