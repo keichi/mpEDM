@@ -14,6 +14,7 @@
 template <class T, class U> void simplex_test_common(int E)
 {
     const auto tau = 1;
+    const auto Tp = 1;
 
     Dataset ds1, ds2;
     ds1.load("simplex_test_data.csv");
@@ -24,8 +25,8 @@ template <class T, class U> void simplex_test_common(int E)
     Timeseries target(ts.data() + ts.size() / 2 - (E - 1) * tau, ts.size() / 2);
     Timeseries prediction;
 
-    auto knn = std::unique_ptr<NearestNeighbors>(new T(tau, true));
-    auto simplex = std::unique_ptr<Simplex>(new U(1, 1, true));
+    auto knn = std::unique_ptr<NearestNeighbors>(new T(tau, Tp, true));
+    auto simplex = std::unique_ptr<Simplex>(new U(tau, Tp, true));
     LUT lut;
 
     knn->compute_lut(lut, library, target, E, E + 1);
@@ -102,7 +103,7 @@ template <class T, class U> void embed_dim_test_common()
     ds1.load("TentMap_rEDM.csv");
     ds2.load("TentMap_rEDM_validation.csv");
 
-    auto knn = std::unique_ptr<NearestNeighbors>(new T(tau, true));
+    auto knn = std::unique_ptr<NearestNeighbors>(new T(tau, Tp, true));
     auto simplex = std::unique_ptr<Simplex>(new U(tau, Tp, true));
 
     Timeseries prediction;
@@ -114,7 +115,7 @@ template <class T, class U> void embed_dim_test_common()
 
     for (auto E = 1; E <= maxE; E++) {
         const Timeseries ts = ds1.timeseries[1];
-        const Timeseries library(ts.data(), 100 - 1);
+        const Timeseries library(ts.data(), 100);
         const Timeseries target(ts.data() + 200 - (E - 1) * tau,
                                 300 + (E - 1) * tau);
 

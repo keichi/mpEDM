@@ -68,6 +68,7 @@ void usage(const std::string &app_name)
         " [OPTION...] FILE\n"
         "  -t, --tau arg    Lag (default: 1)\n"
         "  -e, --emax arg   Maximum embedding dimension (default: 20)\n"
+        "  -p, --Tp arg     Steps to predict in future (default: 1)\n"
         "  -x, --kernel arg Kernel type {cpu|gpu|multigpu} (default: cpu)\n"
         "  -v, --verbose    Enable verbose logging (default: false)\n"
         "  -h, --help       Show help";
@@ -77,8 +78,8 @@ void usage(const std::string &app_name)
 
 int main(int argc, char *argv[])
 {
-    argh::parser cmdl(
-        {"-t", "--tau", "-e", "--emax", "-x", "--kernel", "-v", "--verbose"});
+    argh::parser cmdl({"-t", "--tau", "-p", "--tp", "-e", "--emax", "-x",
+                       "--kernel", "-v", "--verbose"});
     cmdl.parse(argc, argv);
 
     if (cmdl[{"-h", "--help"}]) {
@@ -95,6 +96,8 @@ int main(int argc, char *argv[])
     std::string fname = cmdl[1];
     uint32_t tau;
     cmdl({"t", "tau"}, 1) >> tau;
+    uint32_t Tp;
+    cmdl({"p", "Tp"}, 1) >> Tp;
     uint32_t E_max;
     cmdl({"e", "emax"}, 20) >> E_max;
     std::string kernel_type;
@@ -124,21 +127,16 @@ int main(int argc, char *argv[])
         std::cout << "Using CPU Simplex kernel" << std::endl;
 
         knn = std::shared_ptr<NearestNeighbors>(
-            new NearestNeighborsCPU(tau, verbose));
-        simplex = std::shared_ptr<Simplex>(new SimplexCPU(tau, 1, verbose));
+            new NearestNeighborsCPU(tau, Tp, verbose));
+        simplex = std::shared_ptr<Simplex>(new SimplexCPU(tau, Tp, verbose));
     }
 #ifdef ENABLE_GPU_KERNEL
     else if (kernel_type == "gpu") {
         std::cout << "Using GPU Simplex kernel" << std::endl;
 
         knn = std::shared_ptr<NearestNeighbors>(
-            new NearestNeighborsGPU(tau, verbose));
-        simplex = std::shared_ptr<Simplex>(new SimplexGPU(tau, 1, verbose));
-
-        // } else if (kernel_type == "multigpu") {
-        //     std::cout << "Using Multi-GPU kNN kernel" << std::endl;
-
-        //     run_multi_gpu(ds, E_max, tau, top_k, verbose);
+            new NearestNeighborsGPU(tau, Tp, verbose));
+        simplex = std::shared_ptr<Simplex>(new SimplexGPU(tau, Tp, verbose));
     }
 #endif
     else {

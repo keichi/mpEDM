@@ -7,7 +7,10 @@
 class NearestNeighbors
 {
 public:
-    NearestNeighbors(uint32_t tau, bool verbose) : tau(tau), verbose(verbose) {}
+    NearestNeighbors(uint32_t tau, uint32_t Tp, bool verbose)
+        : tau(tau), Tp(Tp), verbose(verbose)
+    {
+    }
     virtual ~NearestNeighbors(){};
 
     virtual void compute_lut(LUT &out, const Timeseries &library,
@@ -23,6 +26,8 @@ public:
 protected:
     // Lag
     const uint32_t tau;
+    // Steps to predict in future
+    const uint32_t Tp;
     // Enable verbose logging
     const bool verbose;
 };

@@ -12,8 +12,8 @@
 void simplex_projection(std::vector<uint32_t> &optmal_E, const Dataset &ds)
 {
     LUT lut;
-    // tau=1, verbose=true
-    NearestNeighborsCPU knn(1, true);
+    // tau=1, Tp=1, verbose=true
+    NearestNeighborsCPU knn(1, 1, true);
     // tau=1, Tp=1, verbose=true
     SimplexCPU simplex(1, 1, true);
 

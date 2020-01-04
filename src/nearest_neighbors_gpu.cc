@@ -5,8 +5,9 @@
 
 #include "nearest_neighbors_gpu.h"
 
-NearestNeighborsGPU::NearestNeighborsGPU(uint32_t tau, bool verbose)
-    : NearestNeighbors(tau, verbose)
+NearestNeighborsGPU::NearestNeighborsGPU(uint32_t tau, uint32_t Tp,
+                                         bool verbose)
+    : NearestNeighbors(tau, Tp, verbose)
 {
     af::info();
 }

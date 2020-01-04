@@ -20,11 +20,11 @@ TEST_CASE("Cross mapping (E=3)", "[ccm][cpu]")
     ds1.load("sardine_anchovy_sst.csv");
     ds2.load("anchovy_sst_verification_E" + std::to_string(E) + ".csv");
 
-    // tau=1, verbose=true
+    // tau=1, Tp=1, verbose=true
     auto knn =
-        std::unique_ptr<NearestNeighbors>(new NearestNeighborsCPU(1, true));
+        std::unique_ptr<NearestNeighbors>(new NearestNeighborsCPU(1, 1, true));
 
-    // tau=1, Tp=0, verbose=true
+    // tau=1, Tp=1, verbose=true
     auto simplex = std::unique_ptr<Simplex>(new SimplexCPU(1, 1, true));
 
     LUT lut;
@@ -45,12 +45,7 @@ TEST_CASE("Cross mapping (E=3)", "[ccm][cpu]")
 
     REQUIRE(prediction.size() == valid_prediction.size());
 
-    auto mae = 0.0f;
     for (auto i = 0u; i < prediction.size(); i++) {
-        mae += std::abs(prediction[i] - valid_prediction[i]);
+        REQUIRE(prediction[i] == Approx(valid_prediction[i]).epsilon(1e-4f));
     }
-
-    mae /= prediction.size();
-
-    REQUIRE(mae < 0.01f);
 }
