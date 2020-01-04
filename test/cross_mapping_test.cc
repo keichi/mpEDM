@@ -16,7 +16,7 @@ void cross_mapping_test_common(uint32_t E)
 {
     Dataset ds1, ds2;
     ds1.load("sardine_anchovy_sst.csv");
-    ds2.load("anchovy_sst_verification_E" + std::to_string(E) + ".csv");
+    ds2.load("anchovy_sst_validation_E" + std::to_string(E) + ".csv");
 
     // tau=1, Tp=1, verbose=true
     auto knn =

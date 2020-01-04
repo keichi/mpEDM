@@ -16,7 +16,7 @@ template <class T> void knn_test_common(int E)
 
     Dataset ds1, ds2;
     ds1.load("knn_test_data.csv");
-    ds2.load("knn_test_verification_E" + std::to_string(E) + ".csv");
+    ds2.load("knn_test_validation_E" + std::to_string(E) + ".csv");
 
     auto knn = std::unique_ptr<NearestNeighbors>(new T(tau, Tp, true));
     LUT lut;

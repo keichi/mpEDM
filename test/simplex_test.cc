@@ -18,7 +18,7 @@ template <class T, class U> void simplex_test_common(int E)
 
     Dataset ds1, ds2;
     ds1.load("simplex_test_data.csv");
-    ds2.load("simplex_test_verification_E" + std::to_string(E) + ".csv");
+    ds2.load("simplex_test_validation_E" + std::to_string(E) + ".csv");
 
     Timeseries ts = ds1.timeseries[0];
     Timeseries library(ts.data(), ts.size() / 2);
