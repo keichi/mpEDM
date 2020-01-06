@@ -9,7 +9,7 @@ on:
     - master
 
 jobs:
-  test:
+  linux-gpu:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v1
@@ -35,7 +35,7 @@ jobs:
       run: ctest
       working-directory: build
 
-  cpuonly:
+  linux-cpu:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v1
@@ -50,6 +50,29 @@ jobs:
         cmake -DCMAKE_BUILD_TYPE=Debug -DUSE_BOOST=OFF ..
     - name: Run make
       run: make
+      working-directory: build
+    - name: Run ctest
+      run: ctest
+      working-directory: build
+
+  macos-cpu:
+    runs-on: macOS-latest
+    steps:
+    - uses: actions/checkout@v1
+      with:
+        submodules: true
+    - name: Install dependencies
+      run: brew install open-mpi hdf5
+    - name: Run cmake
+      run: |
+        mkdir build
+        cd build
+        cmake -DCMAKE_BUILD_TYPE=Debug -DUSE_BOOST=OFF ..
+    - name: Run make
+      run: make
+      working-directory: build
+    - name: Run ctest
+      run: ctest
       working-directory: build
 
   format:
