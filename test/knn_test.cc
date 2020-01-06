@@ -11,13 +11,14 @@
 template <class T> void knn_test_common(int E)
 {
     const auto tau = 1;
+    const auto Tp = 0;
     const auto k = 4;
 
     Dataset ds1, ds2;
     ds1.load("knn_test_data.csv");
-    ds2.load("knn_test_verification_E" + std::to_string(E) + ".csv");
+    ds2.load("knn_test_validation_E" + std::to_string(E) + ".csv");
 
-    auto knn = std::unique_ptr<NearestNeighbors>(new T(tau, true));
+    auto knn = std::unique_ptr<NearestNeighbors>(new T(tau, Tp, true));
     LUT lut;
 
     knn->compute_lut(lut, ds1.timeseries[0], ds1.timeseries[0], E, k);

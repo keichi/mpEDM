@@ -6,8 +6,9 @@
 
 #include "nearest_neighbors_cpu.h"
 
-NearestNeighborsCPU::NearestNeighborsCPU(uint32_t tau, bool verbose)
-    : NearestNeighbors(tau, verbose)
+NearestNeighborsCPU::NearestNeighborsCPU(uint32_t tau, uint32_t Tp,
+                                         bool verbose)
+    : NearestNeighbors(tau, Tp, verbose)
 {
 }
 
@@ -49,12 +50,10 @@ void NearestNeighborsCPU::compute_lut(LUT &out, const Timeseries &library,
     #pragma omp parallel for
     for (auto i = 0u; i < n_target; i++) {
         for (auto j = 0u; j < n_library; j++) {
-            if (p_target + i != p_library + j) {
-                continue;
+            if (j + Tp >= n_library || p_target + i == p_library + j) {
+                cache.distances[i * n_library + j] =
+                    std::numeric_limits<float>::infinity();
             }
-
-            cache.distances[i * n_library + j] =
-                std::numeric_limits<float>::infinity();
         }
     }
 
@@ -64,7 +63,7 @@ void NearestNeighborsCPU::compute_lut(LUT &out, const Timeseries &library,
         std::partial_sort(cache.indices.begin() + i * n_library,
                           cache.indices.begin() + i * n_library + top_k,
                           cache.indices.begin() + (i + 1) * n_library,
-                          [&](int a, int b) -> int {
+                          [&](uint32_t a, uint32_t b) -> uint32_t {
                               return cache.distances[i * n_library + a] <
                                      cache.distances[i * n_library + b];
                           });

@@ -22,7 +22,7 @@ template <class T>
 void run_common(const Dataset &ds, uint32_t E_max, uint32_t tau, uint32_t top_k,
                 bool verbose)
 {
-    auto kernel = std::unique_ptr<NearestNeighbors>(new T(tau, verbose));
+    auto kernel = std::unique_ptr<NearestNeighbors>(new T(tau, 1, verbose));
 
     auto i = 0;
 
@@ -55,7 +55,7 @@ void worker(uint32_t dev, const Dataset &ds, uint32_t E_max, uint32_t tau,
             uint32_t top_k, bool verbose)
 {
     auto kernel = std::unique_ptr<NearestNeighbors>(
-        new NearestNeighborsCPU(tau, verbose));
+        new NearestNeighborsCPU(tau, 1, verbose));
 
     af::setDevice(dev);
 

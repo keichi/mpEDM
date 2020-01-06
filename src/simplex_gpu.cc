@@ -1,7 +1,3 @@
-#include <cmath>
-#include <iostream>
-#include <limits>
-
 #include <arrayfire.h>
 
 #include "simplex_gpu.h"
@@ -11,19 +7,17 @@ void SimplexGPU::predict(Timeseries &prediction, std::vector<float> &buffer,
 {
     const auto shift = (E - 1) * tau + Tp;
 
-    std::fill(buffer.begin(), buffer.end(), 0);
     buffer.resize(lut.n_rows());
 
-    af::array af_buffer = af::constant(0, lut.n_rows());
+    const af::array idx(lut.n_cols(), lut.n_rows(), lut.indices.data());
+    const af::array dist(lut.n_cols(), lut.n_rows(), lut.distances.data());
+    const af::array target_data(target.size(), target.data());
 
-    af::array idx(E + 1, lut.n_rows(), lut.indices.data());
-    af::array dist(E + 1, lut.n_rows(), lut.distances.data());
-    af::array target_data(target.size(), 1, target.data());
+    const af::array tmp =
+        af::moddims(target_data(idx + shift), lut.n_cols(), lut.n_rows());
+    const af::array pred = af::sum(tmp * dist);
 
-    af::array tmp =
-        af::sum(moddims(target_data(idx + shift), E + 1, lut.n_rows()) * dist);
-
-    tmp.host(buffer.data());
+    pred.host(buffer.data());
 
     prediction = Timeseries(buffer);
 }
