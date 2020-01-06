@@ -45,7 +45,7 @@ class SimplexMPIWorker : public MPIWorker
 {
 public:
     SimplexMPIWorker(const std::string &fname, MPI_Comm comm)
-        : MPIWorker(comm), knn(new NearestNeighborsCPU(1, true)),
+        : MPIWorker(comm), knn(new NearestNeighborsCPU(1, 1, true)),
           simplex(new SimplexCPU(1, 1, true))
     {
         dataset.load(fname);
