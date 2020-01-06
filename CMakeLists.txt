@@ -7,16 +7,12 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 project(cuEDM CXX)
 
-add_executable(knn_bench)
-add_executable(simplex_bench)
-add_executable(cross_mapping_bench)
-
-target_sources(knn_bench PRIVATE src/knn_bench.cc src/dataset.cc src/lut.cc
+add_executable(knn_bench src/knn_bench.cc src/dataset.cc src/lut.cc
                src/nearest_neighbors_cpu.cc src/stats.cc)
-target_sources(simplex_bench PRIVATE src/simplex_bench.cc src/dataset.cc
+add_executable(simplex_bench src/simplex_bench.cc src/dataset.cc
                src/lut.cc src/simplex_cpu.cc src/nearest_neighbors_cpu.cc
                src/stats.cc)
-target_sources(cross_mapping_bench PRIVATE src/cross_mapping_bench.cc
+add_executable(cross_mapping_bench src/cross_mapping_bench.cc
                src/cross_mapping_cpu.cc src/dataset.cc src/lut.cc
                src/simplex_cpu.cc src/nearest_neighbors_cpu.cc src/stats.cc)
 
@@ -102,15 +98,13 @@ include(CTest)
 include(src/thirdparty/catch2/contrib/Catch.cmake)
 
 # Lookup table test
-add_executable(lut_test)
-target_sources(lut_test PRIVATE test/lut_test.cc src/lut.cc)
+add_executable(lut_test test/lut_test.cc src/lut.cc)
 target_link_libraries(lut_test PRIVATE Catch2::Catch2)
 catch_discover_tests(lut_test
                      WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/test)
 
 # k-nearest neighbors test
-add_executable(knn_test)
-target_sources(knn_test PRIVATE test/knn_test.cc src/lut.cc src/dataset.cc
+add_executable(knn_test test/knn_test.cc src/lut.cc src/dataset.cc
                src/nearest_neighbors_cpu.cc)
 target_link_libraries(knn_test PRIVATE Catch2::Catch2)
 if(ArrayFire_FOUND)
@@ -126,8 +120,7 @@ catch_discover_tests(knn_test
                      WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/test)
 
 # Cross mapping test
-add_executable(cross_mapping_test)
-target_sources(cross_mapping_test PRIVATE test/cross_mapping_test.cc
+add_executable(cross_mapping_test test/cross_mapping_test.cc
                src/lut.cc src/dataset.cc src/nearest_neighbors_cpu.cc
                src/simplex_cpu.cc)
 target_link_libraries(cross_mapping_test PRIVATE Catch2::Catch2)
@@ -135,8 +128,7 @@ catch_discover_tests(cross_mapping_test
                      WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/test)
 
 # Simplex test
-add_executable(simplex_test)
-target_sources(simplex_test PRIVATE test/simplex_test.cc src/lut.cc
+add_executable(simplex_test test/simplex_test.cc src/lut.cc
                src/dataset.cc src/nearest_neighbors_cpu.cc src/simplex_cpu.cc)
 target_link_libraries(simplex_test PRIVATE Catch2::Catch2)
 if(ArrayFire_FOUND)
