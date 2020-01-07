@@ -124,6 +124,15 @@ add_executable(cross_mapping_test test/cross_mapping_test.cc
                src/lut.cc src/dataset.cc src/nearest_neighbors_cpu.cc
                src/simplex_cpu.cc)
 target_link_libraries(cross_mapping_test PRIVATE Catch2::Catch2)
+if(ArrayFire_FOUND)
+  if(APPLE)
+    target_link_libraries(cross_mapping_test PRIVATE ArrayFire::afcpu)
+  else()
+    target_link_libraries(cross_mapping_test PRIVATE ArrayFire::af)
+  endif()
+
+  target_sources(cross_mapping_test PRIVATE src/nearest_neighbors_gpu.cc src/simplex_gpu.cc)
+endif()
 catch_discover_tests(cross_mapping_test
                      WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/test)
 
