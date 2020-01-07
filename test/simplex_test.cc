@@ -146,5 +146,5 @@ TEST_CASE("Find optimal embedding dimension (CPU)", "[simplex][cpu]")
 
 TEST_CASE("Find optimal embedding dimension (GPU)", "[simplex][gpu]")
 {
-    embed_dim_test_common<NearestNeighborsCPU, SimplexGPU>();
+    embed_dim_test_common<NearestNeighborsGPU, SimplexGPU>();
 }

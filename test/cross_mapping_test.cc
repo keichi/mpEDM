@@ -75,20 +75,20 @@ TEST_CASE("Compute cross mapping (CPU, E=5)", "[ccm][cpu]")
 
 TEST_CASE("Compute cross mapping (GPU, E=2)", "[ccm][gpu]")
 {
-    cross_mapping_test_common<NearestNeighborsCPU, SimplexGPU>(2);
+    cross_mapping_test_common<NearestNeighborsGPU, SimplexGPU>(2);
 }
 
 TEST_CASE("Compute cross mapping (GPU, E=3)", "[ccm][gpu]")
 {
-    cross_mapping_test_common<NearestNeighborsCPU, SimplexGPU>(3);
+    cross_mapping_test_common<NearestNeighborsGPU, SimplexGPU>(3);
 }
 
 TEST_CASE("Compute cross mapping (GPU, E=4)", "[ccm][gpu]")
 {
-    cross_mapping_test_common<NearestNeighborsCPU, SimplexGPU>(4);
+    cross_mapping_test_common<NearestNeighborsGPU, SimplexGPU>(4);
 }
 
 TEST_CASE("Compute cross mapping (GPU, E=5)", "[ccm][gpu]")
 {
-    cross_mapping_test_common<NearestNeighborsCPU, SimplexGPU>(5);
+    cross_mapping_test_common<NearestNeighborsGPU, SimplexGPU>(5);
 }
