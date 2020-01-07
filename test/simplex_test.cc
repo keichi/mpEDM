@@ -144,7 +144,11 @@ TEST_CASE("Find optimal embedding dimension (CPU)", "[simplex][cpu]")
     embed_dim_test_common<NearestNeighborsCPU, SimplexCPU>();
 }
 
+#ifdef ENABLE_GPU_KERNEL
+
 TEST_CASE("Find optimal embedding dimension (GPU)", "[simplex][gpu]")
 {
     embed_dim_test_common<NearestNeighborsGPU, SimplexGPU>();
 }
+
+#endif

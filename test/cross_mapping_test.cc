@@ -73,6 +73,8 @@ TEST_CASE("Compute cross mapping (CPU, E=5)", "[ccm][cpu]")
     cross_mapping_test_common<NearestNeighborsCPU, SimplexCPU>(5);
 }
 
+#ifdef ENABLE_GPU_KERNEL
+
 TEST_CASE("Compute cross mapping (GPU, E=2)", "[ccm][gpu]")
 {
     cross_mapping_test_common<NearestNeighborsGPU, SimplexGPU>(2);
@@ -92,3 +94,5 @@ TEST_CASE("Compute cross mapping (GPU, E=5)", "[ccm][gpu]")
 {
     cross_mapping_test_common<NearestNeighborsGPU, SimplexGPU>(5);
 }
+
+#endif
