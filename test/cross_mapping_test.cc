@@ -5,6 +5,10 @@
 #include "../src/lut.h"
 #include "../src/nearest_neighbors_cpu.h"
 #include "../src/simplex_cpu.h"
+#ifdef ENABLE_GPU_KERNEL
+#include "../src/nearest_neighbors_gpu.h"
+#include "../src/simplex_gpu.h"
+#endif
 
 // Validation data was generated with pyEDM 1.0.1 with the following
 // parameters:
@@ -12,18 +16,17 @@
 //               E=3, Tp=1, columns="anchovy", target="np_sst", lib="1 76",
 //               pred="1 76", verbose=True)
 
-void cross_mapping_test_common(uint32_t E)
+template <class T, class U> void cross_mapping_test_common(uint32_t E)
 {
+    const auto tau = 1;
+    const auto Tp = 1;
+
     Dataset ds1, ds2;
     ds1.load("sardine_anchovy_sst.csv");
     ds2.load("anchovy_sst_validation_E" + std::to_string(E) + ".csv");
 
-    // tau=1, Tp=1, verbose=true
-    auto knn =
-        std::unique_ptr<NearestNeighbors>(new NearestNeighborsCPU(1, 1, true));
-
-    // tau=1, Tp=1, verbose=true
-    auto simplex = std::unique_ptr<Simplex>(new SimplexCPU(1, 1, true));
+    auto knn = std::unique_ptr<NearestNeighbors>(new T(tau, Tp, true));
+    auto simplex = std::unique_ptr<Simplex>(new U(tau, Tp, true));
 
     LUT lut;
     Timeseries library = Timeseries(ds1.timeseries[1].data(),
@@ -52,20 +55,40 @@ void cross_mapping_test_common(uint32_t E)
 
 TEST_CASE("Compute cross mapping (CPU, E=2)", "[ccm][cpu]")
 {
-    cross_mapping_test_common(2);
+    cross_mapping_test_common<NearestNeighborsCPU, SimplexCPU>(2);
 }
 
 TEST_CASE("Compute cross mapping (CPU, E=3)", "[ccm][cpu]")
 {
-    cross_mapping_test_common(3);
+    cross_mapping_test_common<NearestNeighborsCPU, SimplexCPU>(3);
 }
 
 TEST_CASE("Compute cross mapping (CPU, E=4)", "[ccm][cpu]")
 {
-    cross_mapping_test_common(4);
+    cross_mapping_test_common<NearestNeighborsCPU, SimplexCPU>(4);
 }
 
 TEST_CASE("Compute cross mapping (CPU, E=5)", "[ccm][cpu]")
 {
-    cross_mapping_test_common(5);
+    cross_mapping_test_common<NearestNeighborsCPU, SimplexCPU>(5);
+}
+
+TEST_CASE("Compute cross mapping (GPU, E=2)", "[ccm][gpu]")
+{
+    cross_mapping_test_common<NearestNeighborsCPU, SimplexGPU>(2);
+}
+
+TEST_CASE("Compute cross mapping (GPU, E=3)", "[ccm][gpu]")
+{
+    cross_mapping_test_common<NearestNeighborsCPU, SimplexGPU>(3);
+}
+
+TEST_CASE("Compute cross mapping (GPU, E=4)", "[ccm][gpu]")
+{
+    cross_mapping_test_common<NearestNeighborsCPU, SimplexGPU>(4);
+}
+
+TEST_CASE("Compute cross mapping (GPU, E=5)", "[ccm][gpu]")
+{
+    cross_mapping_test_common<NearestNeighborsCPU, SimplexGPU>(5);
 }
