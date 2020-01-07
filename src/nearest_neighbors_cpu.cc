@@ -17,7 +17,7 @@ void NearestNeighborsCPU::compute_lut(LUT &out, const Timeseries &library,
                                       const Timeseries &target, uint32_t E,
                                       uint32_t top_k)
 {
-    const auto n_library = library.size() - (E - 1) * tau;
+    const auto n_library = library.size() - (E - 1) * tau - Tp;
     const auto n_target = target.size() - (E - 1) * tau;
     const auto p_library = library.data();
     const auto p_target = target.data();
@@ -50,7 +50,7 @@ void NearestNeighborsCPU::compute_lut(LUT &out, const Timeseries &library,
     #pragma omp parallel for
     for (auto i = 0u; i < n_target; i++) {
         for (auto j = 0u; j < n_library; j++) {
-            if (j + Tp >= n_library || p_target + i == p_library + j) {
+            if (p_target + i == p_library + j) {
                 cache.distances[i * n_library + j] =
                     std::numeric_limits<float>::infinity();
             }

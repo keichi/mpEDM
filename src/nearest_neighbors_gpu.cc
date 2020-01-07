@@ -16,7 +16,7 @@ void NearestNeighborsGPU::compute_lut(LUT &out, const Timeseries &library,
                                       const Timeseries &target, uint32_t E,
                                       uint32_t top_k)
 {
-    const auto n_library = library.size() - (E - 1) * tau;
+    const auto n_library = library.size() - (E - 1) * tau - Tp;
     const auto n_target = target.size() - (E - 1) * tau;
     const auto p_library = library.data();
     const auto p_target = target.data();
