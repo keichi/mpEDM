@@ -12,8 +12,9 @@
 #include "nearest_neighbors_cpu.h"
 #include "simplex_cpu.h"
 #ifdef ENABLE_GPU_KERNEL
-#include "../src/nearest_neighbors_gpu.h"
-#include "../src/simplex_gpu.h"
+#include "nearest_neighbors_gpu.h"
+#include "simplex_gpu.h"
+#include "cross_mapping_gpu.h"
 #endif
 #include "stats.h"
 #include "timer.h"
@@ -60,14 +61,14 @@ template <class T, class U> void simplex_projection(std::vector<uint32_t> &optma
     }
 }
 
-void cross_mapping(const Dataset &ds, const std::vector<uint32_t> &optimal_E)
+template <class T> void cross_mapping(const Dataset &ds, const std::vector<uint32_t> &optimal_E, bool verbose)
 {
-    // E_max=20, tau=1, Tp=0, verbose=true
-    CrossMappingCPU xmap(20, 1, 0, true);
+    // E_max=20, tau=1, Tp=0
+    auto xmap = std::unique_ptr<CrossMapping>(new T(20, 1, 0, verbose));
 
     std::vector<float> rhos;
 
-    xmap.run(rhos, ds, optimal_E);
+    xmap->run(rhos, ds, optimal_E);
 }
 
 void usage(const std::string &app_name)
@@ -161,7 +162,22 @@ if (kernel_type == "cpu") {
 
     timer_xmap.start();
 
-    cross_mapping(ds, optimal_E);
+if (kernel_type == "cpu") {
+        std::cout << "Using CPU Cross Mapping kernel" << std::endl;
+
+        cross_mapping<CrossMappingCPU>(ds, optimal_E, verbose);
+    }
+#ifdef ENABLE_GPU_KERNEL
+    else if (kernel_type == "gpu") {
+        std::cout << "Using GPU Cross Mapping kernel" << std::endl;
+
+        cross_mapping<CrossMappingGPU>(ds, optimal_E, verbose);
+    }
+#endif
+    else {
+        std::cerr << "Unknown kernel type " << kernel_type << std::endl;
+        return 1;
+    }
 
     timer_xmap.stop();
 

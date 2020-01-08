@@ -47,7 +47,8 @@ if(ArrayFire_FOUND)
 
   target_sources(knn_bench PRIVATE src/nearest_neighbors_gpu.cc)
   target_sources(simplex_bench PRIVATE src/nearest_neighbors_gpu.cc src/simplex_gpu.cc)
-  target_sources(cross_mapping_bench PRIVATE src/nearest_neighbors_gpu.cc src/simplex_gpu.cc)
+  target_sources(cross_mapping_bench PRIVATE src/nearest_neighbors_gpu.cc src/simplex_gpu.cc 
+                 src/cross_mapping_gpu.cc)
 else()
   message(WARNING "ArrayFire was NOT found, GPU backend is disabled")
 endif()

@@ -27,7 +27,7 @@ public:
 
 protected:
     std::unique_ptr<NearestNeighbors> knn;
-    std::unique_ptr<SimplexCPU> simplex;
+    std::unique_ptr<Simplex> simplex;
     std::vector<LUT> luts;
 };
 
