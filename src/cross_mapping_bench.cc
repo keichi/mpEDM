@@ -63,8 +63,15 @@ template <class T, class U> void simplex_projection(std::vector<uint32_t> &optma
 
 template <class T> void cross_mapping(const Dataset &ds, const std::vector<uint32_t> &optimal_E, bool verbose)
 {
+<<<<<<< HEAD
     // E_max=20, tau=1, Tp=0
     auto xmap = std::unique_ptr<CrossMapping>(new T(20, 1, 0, verbose));
+=======
+    // E_max=20, tau=1, Tp=0, verbose=true
+    // CrossMappingCPU xmap(20, 1, 0, true);
+
+    auto xmap = std::unique_ptr<CrossMapping>(new T(20, 1, 0, true));
+>>>>>>> Fix warning issue during compile
 
     std::vector<float> rhos;
 

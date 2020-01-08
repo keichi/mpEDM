@@ -12,6 +12,7 @@ public:
         : E_max(E_max), tau(tau), Tp(Tp), verbose(verbose)
     {
     }
+    virtual ~CrossMapping() {}
 
     virtual void run(std::vector<float> &rhos, const Dataset &ds,
                      const std::vector<uint32_t> &optimal_E) = 0;
