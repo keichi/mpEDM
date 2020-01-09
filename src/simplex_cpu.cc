@@ -1,7 +1,3 @@
-#include <cmath>
-#include <iostream>
-#include <limits>
-
 #include "simplex_cpu.h"
 
 void SimplexCPU::predict(Timeseries &prediction, std::vector<float> &buffer,

@@ -1,5 +1,10 @@
 #include <iostream>
 
+#ifdef _OPENMP
+#include <omp.h>
+#endif
+#include <arrayfire.h>
+
 #include "cross_mapping_gpu.h"
 #include "stats.h"
 #include "timer.h"
@@ -27,34 +32,51 @@ void CrossMappingGPU::predict(std::vector<float> &rhos,
 {
     Timer t1, t2;
 
+    const auto dev_count = af::getDeviceCount();
+
     t1.start();
-    // Compute lookup tables for library timeseries
-    for (auto E = 1; E <= E_max; E++) {
-        knn->compute_lut(luts[E - 1], library, library, E);
-        luts[E - 1].normalize();
+    #pragma omp parallel num_threads(dev_count)
+    {
+        #ifdef _OPENMP
+        af::setDevice(omp_get_thread_num());
+        #else
+        af::setDevice(0);
+        #endif
+
+        // Compute lookup tables for library timeseries
+        #pragma omp for schedule(dynamic)
+        for (auto E = 1; E <= E_max; E++) {
+            knn->compute_lut(luts[E - 1], library, library, E);
+            luts[E - 1].normalize();
+        }
     }
     t1.stop();
 
     t2.start();
     // Compute Simplex projection from the library to every target
-    std::vector<float> buffer;
+    #pragma omp parallel
+    {
+        std::vector<float> buffer;
 
-    for (auto i = 0; i < targets.size(); i++) {
-        const auto E = optimal_E[i];
+        #pragma omp for
+        for (auto i = 0; i < targets.size(); i++) {
+            const auto E = optimal_E[i];
 
-        const Timeseries target = targets[i];
-        Timeseries prediction;
-        Timeseries shifted_target;
+            const Timeseries target = targets[i];
+            Timeseries prediction;
+            Timeseries shifted_target;
 
-        simplex->predict(prediction, buffer, luts[E - 1], target, E);
-        simplex->shift_target(shifted_target, target, E);
+            simplex->predict(prediction, buffer, luts[E - 1], target, E);
+            simplex->shift_target(shifted_target, target, E);
 
-        corrcoef(prediction, shifted_target);
+            corrcoef(prediction, shifted_target);
+        }
     }
-    
     t2.stop();
 
-    std::cout << "k-NN: " << t1.elapsed() << " [ms], Simplex: "
-              << t2.elapsed() << " [ms]" << std::endl;
+    if (verbose) {
+        std::cout << "k-NN: " << t1.elapsed() << " [ms], Simplex: "
+                  << t2.elapsed() << " [ms]" << std::endl;
+    }
 }
 // clang-format on
