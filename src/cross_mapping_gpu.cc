@@ -37,24 +37,19 @@ void CrossMappingGPU::predict(std::vector<float> &rhos,
     Timer t1, t2;
 
     const Timeseries library = ds.timeseries[index];
+    
+    LUT lut;
+    std::vector<af::array> idx(E_max);
+    std::vector<af::array> dist(E_max);
 
     t1.start();
-    #pragma omp parallel num_threads(n_devs)
-    {
-        #ifdef _OPENMP
-        uint32_t dev_id = omp_get_thread_num();
-        #else
-        uint32_t dev_id = 0;
-        #endif
+    // Compute lookup tables for library timeseries
+    for (auto E = 1; E <= E_max; E++) {
+        knn->compute_lut(lut, library, library, E);
+        lut.normalize();
 
-        af::setDevice(dev_id);
-
-        // Compute lookup tables for library timeseries
-        #pragma omp for schedule(dynamic)
-        for (auto E = 1; E <= max_E; E++) {
-            knn->compute_lut(luts[E - 1], library, library, E);
-            luts[E - 1].normalize();
-        }
+        idx[E - 1] = af::array(lut.n_cols(), lut.n_rows(), lut.indices.data());
+        dist[E - 1] = af::array(lut.n_cols(), lut.n_rows(), lut.distances.data());
     }
     t1.stop();
 
@@ -66,7 +61,7 @@ void CrossMappingGPU::predict(std::vector<float> &rhos,
         af::array prediction;
         af::array shifted_target;
 
-        simplex(prediction, luts[E - 1], target, E);
+        simplex(prediction, idx[E - 1], dist[E - 1], target, E);
         shift_target(shifted_target, target, E);
 
         rhos[i] = af::corrcoef<float>(prediction, af::transpose(shifted_target));
@@ -80,24 +75,22 @@ void CrossMappingGPU::predict(std::vector<float> &rhos,
 }
 // clang-format on
 
-void CrossMappingGPU::simplex(af::array &prediction, const LUT &lut,
+void CrossMappingGPU::simplex(af::array &prediction,
+                              const af::array &idx, const af::array &dist,
                               const af::array &target, uint32_t E)
 {
     const auto shift = (E - 1) * tau + Tp;
 
-    const af::array idx(lut.n_cols(), lut.n_rows(), lut.indices.data());
-    const af::array dist(lut.n_cols(), lut.n_rows(), lut.distances.data());
-
     const af::array tmp =
-        af::moddims(target(idx + shift), lut.n_cols(), lut.n_rows());
+        af::moddims(target(idx + shift), idx.dims(0), idx.dims(1));
     prediction = af::sum(tmp * dist);
 }
 
-void CrossMappingGPU::shift_target(af::array &shifted_target, const af::array &target,
-                  uint32_t E)
+void CrossMappingGPU::shift_target(af::array &shifted_target,
+                                   const af::array &target, uint32_t E)
 {
     const auto shift = (E - 1) * tau + Tp;
     const auto n_prediction = target.dims(0);
 
-    shifted_target =  target(af::seq(shift, n_prediction - 1));
+    shifted_target = target(af::seq(shift, n_prediction - 1));
 }
