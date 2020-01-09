@@ -12,14 +12,15 @@
 #include "nearest_neighbors_cpu.h"
 #include "simplex_cpu.h"
 #ifdef ENABLE_GPU_KERNEL
+#include "cross_mapping_gpu.h"
 #include "nearest_neighbors_gpu.h"
 #include "simplex_gpu.h"
-#include "cross_mapping_gpu.h"
 #endif
 #include "stats.h"
 #include "timer.h"
 
-template <class T, class U> void simplex_projection(std::vector<uint32_t> &optmal_E, const Dataset &ds)
+template <class T, class U>
+void simplex_projection(std::vector<uint32_t> &optmal_E, const Dataset &ds)
 {
     LUT lut;
 
@@ -61,17 +62,12 @@ template <class T, class U> void simplex_projection(std::vector<uint32_t> &optma
     }
 }
 
-template <class T> void cross_mapping(const Dataset &ds, const std::vector<uint32_t> &optimal_E, bool verbose)
+template <class T>
+void cross_mapping(const Dataset &ds, const std::vector<uint32_t> &optimal_E,
+                   bool verbose)
 {
-<<<<<<< HEAD
     // E_max=20, tau=1, Tp=0
     auto xmap = std::unique_ptr<CrossMapping>(new T(20, 1, 0, verbose));
-=======
-    // E_max=20, tau=1, Tp=0, verbose=true
-    // CrossMappingCPU xmap(20, 1, 0, true);
-
-    auto xmap = std::unique_ptr<CrossMapping>(new T(20, 1, 0, true));
->>>>>>> Fix warning issue during compile
 
     std::vector<float> rhos;
 
@@ -145,7 +141,7 @@ int main(int argc, char *argv[])
 
     timer_simplex.start();
 
-if (kernel_type == "cpu") {
+    if (kernel_type == "cpu") {
         std::cout << "Using CPU Simplex kernel" << std::endl;
 
         simplex_projection<NearestNeighborsCPU, SimplexCPU>(optimal_E, ds);
@@ -169,7 +165,7 @@ if (kernel_type == "cpu") {
 
     timer_xmap.start();
 
-if (kernel_type == "cpu") {
+    if (kernel_type == "cpu") {
         std::cout << "Using CPU Cross Mapping kernel" << std::endl;
 
         cross_mapping<CrossMappingCPU>(ds, optimal_E, verbose);
