@@ -56,22 +56,22 @@ TEST_CASE("Compute k-NN lookup table (CPU, E=5)", "[knn][cpu]")
 
 #ifdef ENABLE_GPU_KERNEL
 
-TEST_CASE("Compute k-NN lookup table (GPU, E=2)", "[knn][cpu]")
+TEST_CASE("Compute k-NN lookup table (GPU, E=2)", "[knn][gpu]")
 {
     knn_test_common<NearestNeighborsGPU>(2);
 }
 
-TEST_CASE("Compute k-NN lookup table (GPU, E=3)", "[knn][cpu]")
+TEST_CASE("Compute k-NN lookup table (GPU, E=3)", "[knn][gpu]")
 {
     knn_test_common<NearestNeighborsGPU>(3);
 }
 
-TEST_CASE("Compute k-NN lookup table (GPU, E=4)", "[knn][cpu]")
+TEST_CASE("Compute k-NN lookup table (GPU, E=4)", "[knn][gpu]")
 {
     knn_test_common<NearestNeighborsGPU>(4);
 }
 
-TEST_CASE("Compute k-NN lookup table (GPU, E=5)", "[knn][cpu]")
+TEST_CASE("Compute k-NN lookup table (GPU, E=5)", "[knn][gpu]")
 {
     knn_test_common<NearestNeighborsGPU>(5);
 }
