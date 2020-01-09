@@ -4,6 +4,18 @@
 #include "stats.h"
 #include "timer.h"
 
+void CrossMappingCPU::run(std::vector<float> &rhos, const Dataset &ds,
+                          const std::vector<uint32_t> &optimal_E)
+{
+    for (auto i = 0; i < ds.n_cols(); i++) {
+        const Timeseries library = ds.timeseries[i];
+
+        predict(rhos, library, ds.timeseries, optimal_E);
+
+        std::cout << "Cross mapping for column #" << i << " done" << std::endl;
+    }
+}
+
 // clang-format off
 void CrossMappingCPU::predict(std::vector<float> &rhos,
                               const Timeseries &library,

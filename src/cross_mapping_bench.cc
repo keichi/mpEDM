@@ -59,13 +59,7 @@ void cross_mapping(const Dataset &ds, const std::vector<uint32_t> &optimal_E)
 
     std::vector<float> rhos;
 
-    for (auto i = 0; i < ds.n_cols(); i++) {
-        const Timeseries library = ds.timeseries[i];
-
-        xmap.predict(rhos, library, ds.timeseries, optimal_E);
-
-        std::cout << "Cross mapping for column #" << i << " done" << std::endl;
-    }
+    xmap.run(rhos, ds, optimal_E);
 }
 
 int main(int argc, char *argv[])
