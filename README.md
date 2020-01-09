@@ -27,8 +27,14 @@ GPU-accelerated implementation of Empirical Dynamic Modeling
     $ cd build
     $ cmake -DCMAKE_BUILD_TYPE=Release ..
     ```
-    - Add `-DArrayFire_DIR=/path/to/arrayfire` option to enable the GPU backend.
-    - Add `-DHDF5_DIR=/path/to/hdf5` option to enable the HDF5 reader.
+    - `-DCMAKE_BUILD_TYPE` can be either `Release`, `RelWithDebInfo`, `Debug`
+      or `MinSizeRel`.
+    - Add `-DCMAKE_CXX_COMPILER=/path/to/c++` to select the C++ compiler to use.
+    - Add `-DCMAKE_CXX_FLAGS="..."` to customize the C++ compiler flags.
+    - Add `-DArrayFire_DIR=/path/to/arrayfire` if ArrayFire is not installed
+      in a standard path.
+    - Add `-DHDF5_DIR=/path/to/hdf5` if HDF5 is not installed in a standard
+      path.
 
 4. Run make:
     ```
