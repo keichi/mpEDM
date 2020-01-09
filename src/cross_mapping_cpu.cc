@@ -12,7 +12,10 @@ void CrossMappingCPU::run(std::vector<float> &rhos, const Dataset &ds,
 
         predict(rhos, library, ds.timeseries, optimal_E);
 
-        std::cout << "Cross mapping for column #" << i << " done" << std::endl;
+        if (verbose) {
+            std::cout << "Cross mapping for column #" << i << " done"
+                      << std::endl;
+        }
     }
 }
 
@@ -54,7 +57,9 @@ void CrossMappingCPU::predict(std::vector<float> &rhos,
     }
     t2.stop();
 
-    std::cout << "k-NN: " << t1.elapsed() << " [ms], Simplex: "
-              << t2.elapsed() << " [ms]" << std::endl;
+    if (verbose) {
+        std::cout << "k-NN: " << t1.elapsed() << " [ms], Simplex: "
+                  << t2.elapsed() << " [ms]" << std::endl;
+    }
 }
 // clang-format on
