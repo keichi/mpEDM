@@ -22,24 +22,21 @@ void CrossMappingGPU::predict(std::vector<float> &rhos,
 
     t2.start();
     // Compute Simplex projection from the library to every target
-    #pragma omp parallel
-    {
-        std::vector<float> buffer;
+    std::vector<float> buffer;
 
-        #pragma omp for
-        for (auto i = 0; i < targets.size(); i++) {
-            const auto E = optimal_E[i];
+    for (auto i = 0; i < targets.size(); i++) {
+        const auto E = optimal_E[i];
 
-            const Timeseries target = targets[i];
-            Timeseries prediction;
-            Timeseries shifted_target;
+        const Timeseries target = targets[i];
+        Timeseries prediction;
+        Timeseries shifted_target;
 
-            simplex->predict(prediction, buffer, luts[E - 1], target, E);
-            simplex->shift_target(shifted_target, target, E);
+        simplex->predict(prediction, buffer, luts[E - 1], target, E);
+        simplex->shift_target(shifted_target, target, E);
 
-            corrcoef(prediction, shifted_target);
-        }
+        corrcoef(prediction, shifted_target);
     }
+    
     t2.stop();
 
     std::cout << "k-NN: " << t1.elapsed() << " [ms], Simplex: "
