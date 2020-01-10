@@ -12,7 +12,7 @@ public:
         : max_E(max_E), tau(tau), Tp(Tp), verbose(verbose)
     {
     }
-    
+
     virtual ~CrossMapping() {}
 
     virtual void run(std::vector<float> &rhos, const Dataset &ds,

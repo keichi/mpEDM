@@ -76,9 +76,9 @@ void CrossMappingGPU::predict(std::vector<float> &rhos,
 }
 // clang-format on
 
-void CrossMappingGPU::simplex(af::array &prediction,
-                              const af::array &idx, const af::array &dist,
-                              const af::array &target, uint32_t E)
+void CrossMappingGPU::simplex(af::array &prediction, const af::array &idx,
+                              const af::array &dist, const af::array &target,
+                              uint32_t E)
 {
     const auto shift = (E - 1) * tau + Tp;
 

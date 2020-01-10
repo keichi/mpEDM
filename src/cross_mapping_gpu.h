@@ -30,8 +30,8 @@ public:
     void simplex(af::array &prediction, const af::array &idx,
                  const af::array &dist, const af::array &target, uint32_t E);
 
-        void shift_target(af::array &shifted_target, const af::array &target,
-                          uint32_t E);
+    void shift_target(af::array &shifted_target, const af::array &target,
+                      uint32_t E);
 
 protected:
     std::unique_ptr<NearestNeighbors> knn;
