@@ -4,7 +4,7 @@
 #include <argh.h>
 #include <memory>
 #ifdef ENABLE_GPU_KERNEL
-#include <arrayfire.h>
+// #include <arrayfire.h>
 #endif
 
 #include "dataset.h"
