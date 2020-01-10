@@ -11,7 +11,7 @@ add_executable(knn_bench src/knn_bench.cc src/dataset.cc src/lut.cc
                src/nearest_neighbors_cpu.cc src/stats.cc)
 add_executable(simplex_bench src/simplex_bench.cc src/dataset.cc
                src/lut.cc src/simplex_cpu.cc src/nearest_neighbors_cpu.cc
-               src/stats.cc)
+               src/embedding_dim_cpu.cc src/stats.cc)
 add_executable(cross_mapping_bench src/cross_mapping_bench.cc
                src/cross_mapping_cpu.cc src/dataset.cc src/lut.cc
                src/simplex_cpu.cc src/nearest_neighbors_cpu.cc
@@ -48,7 +48,7 @@ if(ArrayFire_FOUND)
 
   target_sources(knn_bench PRIVATE src/nearest_neighbors_gpu.cc)
   target_sources(simplex_bench PRIVATE src/nearest_neighbors_gpu.cc
-                 src/simplex_gpu.cc)
+                 src/simplex_gpu.cc src/embedding_dim_gpu.cc)
   target_sources(cross_mapping_bench PRIVATE src/nearest_neighbors_gpu.cc
                  src/simplex_gpu.cc src/cross_mapping_gpu.cc
                  src/embedding_dim_gpu.cc)
@@ -139,7 +139,8 @@ if(ArrayFire_FOUND)
     target_link_libraries(cross_mapping_test PRIVATE ArrayFire::af)
   endif()
 
-  target_sources(cross_mapping_test PRIVATE src/nearest_neighbors_gpu.cc src/simplex_gpu.cc)
+  target_sources(cross_mapping_test PRIVATE src/nearest_neighbors_gpu.cc
+                 src/simplex_gpu.cc)
 endif()
 catch_discover_tests(cross_mapping_test
                      WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/test)
@@ -156,7 +157,8 @@ if(ArrayFire_FOUND)
     target_link_libraries(simplex_test PRIVATE ArrayFire::af)
   endif()
 
-  target_sources(simplex_test PRIVATE src/nearest_neighbors_gpu.cc src/simplex_gpu.cc)
+  target_sources(simplex_test PRIVATE src/nearest_neighbors_gpu.cc
+                 src/simplex_gpu.cc)
 endif()
 catch_discover_tests(simplex_test
                      WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/test)

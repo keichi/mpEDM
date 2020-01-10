@@ -22,11 +22,12 @@
 #include "timer.h"
 
 template <class T>
-void find_embedding_dim(std::vector<uint32_t> &optmal_E, const Dataset &ds,
-                        bool verbose)
+void find_embedding_dim(std::vector<uint32_t> &optmal_E, uint32_t max_E,
+                        const Dataset &ds, bool verbose)
 {
     // max_E=20, tau=1, Tp=1
-    auto embedding_dim = std::unique_ptr<EmbeddingDim>(new T(20, 1, 1, true));
+    auto embedding_dim =
+        std::unique_ptr<EmbeddingDim>(new T(max_E, 1, 1, verbose));
 
     optmal_E.resize(ds.n_cols());
 
@@ -44,11 +45,11 @@ void find_embedding_dim(std::vector<uint32_t> &optmal_E, const Dataset &ds,
 }
 
 template <class T>
-void cross_mapping(const Dataset &ds, const std::vector<uint32_t> &optimal_E,
-                   bool verbose)
+void cross_mapping(uint32_t max_E, const Dataset &ds,
+                   const std::vector<uint32_t> &optimal_E, bool verbose)
 {
     // max_E=20, tau=1, Tp=0
-    auto xmap = std::unique_ptr<CrossMapping>(new T(20, 1, 0, verbose));
+    auto xmap = std::unique_ptr<CrossMapping>(new T(max_E, 1, 0, verbose));
 
     std::vector<float> rhos;
 
@@ -125,13 +126,13 @@ int main(int argc, char *argv[])
     if (kernel_type == "cpu") {
         std::cout << "Using CPU Simplex kernel" << std::endl;
 
-        find_embedding_dim<EmbeddingDimCPU>(optimal_E, ds, verbose);
+        find_embedding_dim<EmbeddingDimCPU>(optimal_E, max_E, ds, verbose);
     }
 #ifdef ENABLE_GPU_KERNEL
     else if (kernel_type == "gpu") {
         std::cout << "Using GPU Simplex kernel" << std::endl;
 
-        find_embedding_dim<EmbeddingDimGPU>(optimal_E, ds, verbose);
+        find_embedding_dim<EmbeddingDimGPU>(optimal_E, max_E, ds, verbose);
     }
 #endif
     else {
@@ -149,13 +150,13 @@ int main(int argc, char *argv[])
     if (kernel_type == "cpu") {
         std::cout << "Using CPU cross mapping kernel" << std::endl;
 
-        cross_mapping<CrossMappingCPU>(ds, optimal_E, verbose);
+        cross_mapping<CrossMappingCPU>(max_E, ds, optimal_E, verbose);
     }
 #ifdef ENABLE_GPU_KERNEL
     else if (kernel_type == "gpu") {
         std::cout << "Using GPU cross mapping kernel" << std::endl;
 
-        cross_mapping<CrossMappingGPU>(ds, optimal_E, verbose);
+        cross_mapping<CrossMappingGPU>(max_E, ds, optimal_E, verbose);
     }
 #endif
     else {
