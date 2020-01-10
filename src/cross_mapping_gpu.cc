@@ -9,6 +9,15 @@
 #include "stats.h"
 #include "timer.h"
 
+CrossMappingGPU::CrossMappingGPU(uint32_t max_E, uint32_t tau, uint32_t Tp,
+                                 bool verbose)
+    : CrossMapping(max_E, tau, Tp, verbose),
+      knn(new NearestNeighborsGPU(tau, Tp, verbose)),
+      simplex(new SimplexCPU(tau, Tp, verbose)), luts(max_E)
+{
+    n_devs = af::getDeviceCount();
+}
+
 void CrossMappingGPU::run(std::vector<float> &rhos, const Dataset &ds,
                           const std::vector<uint32_t> &optimal_E)
 {

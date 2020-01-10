@@ -8,6 +8,18 @@
 #include "embedding_dim_gpu.h"
 #include "stats.h"
 
+EmbeddingDimGPU::EmbeddingDimGPU(uint32_t max_E, uint32_t tau, uint32_t Tp,
+                                 bool verbose)
+    : EmbeddingDim(max_E, tau, Tp, verbose),
+      knn(new NearestNeighborsGPU(tau, Tp, verbose)),
+      simplex(new SimplexCPU(tau, Tp, verbose)), rhos(max_E)
+{
+    n_devs = af::getDeviceCount();
+
+    luts.resize(n_devs);
+    buffers.resize(n_devs);
+}
+
 // clang-format off
 uint32_t EmbeddingDimGPU::run(const Timeseries &ts)
 {

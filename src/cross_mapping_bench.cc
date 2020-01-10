@@ -2,9 +2,6 @@
 #include <iostream>
 
 #include <argh.h>
-#ifdef ENABLE_GPU_KERNEL
-#include <arrayfire.h>
-#endif
 
 #include "cross_mapping_cpu.h"
 #include "dataset.h"

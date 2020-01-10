@@ -42,13 +42,9 @@ if(ArrayFire_FOUND)
     # See: https://github.com/arrayfire/arrayfire/issues/2687
     target_link_libraries(cuedm PRIVATE ArrayFire::afcpu)
     target_link_libraries(knn_bench PRIVATE ArrayFire::afcpu)
-    target_link_libraries(simplex_bench PRIVATE ArrayFire::afcpu)
-    target_link_libraries(cross_mapping_bench PRIVATE ArrayFire::afcpu)
   else()
     target_link_libraries(cuedm PRIVATE ArrayFire::af)
     target_link_libraries(knn_bench PRIVATE ArrayFire::af)
-    target_link_libraries(simplex_bench PRIVATE ArrayFire::af)
-    target_link_libraries(cross_mapping_bench PRIVATE ArrayFire::af)
   endif()
   target_include_directories(knn_bench PRIVATE src/thirdparty/concurrentqueue)
 
