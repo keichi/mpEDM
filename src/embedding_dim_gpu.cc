@@ -8,6 +8,7 @@
 #include "embedding_dim_gpu.h"
 #include "stats.h"
 
+// clang-format off
 uint32_t EmbeddingDimGPU::run(const Timeseries &ts)
 {
     #pragma omp parallel num_threads(n_devs)
@@ -44,3 +45,4 @@ uint32_t EmbeddingDimGPU::run(const Timeseries &ts)
 
     return best_E;
 }
+// clang-format on
