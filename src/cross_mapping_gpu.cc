@@ -1,10 +1,15 @@
 #include <iostream>
 
-#include "cross_mapping_cpu.h"
+#ifdef _OPENMP
+#include <omp.h>
+#endif
+#include <arrayfire.h>
+
+#include "cross_mapping_gpu.h"
 #include "stats.h"
 #include "timer.h"
 
-void CrossMappingCPU::run(std::vector<float> &rhos, const Dataset &ds,
+void CrossMappingGPU::run(std::vector<float> &rhos, const Dataset &ds,
                           const std::vector<uint32_t> &optimal_E)
 {
     for (auto i = 0; i < ds.n_cols(); i++) {
@@ -20,7 +25,7 @@ void CrossMappingCPU::run(std::vector<float> &rhos, const Dataset &ds,
 }
 
 // clang-format off
-void CrossMappingCPU::predict(std::vector<float> &rhos,
+void CrossMappingGPU::predict(std::vector<float> &rhos,
                               const Timeseries &library,
                               const std::vector<Timeseries> &targets,
                               const std::vector<uint32_t> &optimal_E)
@@ -29,9 +34,22 @@ void CrossMappingCPU::predict(std::vector<float> &rhos,
 
     // Compute k-NN lookup tables for library timeseries
     t1.start();
-    for (auto E = 1; E <= max_E; E++) {
-        knn->compute_lut(luts[E - 1], library, library, E);
-        luts[E - 1].normalize();
+    #pragma omp parallel num_threads(n_devs)
+    {
+        #ifdef _OPENMP
+        uint32_t dev_id = omp_get_thread_num();
+        #else
+        uint32_t dev_id = 0;
+        #endif
+
+        af::setDevice(dev_id);
+
+        // Compute lookup tables for library timeseries
+        #pragma omp for schedule(dynamic)
+        for (auto E = 1; E <= max_E; E++) {
+            knn->compute_lut(luts[E - 1], library, library, E);
+            luts[E - 1].normalize();
+        }
     }
     t1.stop();
 

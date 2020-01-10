@@ -87,11 +87,11 @@ protected:
         }
 
         const auto it = std::max_element(rhos.begin(), rhos.end());
-        const auto maxE = it - rhos.begin() + 1;
+        const auto max_E = it - rhos.begin() + 1;
         const auto maxRho = *it;
 
         result["id"] = id;
-        result["E"] = maxE;
+        result["E"] = max_E;
         result["rho"] = maxRho;
     }
 };

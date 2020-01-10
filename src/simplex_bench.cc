@@ -21,7 +21,7 @@
 
 void simplex_projection(std::shared_ptr<NearestNeighbors> knn,
                         std::shared_ptr<Simplex> simplex, const Timeseries &ts,
-                        uint32_t E_max)
+                        uint32_t max_E)
 {
     LUT lut;
 
@@ -37,7 +37,7 @@ void simplex_projection(std::shared_ptr<NearestNeighbors> knn,
     std::vector<float> rhos;
     std::vector<float> buffer;
 
-    for (auto E = 1; E <= E_max; E++) {
+    for (auto E = 1; E <= max_E; E++) {
         knn->compute_lut(lut, library, target, E);
         lut.normalize();
 
@@ -50,10 +50,10 @@ void simplex_projection(std::shared_ptr<NearestNeighbors> knn,
     }
 
     const auto it = std::max_element(rhos.begin(), rhos.end());
-    const auto maxE = it - rhos.begin() + 1;
-    const auto maxRho = *it;
+    const auto best_E = it - rhos.begin() + 1;
+    const auto best_rho = *it;
 
-    std::cout << "best E=" << maxE << " rho=" << maxRho << std::endl;
+    std::cout << "best E=" << best_E << " rho=" << best_rho << std::endl;
 }
 
 void usage(const std::string &app_name)
@@ -98,8 +98,8 @@ int main(int argc, char *argv[])
     cmdl({"t", "tau"}, 1) >> tau;
     uint32_t Tp;
     cmdl({"p", "Tp"}, 1) >> Tp;
-    uint32_t E_max;
-    cmdl({"e", "emax"}, 20) >> E_max;
+    uint32_t max_E;
+    cmdl({"e", "emax"}, 20) >> max_E;
     std::string kernel_type;
     cmdl({"x", "kernel"}, "cpu") >> kernel_type;
     bool verbose = cmdl[{"v", "verbose"}];
@@ -148,7 +148,7 @@ int main(int argc, char *argv[])
     for (const auto &ts : ds.timeseries) {
         std::cout << "Simplex projection for timeseries #" << (i++) << ": ";
 
-        simplex_projection(knn, simplex, ts, E_max);
+        simplex_projection(knn, simplex, ts, max_E);
     }
 
     timer_tot.stop();

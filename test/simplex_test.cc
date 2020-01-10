@@ -97,7 +97,7 @@ template <class T, class U> void embed_dim_test_common()
 {
     const auto tau = 1;
     const auto Tp = 1;
-    const auto maxE = 20;
+    const auto max_E = 20;
 
     Dataset ds1, ds2;
     ds1.load("TentMap_rEDM.csv");
@@ -110,10 +110,10 @@ template <class T, class U> void embed_dim_test_common()
     Timeseries shifted_target;
     std::vector<float> buffer;
     LUT lut;
-    std::vector<float> rho(maxE);
-    std::vector<float> rho_valid(maxE);
+    std::vector<float> rho(max_E);
+    std::vector<float> rho_valid(max_E);
 
-    for (auto E = 1; E <= maxE; E++) {
+    for (auto E = 1; E <= max_E; E++) {
         const Timeseries ts = ds1.timeseries[1];
         const Timeseries library(ts.data(), 100);
         const Timeseries target(ts.data() + 200 - (E - 1) * tau,

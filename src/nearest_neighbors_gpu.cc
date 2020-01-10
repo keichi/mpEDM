@@ -9,7 +9,9 @@ NearestNeighborsGPU::NearestNeighborsGPU(uint32_t tau, uint32_t Tp,
                                          bool verbose)
     : NearestNeighbors(tau, Tp, verbose)
 {
-    af::info();
+    if (verbose) {
+        af::info();
+    }
 }
 
 void NearestNeighborsGPU::compute_lut(LUT &out, const Timeseries &library,
