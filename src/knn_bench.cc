@@ -116,7 +116,7 @@ void usage(const std::string &app_name)
         app_name +
         " [OPTION...] FILE\n"
         "  -t, --tau arg    Lag (default: 1)\n"
-        "  -e, --emax arg   Maximum embedding dimension (default: 20)\n"
+        "  -e, --maxe arg   Maximum embedding dimension (default: 20)\n"
         "  -k, --topk arg   Number of neighbors to find (default: 100)\n"
         "  -x, --kernel arg Kernel type {cpu|gpu|multigpu} (default: cpu)\n"
         "  -v, --verbose    Enable verbose logging (default: false)\n"
@@ -127,7 +127,7 @@ void usage(const std::string &app_name)
 
 int main(int argc, char *argv[])
 {
-    argh::parser cmdl({"-t", "--tau", "-e", "--emax", "-k", "--topk", "-x",
+    argh::parser cmdl({"-t", "--tau", "-e", "--maxe", "-k", "--topk", "-x",
                        "--kernel", "-v", "--verbose"});
     cmdl.parse(argc, argv);
 
@@ -146,7 +146,7 @@ int main(int argc, char *argv[])
     int tau;
     cmdl({"t", "tau"}, 1) >> tau;
     int max_E;
-    cmdl({"e", "emax"}, 20) >> max_E;
+    cmdl({"e", "maxe"}, 20) >> max_E;
     int top_k;
     cmdl({"k", "topk"}, 100) >> top_k;
     std::string kernel_type;

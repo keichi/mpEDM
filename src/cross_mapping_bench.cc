@@ -67,9 +67,9 @@ void usage(const std::string &app_name)
         app_name +
         " [OPTION...] FILE\n"
         "  -t, --tau arg    Lag (default: 1)\n"
-        "  -e, --emax arg   Maximum embedding dimension (default: 20)\n"
+        "  -e, --maxe arg   Maximum embedding dimension (default: 20)\n"
         "  -p, --Tp arg     Steps to predict in future (default: 1)\n"
-        "  -x, --kernel arg Kernel type {cpu|gpu|multigpu} (default: cpu)\n"
+        "  -x, --kernel arg Kernel type {cpu|gpu} (default: cpu)\n"
         "  -v, --verbose    Enable verbose logging (default: false)\n"
         "  -h, --help       Show help";
 
@@ -78,7 +78,7 @@ void usage(const std::string &app_name)
 
 int main(int argc, char *argv[])
 {
-    argh::parser cmdl({"-t", "--tau", "-p", "--tp", "-e", "--emax", "-x",
+    argh::parser cmdl({"-t", "--tau", "-p", "--tp", "-e", "--maxe", "-x",
                        "--kernel", "-v", "--verbose"});
     cmdl.parse(argc, argv);
 
@@ -99,7 +99,7 @@ int main(int argc, char *argv[])
     uint32_t Tp;
     cmdl({"p", "Tp"}, 1) >> Tp;
     uint32_t max_E;
-    cmdl({"e", "emax"}, 20) >> max_E;
+    cmdl({"e", "maxe"}, 20) >> max_E;
     std::string kernel_type;
     cmdl({"x", "kernel"}, "cpu") >> kernel_type;
     bool verbose = cmdl[{"v", "verbose"}];
