@@ -39,12 +39,12 @@ void CrossMappingGPU::predict(std::vector<float> &rhos,
     const Timeseries library = ds.timeseries[index];
     
     LUT lut;
-    std::vector<af::array> idx(E_max);
-    std::vector<af::array> dist(E_max);
+    std::vector<af::array> idx(max_E);
+    std::vector<af::array> dist(max_E);
 
     t1.start();
     // Compute lookup tables for library timeseries
-    for (auto E = 1; E <= E_max; E++) {
+    for (auto E = 1; E <= max_E; E++) {
         knn->compute_lut(lut, library, library, E);
         lut.normalize();
 
@@ -53,6 +53,7 @@ void CrossMappingGPU::predict(std::vector<float> &rhos,
     }
     t1.stop();
 
+    t2.start();
     // Compute Simplex projection from the library to every target
     for (auto i = 0; i < ds.timeseries.size(); i++) {
         const auto E = optimal_E[i];

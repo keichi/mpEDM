@@ -14,8 +14,8 @@
 class CrossMappingGPU : public CrossMapping
 {
 public:
-    CrossMappingGPU(uint32_t E_max, uint32_t tau, uint32_t Tp, bool verbose)
-        : CrossMapping(E_max, tau, Tp, verbose),
+    CrossMappingGPU(uint32_t max_E, uint32_t tau, uint32_t Tp, bool verbose)
+        : CrossMapping(max_E, tau, Tp, verbose),
           knn(new NearestNeighborsGPU(tau, Tp, verbose))
     {
         n_devs = af::getDeviceCount();
@@ -35,6 +35,7 @@ public:
 
 protected:
     std::unique_ptr<NearestNeighbors> knn;
+    uint32_t n_devs;
 };
 
 #endif
