@@ -6,10 +6,6 @@
 #endif
 
 #include <argh.h>
-#ifdef ENABLE_GPU_KERNEL
-#include <arrayfire.h>
-#include <concurrentqueue.h>
-#endif
 
 #include "nearest_neighbors.h"
 #include "nearest_neighbors_cpu.h"
@@ -46,65 +42,6 @@ void run_common(const Dataset &ds, uint32_t max_E, uint32_t tau, uint32_t top_k,
     }
 }
 
-#ifdef ENABLE_GPU_KERNEL
-
-moodycamel::ConcurrentQueue<uint32_t> work_queue;
-std::mutex mtx;
-
-void worker(uint32_t dev, const Dataset &ds, uint32_t max_E, uint32_t tau,
-            uint32_t top_k, bool verbose)
-{
-    auto kernel = std::unique_ptr<NearestNeighbors>(
-        new NearestNeighborsCPU(tau, 1, verbose));
-
-    af::setDevice(dev);
-
-    auto i = 0;
-
-    while (work_queue.try_dequeue(i)) {
-        Timer timer;
-        timer.start();
-
-        LUT out;
-
-        for (auto E = 1; E <= max_E; E++) {
-            kernel->compute_lut(out, ds.timeseries[i], ds.timeseries[i], E,
-                                top_k);
-        }
-
-        timer.stop();
-
-        if (verbose) {
-            std::lock_guard<std::mutex> lock(mtx);
-            std::cout << "Computed LUT for column #" << i << " in "
-                      << timer.elapsed() << " [ms]" << std::endl;
-        }
-    }
-}
-
-void run_multi_gpu(const Dataset &ds, uint32_t max_E, uint32_t tau,
-                   uint32_t top_k, bool verbose)
-{
-    for (auto i = 0; i < ds.timeseries.size(); i++) {
-        work_queue.enqueue(i);
-    }
-
-    std::vector<std::thread> threads;
-
-    auto dev_count = af::getDeviceCount();
-
-    for (auto dev = 0; dev < dev_count; dev++) {
-        threads.push_back(
-            std::thread(worker, dev, ds, max_E, tau, top_k, verbose));
-    }
-
-    for (auto &thread : threads) {
-        thread.join();
-    }
-}
-
-#endif
-
 void usage(const std::string &app_name)
 {
     std::string msg =
@@ -118,7 +55,7 @@ void usage(const std::string &app_name)
         "  -t, --tau arg    Lag (default: 1)\n"
         "  -e, --maxe arg   Maximum embedding dimension (default: 20)\n"
         "  -k, --topk arg   Number of neighbors to find (default: 100)\n"
-        "  -x, --kernel arg Kernel type {cpu|gpu|multigpu} (default: cpu)\n"
+        "  -x, --kernel arg Kernel type {cpu|gpu} (default: cpu)\n"
         "  -v, --verbose    Enable verbose logging (default: false)\n"
         "  -h, --help       Show help";
 
@@ -188,10 +125,6 @@ int main(int argc, char *argv[])
         std::cout << "Using GPU kNN kernel" << std::endl;
 
         run_common<NearestNeighborsGPU>(ds, max_E, tau, top_k, verbose);
-    } else if (kernel_type == "multigpu") {
-        std::cout << "Using Multi-GPU kNN kernel" << std::endl;
-
-        run_multi_gpu(ds, max_E, tau, top_k, verbose);
     }
 #endif
     else {

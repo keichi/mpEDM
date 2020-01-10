@@ -4,9 +4,6 @@
 [submodule "thirdparty/argh"]
 	path = src/thirdparty/argh
 	url = https://github.com/adishavit/argh.git
-[submodule "thirdparty/concurrentqueue"]
-	path = src/thirdparty/concurrentqueue
-	url = https://github.com/cameron314/concurrentqueue.git
 [submodule "src/json"]
 	path = src/thirdparty/json
 	url = https://github.com/nlohmann/json.git

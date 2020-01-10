@@ -41,12 +41,9 @@ if(ArrayFire_FOUND)
     # Need to force CPU backend since OpenCL backend on macOS has bugs
     # See: https://github.com/arrayfire/arrayfire/issues/2687
     target_link_libraries(cuedm PRIVATE ArrayFire::afcpu)
-    target_link_libraries(knn_bench PRIVATE ArrayFire::afcpu)
   else()
     target_link_libraries(cuedm PRIVATE ArrayFire::af)
-    target_link_libraries(knn_bench PRIVATE ArrayFire::af)
   endif()
-  target_include_directories(knn_bench PRIVATE src/thirdparty/concurrentqueue)
 
   target_sources(cuedm PRIVATE src/nearest_neighbors_gpu.cc src/simplex_gpu.cc
                  src/cross_mapping_gpu.cc src/embedding_dim_gpu.cc)
