@@ -1,8 +1,8 @@
 #ifndef __EMBEDDING_DIM_GPU_H__
 #define __EMBEDDING_DIM_GPU_H__
 
-#include <memory>
 #include <arrayfire.h>
+#include <memory>
 
 #include "embedding_dim.h"
 #include "lut.h"
