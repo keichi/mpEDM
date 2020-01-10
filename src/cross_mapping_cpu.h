@@ -11,10 +11,10 @@
 class CrossMappingCPU : public CrossMapping
 {
 public:
-    CrossMappingCPU(uint32_t E_max, uint32_t tau, uint32_t Tp, bool verbose)
-        : CrossMapping(E_max, tau, Tp, verbose),
+    CrossMappingCPU(uint32_t max_E, uint32_t tau, uint32_t Tp, bool verbose)
+        : CrossMapping(max_E, tau, Tp, verbose),
           knn(new NearestNeighborsCPU(tau, Tp, verbose)),
-          simplex(new SimplexCPU(tau, Tp, verbose)), luts(E_max)
+          simplex(new SimplexCPU(tau, Tp, verbose)), luts(max_E)
     {
     }
 

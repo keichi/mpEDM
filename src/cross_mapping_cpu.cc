@@ -27,16 +27,16 @@ void CrossMappingCPU::predict(std::vector<float> &rhos,
 {
     Timer t1, t2;
 
+    // Compute k-NN lookup tables for library timeseries
     t1.start();
-    // Compute lookup tables for library timeseries
-    for (auto E = 1; E <= E_max; E++) {
+    for (auto E = 1; E <= max_E; E++) {
         knn->compute_lut(luts[E - 1], library, library, E);
         luts[E - 1].normalize();
     }
     t1.stop();
 
-    t2.start();
     // Compute Simplex projection from the library to every target
+    t2.start();
     #pragma omp parallel
     {
         std::vector<float> buffer;

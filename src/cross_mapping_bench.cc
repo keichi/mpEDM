@@ -8,57 +8,38 @@
 
 #include "cross_mapping_cpu.h"
 #include "dataset.h"
+#include "embedding_dim_cpu.h"
 #include "lut.h"
 #include "nearest_neighbors_cpu.h"
 #include "simplex_cpu.h"
 #ifdef ENABLE_GPU_KERNEL
 #include "cross_mapping_gpu.h"
+#include "embedding_dim_gpu.h"
 #include "nearest_neighbors_gpu.h"
 #include "simplex_gpu.h"
 #endif
 #include "stats.h"
 #include "timer.h"
 
-template <class T, class U>
-void simplex_projection(std::vector<uint32_t> &optmal_E, const Dataset &ds)
+template <class T>
+void find_embedding_dim(std::vector<uint32_t> &optmal_E, const Dataset &ds,
+                        bool verbose)
 {
-    LUT lut;
-
-    auto knn = std::unique_ptr<NearestNeighbors>(new T(1, 1, true));
-    auto simplex = std::unique_ptr<Simplex>(new U(1, 1, true));
+    // max_E=20, tau=1, Tp=1
+    auto embedding_dim = std::unique_ptr<EmbeddingDim>(new T(20, 1, 1, true));
 
     optmal_E.resize(ds.n_cols());
 
     for (auto i = 0; i < ds.n_cols(); i++) {
         const Timeseries ts = ds.timeseries[i];
-        // Split input into two halves
-        const Timeseries library(ts.data(), ts.size() / 2);
-        const Timeseries target(ts.data() + ts.size() / 2, ts.size() / 2);
-        Timeseries prediction;
-        Timeseries shifted_target;
+        const auto best_E = embedding_dim->run(ts);
 
-        std::vector<float> rhos;
-        std::vector<float> buffer;
-
-        for (auto E = 1; E <= 20; E++) {
-            knn->compute_lut(lut, library, target, E, E + 1);
-            lut.normalize();
-
-            simplex->predict(prediction, buffer, lut, library, E);
-            simplex->shift_target(shifted_target, target, E);
-
-            const float rho = corrcoef(prediction, shifted_target);
-
-            rhos.push_back(rho);
+        if (verbose) {
+            std::cout << "Optimal E for column #" << i << " is " << best_E
+                      << std::endl;
         }
 
-        const auto it = std::max_element(rhos.begin(), rhos.end());
-        const auto maxE = it - rhos.begin() + 1;
-
-        std::cout << "Optimal E for column #" << i << " is " << maxE
-                  << std::endl;
-
-        optmal_E[i] = maxE;
+        optmal_E[i] = best_E;
     }
 }
 
@@ -66,7 +47,7 @@ template <class T>
 void cross_mapping(const Dataset &ds, const std::vector<uint32_t> &optimal_E,
                    bool verbose)
 {
-    // E_max=20, tau=1, Tp=0
+    // max_E=20, tau=1, Tp=0
     auto xmap = std::unique_ptr<CrossMapping>(new T(20, 1, 0, verbose));
 
     std::vector<float> rhos;
@@ -116,8 +97,8 @@ int main(int argc, char *argv[])
     cmdl({"t", "tau"}, 1) >> tau;
     uint32_t Tp;
     cmdl({"p", "Tp"}, 1) >> Tp;
-    uint32_t E_max;
-    cmdl({"e", "emax"}, 20) >> E_max;
+    uint32_t max_E;
+    cmdl({"e", "emax"}, 20) >> max_E;
     std::string kernel_type;
     cmdl({"x", "kernel"}, "cpu") >> kernel_type;
     bool verbose = cmdl[{"v", "verbose"}];
@@ -144,13 +125,13 @@ int main(int argc, char *argv[])
     if (kernel_type == "cpu") {
         std::cout << "Using CPU Simplex kernel" << std::endl;
 
-        simplex_projection<NearestNeighborsCPU, SimplexCPU>(optimal_E, ds);
+        find_embedding_dim<EmbeddingDimCPU>(optimal_E, ds, verbose);
     }
 #ifdef ENABLE_GPU_KERNEL
     else if (kernel_type == "gpu") {
         std::cout << "Using GPU Simplex kernel" << std::endl;
 
-        simplex_projection<NearestNeighborsGPU, SimplexGPU>(optimal_E, ds);
+        find_embedding_dim<EmbeddingDimGPU>(optimal_E, ds, verbose);
     }
 #endif
     else {
@@ -166,13 +147,13 @@ int main(int argc, char *argv[])
     timer_xmap.start();
 
     if (kernel_type == "cpu") {
-        std::cout << "Using CPU Cross Mapping kernel" << std::endl;
+        std::cout << "Using CPU cross mapping kernel" << std::endl;
 
         cross_mapping<CrossMappingCPU>(ds, optimal_E, verbose);
     }
 #ifdef ENABLE_GPU_KERNEL
     else if (kernel_type == "gpu") {
-        std::cout << "Using GPU Cross Mapping kernel" << std::endl;
+        std::cout << "Using GPU cross mapping kernel" << std::endl;
 
         cross_mapping<CrossMappingGPU>(ds, optimal_E, verbose);
     }

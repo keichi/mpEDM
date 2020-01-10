@@ -19,7 +19,7 @@
 #include "timer.h"
 
 template <class T>
-void run_common(const Dataset &ds, uint32_t E_max, uint32_t tau, uint32_t top_k,
+void run_common(const Dataset &ds, uint32_t max_E, uint32_t tau, uint32_t top_k,
                 bool verbose)
 {
     auto kernel = std::unique_ptr<NearestNeighbors>(new T(tau, 1, verbose));
@@ -32,7 +32,7 @@ void run_common(const Dataset &ds, uint32_t E_max, uint32_t tau, uint32_t top_k,
 
         LUT out;
 
-        for (auto E = 1; E <= E_max; E++) {
+        for (auto E = 1; E <= max_E; E++) {
             kernel->compute_lut(out, ts, ts, E, top_k);
         }
 
@@ -51,7 +51,7 @@ void run_common(const Dataset &ds, uint32_t E_max, uint32_t tau, uint32_t top_k,
 moodycamel::ConcurrentQueue<uint32_t> work_queue;
 std::mutex mtx;
 
-void worker(uint32_t dev, const Dataset &ds, uint32_t E_max, uint32_t tau,
+void worker(uint32_t dev, const Dataset &ds, uint32_t max_E, uint32_t tau,
             uint32_t top_k, bool verbose)
 {
     auto kernel = std::unique_ptr<NearestNeighbors>(
@@ -67,7 +67,7 @@ void worker(uint32_t dev, const Dataset &ds, uint32_t E_max, uint32_t tau,
 
         LUT out;
 
-        for (auto E = 1; E <= E_max; E++) {
+        for (auto E = 1; E <= max_E; E++) {
             kernel->compute_lut(out, ds.timeseries[i], ds.timeseries[i], E,
                                 top_k);
         }
@@ -82,7 +82,7 @@ void worker(uint32_t dev, const Dataset &ds, uint32_t E_max, uint32_t tau,
     }
 }
 
-void run_multi_gpu(const Dataset &ds, uint32_t E_max, uint32_t tau,
+void run_multi_gpu(const Dataset &ds, uint32_t max_E, uint32_t tau,
                    uint32_t top_k, bool verbose)
 {
     for (auto i = 0; i < ds.timeseries.size(); i++) {
@@ -95,7 +95,7 @@ void run_multi_gpu(const Dataset &ds, uint32_t E_max, uint32_t tau,
 
     for (auto dev = 0; dev < dev_count; dev++) {
         threads.push_back(
-            std::thread(worker, dev, ds, E_max, tau, top_k, verbose));
+            std::thread(worker, dev, ds, max_E, tau, top_k, verbose));
     }
 
     for (auto &thread : threads) {
@@ -145,8 +145,8 @@ int main(int argc, char *argv[])
     std::string fname = cmdl[1];
     int tau;
     cmdl({"t", "tau"}, 1) >> tau;
-    int E_max;
-    cmdl({"e", "emax"}, 20) >> E_max;
+    int max_E;
+    cmdl({"e", "emax"}, 20) >> max_E;
     int top_k;
     cmdl({"k", "topk"}, 100) >> top_k;
     std::string kernel_type;
@@ -168,7 +168,7 @@ int main(int argc, char *argv[])
 
     timer_tot.start();
 
-    int n = ds.n_rows() - (E_max - 1) * tau;
+    int n = ds.n_rows() - (max_E - 1) * tau;
     if (n <= 0) {
         std::cerr << "E or tau is too large" << std::endl;
         return 1;
@@ -181,17 +181,17 @@ int main(int argc, char *argv[])
     if (kernel_type == "cpu") {
         std::cout << "Using CPU kNN kernel" << std::endl;
 
-        run_common<NearestNeighborsCPU>(ds, E_max, tau, top_k, verbose);
+        run_common<NearestNeighborsCPU>(ds, max_E, tau, top_k, verbose);
     }
 #ifdef ENABLE_GPU_KERNEL
     else if (kernel_type == "gpu") {
         std::cout << "Using GPU kNN kernel" << std::endl;
 
-        run_common<NearestNeighborsGPU>(ds, E_max, tau, top_k, verbose);
+        run_common<NearestNeighborsGPU>(ds, max_E, tau, top_k, verbose);
     } else if (kernel_type == "multigpu") {
         std::cout << "Using Multi-GPU kNN kernel" << std::endl;
 
-        run_multi_gpu(ds, E_max, tau, top_k, verbose);
+        run_multi_gpu(ds, max_E, tau, top_k, verbose);
     }
 #endif
     else {
