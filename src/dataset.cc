@@ -25,7 +25,7 @@ void Dataset::load(const std::string &path)
     }
 #endif
     else {
-        throw std::invalid_argument("Unknown file type: " + path);
+        throw std::invalid_argument("Unknown file type " + path);
     }
 
     create_timeseries();
@@ -36,6 +36,10 @@ void Dataset::load_csv(const std::string &path)
     std::ifstream ifs(path);
     std::string line;
     std::vector<std::vector<float>> columns;
+
+    if (!ifs) {
+        throw std::invalid_argument("Failed to open file " + path);
+    }
 
     _n_rows = 0;
     _n_cols = 0;
