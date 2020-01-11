@@ -1,11 +1,8 @@
 #include <algorithm>
 #include <iostream>
+#include <memory>
 
 #include <argh.h>
-#include <memory>
-#ifdef ENABLE_GPU_KERNEL
-// #include <arrayfire.h>
-#endif
 
 #include "dataset.h"
 #include "embedding_dim_cpu.h"

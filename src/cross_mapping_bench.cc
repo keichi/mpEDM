@@ -6,14 +6,9 @@
 #include "cross_mapping_cpu.h"
 #include "dataset.h"
 #include "embedding_dim_cpu.h"
-#include "lut.h"
-#include "nearest_neighbors_cpu.h"
-#include "simplex_cpu.h"
 #ifdef ENABLE_GPU_KERNEL
 #include "cross_mapping_gpu.h"
 #include "embedding_dim_gpu.h"
-#include "nearest_neighbors_gpu.h"
-#include "simplex_gpu.h"
 #endif
 #include "stats.h"
 #include "timer.h"
