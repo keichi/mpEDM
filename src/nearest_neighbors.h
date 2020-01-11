@@ -1,6 +1,8 @@
 #ifndef __NEAREST_NEIGHBORS_H__
 #define __NEAREST_NEIGHBORS_H__
 
+#include <cstdint>
+
 #include "dataset.h"
 #include "lut.h"
 

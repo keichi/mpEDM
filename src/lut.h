@@ -1,6 +1,7 @@
 #ifndef __LUT_HPP__
 #define __LUT_HPP__
 
+#include <cstdint>
 #include <vector>
 
 class LUT
