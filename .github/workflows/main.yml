@@ -16,7 +16,7 @@ jobs:
       with:
         submodules: true
     - name: Install dependencies
-      run: sudo apt-get install -y libopenmpi-dev libhdf5-dev
+      run: sudo apt-get update && sudo apt-get install -y libopenmpi-dev libhdf5-dev
     - name: Install ArrayFire
       run: |
         wget https://arrayfire.s3.amazonaws.com/3.6.4/ArrayFire-v3.6.4_Linux_x86_64.sh
@@ -42,7 +42,7 @@ jobs:
       with:
         submodules: true
     - name: Install dependencies
-      run: sudo apt-get install -y libopenmpi-dev libhdf5-dev
+      run: sudo apt-get update && sudo apt-get install -y libopenmpi-dev libhdf5-dev
     - name: Run cmake
       run: |
         mkdir build
@@ -80,7 +80,7 @@ jobs:
     steps:
     - uses: actions/checkout@v1
     - name: Install clang-format
-      run: sudo apt-get install -y clang-format-8
+      run: sudo apt-get update && sudo apt-get install -y clang-format-8
     - name: Run clang-format
       run: ./scripts/run-clang-format.py -r src --clang-format-executable $(which clang-format-8)
 
@@ -89,6 +89,6 @@ jobs:
     steps:
     - uses: actions/checkout@v1
     - name: Install cppcheck
-      run: sudo apt-get install -y cppcheck
+      run: sudo apt-get update && sudo apt-get install -y cppcheck
     - name: Run cppcheck
       run: cppcheck --enable=all --inline-suppr -i src/thirdparty src
