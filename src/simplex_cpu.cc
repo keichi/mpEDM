@@ -5,8 +5,8 @@ void SimplexCPU::predict(Timeseries &prediction, std::vector<float> &buffer,
 {
     const auto shift = (E - 1) * tau + Tp;
 
-    std::fill(buffer.begin(), buffer.end(), 0);
     buffer.resize(lut.n_rows());
+    std::fill(buffer.begin(), buffer.end(), 0);
 
     for (auto i = 0u; i < lut.n_rows(); i++) {
         for (auto j = 0u; j < E + 1; j++) {
