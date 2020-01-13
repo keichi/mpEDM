@@ -34,8 +34,8 @@ uint32_t EmbeddingDimGPU::run(const Timeseries &ts)
         af::setDevice(dev_id);
 
         // Split input into two halves
-        const Timeseries library(ts.data(), ts.size() / 2);
-        const Timeseries target(ts.data() + ts.size() / 2, ts.size() / 2);
+        const Timeseries library = ts.slice(0, ts.size() / 2);
+        const Timeseries target = ts.slice(ts.size() / 2);
         Timeseries prediction;
         Timeseries shifted_target;
 

@@ -26,9 +26,8 @@ public:
                               const Timeseries &target, uint32_t E)
     {
         const auto shift = (E - 1) * tau + Tp;
-        const auto n_prediction = target.size() - shift;
 
-        shifted_target = Timeseries(target.data() + shift, n_prediction);
+        shifted_target = target.slice(shift);
     }
 
 protected:

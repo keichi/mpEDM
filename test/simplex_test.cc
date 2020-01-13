@@ -20,9 +20,10 @@ template <class T, class U> void simplex_test_common(int E)
     ds1.load("simplex_test_data.csv");
     ds2.load("simplex_test_validation_E" + std::to_string(E) + ".csv");
 
-    Timeseries ts = ds1.timeseries[0];
-    Timeseries library(ts.data(), ts.size() / 2);
-    Timeseries target(ts.data() + ts.size() / 2 - (E - 1) * tau, ts.size() / 2);
+    const Timeseries ts = ds1.timeseries[0];
+    const Timeseries library = ts.slice(0, ts.size() / 2);
+    const Timeseries target = ts.slice(ts.size() / 2 - (E - 1) * tau,
+                                       ts.size() - (E - 1) * tau);
     Timeseries prediction;
 
     auto knn = std::unique_ptr<NearestNeighbors>(new T(tau, Tp, true));
@@ -115,9 +116,8 @@ template <class T, class U> void embed_dim_test_common()
 
     for (auto E = 1; E <= max_E; E++) {
         const Timeseries ts = ds1.timeseries[1];
-        const Timeseries library(ts.data(), 100);
-        const Timeseries target(ts.data() + 200 - (E - 1) * tau,
-                                300 + (E - 1) * tau);
+        const Timeseries library = ts.slice(0, 100);
+        const Timeseries target = ts.slice(200 - (E - 1) * tau, 500);
 
         knn->compute_lut(lut, library, target, E);
         lut.normalize();

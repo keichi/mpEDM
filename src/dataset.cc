@@ -14,6 +14,24 @@
 
 #include "dataset.h"
 
+Timeseries Timeseries::slice(size_t start, size_t end) const
+{
+    if (end < start) {
+        throw std::invalid_argument("Invald slice: end < start");
+    } else if (start >= _size) {
+        throw std::invalid_argument("Invald slice: start is out of bounds");
+    } else if (end >= _size) {
+        throw std::invalid_argument("Invald slice: end is out of bounds");
+    }
+
+    return Timeseries(_data + start, end - start);
+}
+
+Timeseries Timeseries::slice(size_t start) const
+{
+    return Timeseries(_data + start, _size - start);
+}
+
 void Dataset::load(const std::string &path)
 {
     if (ends_with(path, ".csv")) {
@@ -43,6 +61,8 @@ void Dataset::load_csv(const std::string &path)
 
     _n_rows = 0;
     _n_cols = 0;
+
+    auto is_header = true;
 
     while (ifs >> line) {
         std::stringstream ss(line);

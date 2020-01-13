@@ -29,14 +29,14 @@ template <class T, class U> void cross_mapping_test_common(uint32_t E)
     auto simplex = std::unique_ptr<Simplex>(new U(tau, Tp, true));
 
     LUT lut;
-    Timeseries library = Timeseries(ds1.timeseries[1].data(),
-                                    ds1.timeseries[1].size() - (E - 1));
-    Timeseries target = Timeseries(ds1.timeseries[4].data(),
-                                   ds1.timeseries[4].size() - (E - 1));
+    const Timeseries library =
+        ds1.timeseries[1].slice(0, ds1.timeseries[1].size() - (E - 1));
+    const Timeseries target =
+        ds1.timeseries[4].slice(0, ds1.timeseries[4].size() - (E - 1));
 
     Timeseries prediction;
     Timeseries shifted_target;
-    Timeseries valid_prediction = ds2.timeseries[0];
+    const Timeseries valid_prediction = ds2.timeseries[0];
 
     knn->compute_lut(lut, library, library, E);
     lut.normalize();
