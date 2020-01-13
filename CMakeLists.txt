@@ -30,15 +30,25 @@ target_link_libraries(knn_bench PRIVATE argh)
 target_link_libraries(simplex_bench PRIVATE argh)
 target_link_libraries(cross_mapping_bench PRIVATE argh)
 
-# Enable ArrayFire backend if available
+# Enable OpenMP if available
+find_package(OpenMP)
+if(OpenMP_FOUND)
+  message(STATUS "OpenMP found, enabling multi-threading")
+
+  target_link_libraries(cuedm PRIVATE OpenMP::OpenMP_CXX)
+else()
+  message(WARNING "OpenMP was NOT found, multi-threading is disabled")
+endif()
+
+# Enable GPU backend if ArrayFire and OpenMP are available
 find_package(ArrayFire)
-if(ArrayFire_FOUND)
+if(ArrayFire_FOUND AND OpenMP_FOUND)
   message(STATUS "ArrayFire found, enabling GPU backend")
 
   add_definitions(-DENABLE_GPU_KERNEL)
 
   if(APPLE)
-    # Need to force CPU backend since OpenCL backend on macOS has bugs
+    # Need to force the CPU backend since the OpenCL backend has bugs on macOS
     # See: https://github.com/arrayfire/arrayfire/issues/2687
     target_link_libraries(cuedm PRIVATE ArrayFire::afcpu)
   else()
@@ -77,17 +87,6 @@ if(CMAKE_BUILD_TYPE STREQUAL "Release" OR CMAKE_BUILD_TYPE STREQUAL
   if(CXX_SUPPORTS_MARCH)
     add_compile_options("-march=native")
   endif()
-endif()
-
-# Enable OpenMP if available
-# For some reason, CMake fails to detect OpenMP on clang (macOS)
-find_package(OpenMP)
-if(OpenMP_FOUND)
-  message(STATUS "OpenMP found, enabling multi-threading")
-
-  target_link_libraries(cuedm PRIVATE OpenMP::OpenMP_CXX)
-else()
-  message(WARNING "OpenMP was NOT found, multi-threaading is disabled")
 endif()
 
 # Enable HDF5 reader if available
