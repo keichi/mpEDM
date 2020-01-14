@@ -40,7 +40,7 @@ uint32_t EmbeddingDimGPU::run(const Series &ts)
         Series shifted_target;
 
         #pragma omp for schedule(dynamic)
-        for (auto E = 1; E <= max_E; E++) {
+        for (auto E = 1u; E <= max_E; E++) {
             knn->compute_lut(luts[dev_id], library, target, E, E + 1);
             luts[dev_id].normalize();
 

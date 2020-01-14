@@ -28,7 +28,7 @@ void run_common(const DataFrame &df, uint32_t max_E, uint32_t tau,
 
         LUT out;
 
-        for (auto E = 1; E <= max_E; E++) {
+        for (auto E = 1u; E <= max_E; E++) {
             kernel->compute_lut(out, ts, ts, E, top_k);
         }
 

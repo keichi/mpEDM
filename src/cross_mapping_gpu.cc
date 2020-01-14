@@ -21,7 +21,7 @@ CrossMappingGPU::CrossMappingGPU(uint32_t max_E, uint32_t tau, uint32_t Tp,
 void CrossMappingGPU::run(std::vector<float> &rhos, const DataFrame &df,
                           const std::vector<uint32_t> &optimal_E)
 {
-    for (auto i = 0; i < df.n_columns(); i++) {
+    for (auto i = 0u; i < df.n_columns(); i++) {
         const Series library = df.columns[i];
 
         predict(rhos, library, df.columns, optimal_E);
@@ -55,7 +55,7 @@ void CrossMappingGPU::predict(std::vector<float> &rhos,
 
         // Compute lookup tables for library timeseries
         #pragma omp for schedule(dynamic)
-        for (auto E = 1; E <= max_E; E++) {
+        for (auto E = 1u; E <= max_E; E++) {
             knn->compute_lut(luts[E - 1], library, library, E);
             luts[E - 1].normalize();
         }
@@ -69,7 +69,7 @@ void CrossMappingGPU::predict(std::vector<float> &rhos,
         std::vector<float> buffer;
 
         #pragma omp for
-        for (auto i = 0; i < targets.size(); i++) {
+        for (auto i = 0u; i < targets.size(); i++) {
             const auto E = optimal_E[i];
 
             const Series target = targets[i];
