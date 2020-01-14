@@ -6,10 +6,6 @@
 #endif
 
 #include <argh.h>
-#ifdef ENABLE_GPU_KERNEL
-#include <arrayfire.h>
-#include <concurrentqueue.h>
-#endif
 
 #include "nearest_neighbors.h"
 #include "nearest_neighbors_cpu.h"
@@ -19,14 +15,14 @@
 #include "timer.h"
 
 template <class T>
-void run_common(const Dataset &ds, uint32_t max_E, uint32_t tau, uint32_t top_k,
-                bool verbose)
+void run_common(const DataFrame &df, uint32_t max_E, uint32_t tau,
+                uint32_t top_k, bool verbose)
 {
     auto kernel = std::unique_ptr<NearestNeighbors>(new T(tau, 1, verbose));
 
     auto i = 0;
 
-    for (const auto &ts : ds.timeseries) {
+    for (const auto &ts : df.columns) {
         Timer timer;
         timer.start();
 
@@ -46,65 +42,6 @@ void run_common(const Dataset &ds, uint32_t max_E, uint32_t tau, uint32_t top_k,
     }
 }
 
-#ifdef ENABLE_GPU_KERNEL
-
-moodycamel::ConcurrentQueue<uint32_t> work_queue;
-std::mutex mtx;
-
-void worker(uint32_t dev, const Dataset &ds, uint32_t max_E, uint32_t tau,
-            uint32_t top_k, bool verbose)
-{
-    auto kernel = std::unique_ptr<NearestNeighbors>(
-        new NearestNeighborsCPU(tau, 1, verbose));
-
-    af::setDevice(dev);
-
-    auto i = 0;
-
-    while (work_queue.try_dequeue(i)) {
-        Timer timer;
-        timer.start();
-
-        LUT out;
-
-        for (auto E = 1; E <= max_E; E++) {
-            kernel->compute_lut(out, ds.timeseries[i], ds.timeseries[i], E,
-                                top_k);
-        }
-
-        timer.stop();
-
-        if (verbose) {
-            std::lock_guard<std::mutex> lock(mtx);
-            std::cout << "Computed LUT for column #" << i << " in "
-                      << timer.elapsed() << " [ms]" << std::endl;
-        }
-    }
-}
-
-void run_multi_gpu(const Dataset &ds, uint32_t max_E, uint32_t tau,
-                   uint32_t top_k, bool verbose)
-{
-    for (auto i = 0; i < ds.timeseries.size(); i++) {
-        work_queue.enqueue(i);
-    }
-
-    std::vector<std::thread> threads;
-
-    auto dev_count = af::getDeviceCount();
-
-    for (auto dev = 0; dev < dev_count; dev++) {
-        threads.push_back(
-            std::thread(worker, dev, ds, max_E, tau, top_k, verbose));
-    }
-
-    for (auto &thread : threads) {
-        thread.join();
-    }
-}
-
-#endif
-
 void usage(const std::string &app_name)
 {
     std::string msg =
@@ -116,9 +53,9 @@ void usage(const std::string &app_name)
         app_name +
         " [OPTION...] FILE\n"
         "  -t, --tau arg    Lag (default: 1)\n"
-        "  -e, --emax arg   Maximum embedding dimension (default: 20)\n"
+        "  -e, --maxe arg   Maximum embedding dimension (default: 20)\n"
         "  -k, --topk arg   Number of neighbors to find (default: 100)\n"
-        "  -x, --kernel arg Kernel type {cpu|gpu|multigpu} (default: cpu)\n"
+        "  -x, --kernel arg Kernel type {cpu|gpu} (default: cpu)\n"
         "  -v, --verbose    Enable verbose logging (default: false)\n"
         "  -h, --help       Show help";
 
@@ -127,7 +64,7 @@ void usage(const std::string &app_name)
 
 int main(int argc, char *argv[])
 {
-    argh::parser cmdl({"-t", "--tau", "-e", "--emax", "-k", "--topk", "-x",
+    argh::parser cmdl({"-t", "--tau", "-e", "--maxe", "-k", "--topk", "-x",
                        "--kernel", "-v", "--verbose"});
     cmdl.parse(argc, argv);
 
@@ -146,7 +83,7 @@ int main(int argc, char *argv[])
     int tau;
     cmdl({"t", "tau"}, 1) >> tau;
     int max_E;
-    cmdl({"e", "emax"}, 20) >> max_E;
+    cmdl({"e", "maxe"}, 20) >> max_E;
     int top_k;
     cmdl({"k", "topk"}, 100) >> top_k;
     std::string kernel_type;
@@ -158,17 +95,17 @@ int main(int argc, char *argv[])
     Timer timer_tot;
     timer_tot.start();
 
-    Dataset ds;
-    ds.load(fname);
+    DataFrame df;
+    df.load(fname);
 
     timer_tot.stop();
 
-    std::cout << "Read " << ds.n_rows() << " rows in " << timer_tot.elapsed()
+    std::cout << "Read " << df.n_rows() << " rows in " << timer_tot.elapsed()
               << " [ms]" << std::endl;
 
     timer_tot.start();
 
-    int n = ds.n_rows() - (max_E - 1) * tau;
+    int n = df.n_rows() - (max_E - 1) * tau;
     if (n <= 0) {
         std::cerr << "E or tau is too large" << std::endl;
         return 1;
@@ -181,17 +118,13 @@ int main(int argc, char *argv[])
     if (kernel_type == "cpu") {
         std::cout << "Using CPU kNN kernel" << std::endl;
 
-        run_common<NearestNeighborsCPU>(ds, max_E, tau, top_k, verbose);
+        run_common<NearestNeighborsCPU>(df, max_E, tau, top_k, verbose);
     }
 #ifdef ENABLE_GPU_KERNEL
     else if (kernel_type == "gpu") {
         std::cout << "Using GPU kNN kernel" << std::endl;
 
-        run_common<NearestNeighborsGPU>(ds, max_E, tau, top_k, verbose);
-    } else if (kernel_type == "multigpu") {
-        std::cout << "Using Multi-GPU kNN kernel" << std::endl;
-
-        run_multi_gpu(ds, max_E, tau, top_k, verbose);
+        run_common<NearestNeighborsGPU>(df, max_E, tau, top_k, verbose);
     }
 #endif
     else {

@@ -32,7 +32,7 @@ TEST_CASE("Normalize lookup table", "[lut][cpu]")
 
     lut.normalize();
 
-    for (auto i = 0u; i < lut.n_cols() * lut.n_rows(); i++) {
+    for (auto i = 0u; i < lut.n_columns() * lut.n_rows(); i++) {
         REQUIRE(lut.distances[i] == Approx(normalized[i]));
     }
 }

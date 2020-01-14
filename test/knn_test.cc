@@ -1,7 +1,7 @@
 #define CATCH_CONFIG_MAIN
 #include <catch2/catch.hpp>
 
-#include "../src/dataset.h"
+#include "../src/dataframe.h"
 #include "../src/lut.h"
 #include "../src/nearest_neighbors_cpu.h"
 #ifdef ENABLE_GPU_KERNEL
@@ -14,22 +14,22 @@ template <class T> void knn_test_common(int E)
     const auto Tp = 0;
     const auto k = 4;
 
-    Dataset ds1, ds2;
-    ds1.load("knn_test_data.csv");
-    ds2.load("knn_test_validation_E" + std::to_string(E) + ".csv");
+    DataFrame df1, df2;
+    df1.load("knn_test_data.csv");
+    df2.load("knn_test_validation_E" + std::to_string(E) + ".csv");
 
     auto knn = std::unique_ptr<NearestNeighbors>(new T(tau, Tp, true));
     LUT lut;
 
-    knn->compute_lut(lut, ds1.timeseries[0], ds1.timeseries[0], E, k);
+    knn->compute_lut(lut, df1.columns[0], df1.columns[0], E, k);
 
-    REQUIRE(lut.n_rows() == ds1.n_rows() - (E - 1));
-    REQUIRE(lut.n_cols() == k);
+    REQUIRE(lut.n_rows() == df1.n_rows() - (E - 1));
+    REQUIRE(lut.n_columns() == k);
 
     for (auto row = 0u; row < lut.n_rows(); row++) {
-        for (auto col = 0u; col < lut.n_cols(); col++) {
-            REQUIRE(lut.distances[row * lut.n_cols() + col] ==
-                    Approx(ds2.timeseries[col][row]));
+        for (auto col = 0u; col < lut.n_columns(); col++) {
+            REQUIRE(lut.distances[row * lut.n_columns() + col] ==
+                    Approx(df2.columns[col][row]));
         }
     }
 }

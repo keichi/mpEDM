@@ -8,8 +8,20 @@
 #include "embedding_dim_gpu.h"
 #include "stats.h"
 
+EmbeddingDimGPU::EmbeddingDimGPU(uint32_t max_E, uint32_t tau, uint32_t Tp,
+                                 bool verbose)
+    : EmbeddingDim(max_E, tau, Tp, verbose),
+      knn(new NearestNeighborsGPU(tau, Tp, verbose)),
+      simplex(new SimplexCPU(tau, Tp, verbose)), rhos(max_E)
+{
+    n_devs = af::getDeviceCount();
+
+    luts.resize(n_devs);
+    buffers.resize(n_devs);
+}
+
 // clang-format off
-uint32_t EmbeddingDimGPU::run(const Timeseries &ts)
+uint32_t EmbeddingDimGPU::run(const Series &ts)
 {
     #pragma omp parallel num_threads(n_devs)
     {
@@ -22,10 +34,10 @@ uint32_t EmbeddingDimGPU::run(const Timeseries &ts)
         af::setDevice(dev_id);
 
         // Split input into two halves
-        const Timeseries library(ts.data(), ts.size() / 2);
-        const Timeseries target(ts.data() + ts.size() / 2, ts.size() / 2);
-        Timeseries prediction;
-        Timeseries shifted_target;
+        const Series library = ts.slice(0, ts.size() / 2);
+        const Series target = ts.slice(ts.size() / 2);
+        Series prediction;
+        Series shifted_target;
 
         #pragma omp for schedule(dynamic)
         for (auto E = 1; E <= max_E; E++) {

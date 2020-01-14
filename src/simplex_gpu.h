@@ -1,7 +1,7 @@
 #ifndef __SIMPLEX_GPU_H__
 #define __SIMPLEX_GPU_H__
 
-#include "dataset.h"
+#include "dataframe.h"
 #include "lut.h"
 #include "simplex.h"
 
@@ -14,8 +14,8 @@ public:
     }
     ~SimplexGPU(){};
 
-    void predict(Timeseries &prediction, std::vector<float> &buffer,
-                 const LUT &lut, const Timeseries &target, uint32_t E) override;
+    void predict(Series &prediction, std::vector<float> &buffer, const LUT &lut,
+                 const Series &target, uint32_t E) override;
 
 protected:
 };

@@ -12,9 +12,27 @@
 #include <highfive/H5File.hpp>
 #endif
 
-#include "dataset.h"
+#include "dataframe.h"
 
-void Dataset::load(const std::string &path)
+Series Series::slice(size_t start, size_t end) const
+{
+    if (end < start) {
+        throw std::invalid_argument("Invald slice: end < start");
+    } else if (start >= _size) {
+        throw std::invalid_argument("Invald slice: start is out of boundf");
+    } else if (end >= _size) {
+        throw std::invalid_argument("Invald slice: end is out of boundf");
+    }
+
+    return Series(_data + start, end - start);
+}
+
+Series Series::slice(size_t start) const
+{
+    return Series(_data + start, _size - start);
+}
+
+void DataFrame::load(const std::string &path)
 {
     if (ends_with(path, ".csv")) {
         load_csv(path);
@@ -25,20 +43,26 @@ void Dataset::load(const std::string &path)
     }
 #endif
     else {
-        throw std::invalid_argument("Unknown file type: " + path);
+        throw std::invalid_argument("Unknown file type " + path);
     }
 
     create_timeseries();
 }
 
-void Dataset::load_csv(const std::string &path)
+void DataFrame::load_csv(const std::string &path)
 {
     std::ifstream ifs(path);
     std::string line;
     std::vector<std::vector<float>> columns;
 
+    if (!ifs) {
+        throw std::invalid_argument("Failed to open file " + path);
+    }
+
     _n_rows = 0;
-    _n_cols = 0;
+    _n_columns = 0;
+
+    auto is_header = true;
 
     while (ifs >> line) {
         std::stringstream ss(line);
@@ -48,7 +72,7 @@ void Dataset::load_csv(const std::string &path)
             // Read header
             if (is_header) {
                 columns.push_back(std::vector<float>());
-                _n_cols++;
+                _n_columns++;
                 continue;
             }
 
@@ -63,37 +87,38 @@ void Dataset::load_csv(const std::string &path)
         _n_rows++;
     }
 
-    _data.resize(_n_rows * _n_cols);
-    for (auto i = 0u; i < _n_cols; i++) {
+    _data.resize(_n_rows * _n_columns);
+    for (auto i = 0u; i < _n_columns; i++) {
         std::copy(columns[i].begin(), columns[i].end(),
                   _data.begin() + i * _n_rows);
     }
 }
 
 #ifdef ENABLE_HDF5_READER
-void Dataset::load_hdf5(const std::string &path)
+void DataFrame::load_hdf5(const std::string &path)
 {
     const HighFive::File file(path, HighFive::File::ReadOnly);
     const auto dataset = file.getDataSet("/values");
     const auto shape = dataset.getDimensions();
 
-    _n_cols = shape[0];
+    _n_columns = shape[0];
     _n_rows = shape[1];
 
-    _data.resize(_n_rows * _n_cols);
+    _data.resize(_n_rows * _n_columns);
     dataset.read(_data.data());
 }
 #endif
 
-void Dataset::create_timeseries()
+void DataFrame::create_timeseries()
 {
-    timeseries.resize(_n_cols);
-    for (auto i = 0u; i < _n_cols; i++) {
-        timeseries[i] = Timeseries(_data.data() + i * _n_rows, _n_rows);
+    columns.resize(_n_columns);
+    for (auto i = 0u; i < _n_columns; i++) {
+        columns[i] = Series(_data.data() + i * _n_rows, _n_rows);
     }
 }
 
-bool Dataset::ends_with(const std::string &str, const std::string &suffix) const
+bool DataFrame::ends_with(const std::string &str,
+                          const std::string &suffix) const
 {
     if (str.size() < suffix.size()) {
         return false;

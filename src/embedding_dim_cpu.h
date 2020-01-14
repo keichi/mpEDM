@@ -18,7 +18,7 @@ public:
     {
     }
 
-    uint32_t run(const Timeseries &ts) override;
+    uint32_t run(const Series &ts) override;
 
 protected:
     std::unique_ptr<NearestNeighbors> knn;

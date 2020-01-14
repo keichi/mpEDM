@@ -1,60 +1,16 @@
 #include <algorithm>
 #include <iostream>
+#include <memory>
 
 #include <argh.h>
-#include <memory>
-#ifdef ENABLE_GPU_KERNEL
-#include <arrayfire.h>
-#endif
 
-#include "dataset.h"
-#include "nearest_neighbors.h"
-#include "nearest_neighbors_cpu.h"
-#include "simplex.h"
-#include "simplex_cpu.h"
+#include "dataframe.h"
+#include "embedding_dim_cpu.h"
 #ifdef ENABLE_GPU_KERNEL
-#include "nearest_neighbors_gpu.h"
-#include "simplex_gpu.h"
+#include "embedding_dim_gpu.h"
 #endif
 #include "stats.h"
 #include "timer.h"
-
-void simplex_projection(std::shared_ptr<NearestNeighbors> knn,
-                        std::shared_ptr<Simplex> simplex, const Timeseries &ts,
-                        uint32_t max_E)
-{
-    LUT lut;
-
-    // Split input into two halves
-    Timeseries library(ts.data(), ts.size() / 2);
-    Timeseries target(ts.data() + ts.size() / 2, ts.size() / 2);
-    // Use following to get the exact same predictions as cppEDM
-    // Timeseries target(ts.data() + ts.size() / 2 - (E - 1) * tau,
-    //                   ts.size() / 2 + (E - 1) * tau);
-    Timeseries prediction;
-    Timeseries shifted_target;
-
-    std::vector<float> rhos;
-    std::vector<float> buffer;
-
-    for (auto E = 1; E <= max_E; E++) {
-        knn->compute_lut(lut, library, target, E);
-        lut.normalize();
-
-        simplex->predict(prediction, buffer, lut, library, E);
-        simplex->shift_target(shifted_target, target, E);
-
-        const float rho = corrcoef(prediction, shifted_target);
-
-        rhos.push_back(rho);
-    }
-
-    const auto it = std::max_element(rhos.begin(), rhos.end());
-    const auto best_E = it - rhos.begin() + 1;
-    const auto best_rho = *it;
-
-    std::cout << "best E=" << best_E << " rho=" << best_rho << std::endl;
-}
 
 void usage(const std::string &app_name)
 {
@@ -67,7 +23,7 @@ void usage(const std::string &app_name)
         app_name +
         " [OPTION...] FILE\n"
         "  -t, --tau arg    Lag (default: 1)\n"
-        "  -e, --emax arg   Maximum embedding dimension (default: 20)\n"
+        "  -e, --maxe arg   Maximum embedding dimension (default: 20)\n"
         "  -p, --Tp arg     Steps to predict in future (default: 1)\n"
         "  -x, --kernel arg Kernel type {cpu|gpu|multigpu} (default: cpu)\n"
         "  -v, --verbose    Enable verbose logging (default: false)\n"
@@ -78,7 +34,7 @@ void usage(const std::string &app_name)
 
 int main(int argc, char *argv[])
 {
-    argh::parser cmdl({"-t", "--tau", "-p", "--tp", "-e", "--emax", "-x",
+    argh::parser cmdl({"-t", "--tau", "-p", "--tp", "-e", "--maxe", "-x",
                        "--kernel", "-v", "--verbose"});
     cmdl.parse(argc, argv);
 
@@ -99,7 +55,7 @@ int main(int argc, char *argv[])
     uint32_t Tp;
     cmdl({"p", "Tp"}, 1) >> Tp;
     uint32_t max_E;
-    cmdl({"e", "emax"}, 20) >> max_E;
+    cmdl({"e", "maxe"}, 20) >> max_E;
     std::string kernel_type;
     cmdl({"x", "kernel"}, "cpu") >> kernel_type;
     bool verbose = cmdl[{"v", "verbose"}];
@@ -110,33 +66,30 @@ int main(int argc, char *argv[])
 
     timer_tot.start();
 
-    Dataset ds;
-    ds.load(fname);
+    DataFrame df;
+    df.load(fname);
 
     timer_tot.stop();
 
-    std::cout << "Read " << ds.n_rows() << " rows in " << timer_tot.elapsed()
+    std::cout << "Read " << df.n_rows() << " rows in " << timer_tot.elapsed()
               << " [ms]" << std::endl;
 
     timer_tot.start();
 
-    std::shared_ptr<NearestNeighbors> knn;
-    std::shared_ptr<Simplex> simplex;
+    std::unique_ptr<EmbeddingDim> embedding_dim;
 
     if (kernel_type == "cpu") {
         std::cout << "Using CPU Simplex kernel" << std::endl;
 
-        knn = std::shared_ptr<NearestNeighbors>(
-            new NearestNeighborsCPU(tau, Tp, verbose));
-        simplex = std::shared_ptr<Simplex>(new SimplexCPU(tau, Tp, verbose));
+        embedding_dim = std::unique_ptr<EmbeddingDim>(
+            new EmbeddingDimCPU(max_E, tau, Tp, verbose));
     }
 #ifdef ENABLE_GPU_KERNEL
     else if (kernel_type == "gpu") {
         std::cout << "Using GPU Simplex kernel" << std::endl;
 
-        knn = std::shared_ptr<NearestNeighbors>(
-            new NearestNeighborsGPU(tau, Tp, verbose));
-        simplex = std::shared_ptr<Simplex>(new SimplexGPU(tau, Tp, verbose));
+        embedding_dim = std::unique_ptr<EmbeddingDim>(
+            new EmbeddingDimGPU(max_E, tau, Tp, verbose));
     }
 #endif
     else {
@@ -144,11 +97,14 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-    auto i = 0;
-    for (const auto &ts : ds.timeseries) {
-        std::cout << "Simplex projection for timeseries #" << (i++) << ": ";
+    for (auto i = 0; i < df.columns.size(); i++) {
+        std::cout << "Simplex projection for timeseries #" << i << ": ";
 
-        simplex_projection(knn, simplex, ts, max_E);
+        const auto best_E = embedding_dim->run(df.columns[i]);
+
+        if (verbose) {
+            std::cout << "best E=" << best_E << std::endl;
+        }
     }
 
     timer_tot.stop();

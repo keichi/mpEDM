@@ -3,13 +3,13 @@
 #include "embedding_dim_cpu.h"
 #include "stats.h"
 
-uint32_t EmbeddingDimCPU::run(const Timeseries &ts)
+uint32_t EmbeddingDimCPU::run(const Series &ts)
 {
     // Split input into two halves
-    const Timeseries library(ts.data(), ts.size() / 2);
-    const Timeseries target(ts.data() + ts.size() / 2, ts.size() / 2);
-    Timeseries prediction;
-    Timeseries shifted_target;
+    const Series library = ts.slice(0, ts.size() / 2);
+    const Series target = ts.slice(ts.size() / 2);
+    Series prediction;
+    Series shifted_target;
 
     for (auto E = 1; E <= max_E; E++) {
         knn->compute_lut(lut, library, target, E, E + 1);
