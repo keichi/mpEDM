@@ -21,7 +21,7 @@ EmbeddingDimGPU::EmbeddingDimGPU(uint32_t max_E, uint32_t tau, uint32_t Tp,
 }
 
 // clang-format off
-uint32_t EmbeddingDimGPU::run(const Timeseries &ts)
+uint32_t EmbeddingDimGPU::run(const Series &ts)
 {
     #pragma omp parallel num_threads(n_devs)
     {
@@ -34,10 +34,10 @@ uint32_t EmbeddingDimGPU::run(const Timeseries &ts)
         af::setDevice(dev_id);
 
         // Split input into two halves
-        const Timeseries library = ts.slice(0, ts.size() / 2);
-        const Timeseries target = ts.slice(ts.size() / 2);
-        Timeseries prediction;
-        Timeseries shifted_target;
+        const Series library = ts.slice(0, ts.size() / 2);
+        const Series target = ts.slice(ts.size() / 2);
+        Series prediction;
+        Series shifted_target;
 
         #pragma omp for schedule(dynamic)
         for (auto E = 1; E <= max_E; E++) {

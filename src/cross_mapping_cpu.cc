@@ -4,13 +4,13 @@
 #include "stats.h"
 #include "timer.h"
 
-void CrossMappingCPU::run(std::vector<float> &rhos, const Dataset &ds,
+void CrossMappingCPU::run(std::vector<float> &rhos, const DataFrame &df,
                           const std::vector<uint32_t> &optimal_E)
 {
-    for (auto i = 0; i < ds.n_cols(); i++) {
-        const Timeseries library = ds.timeseries[i];
+    for (auto i = 0; i < df.n_cols(); i++) {
+        const Series library = df.columns[i];
 
-        predict(rhos, library, ds.timeseries, optimal_E);
+        predict(rhos, library, df.columns, optimal_E);
 
         if (verbose) {
             std::cout << "Cross mapping for column #" << i << " done"
@@ -21,8 +21,8 @@ void CrossMappingCPU::run(std::vector<float> &rhos, const Dataset &ds,
 
 // clang-format off
 void CrossMappingCPU::predict(std::vector<float> &rhos,
-                              const Timeseries &library,
-                              const std::vector<Timeseries> &targets,
+                              const Series &library,
+                              const std::vector<Series> &targets,
                               const std::vector<uint32_t> &optimal_E)
 {
     Timer t1, t2;
@@ -45,9 +45,9 @@ void CrossMappingCPU::predict(std::vector<float> &rhos,
         for (auto i = 0; i < targets.size(); i++) {
             const auto E = optimal_E[i];
 
-            const Timeseries target = targets[i];
-            Timeseries prediction;
-            Timeseries shifted_target;
+            const Series target = targets[i];
+            Series prediction;
+            Series shifted_target;
 
             simplex->predict(prediction, buffer, luts[E - 1], target, E);
             simplex->shift_target(shifted_target, target, E);

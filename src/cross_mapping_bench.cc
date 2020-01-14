@@ -4,7 +4,7 @@
 #include <argh.h>
 
 #include "cross_mapping_cpu.h"
-#include "dataset.h"
+#include "dataframe.h"
 #include "embedding_dim_cpu.h"
 #ifdef ENABLE_GPU_KERNEL
 #include "cross_mapping_gpu.h"
@@ -15,16 +15,16 @@
 
 template <class T>
 void find_embedding_dim(std::vector<uint32_t> &optmal_E, uint32_t max_E,
-                        const Dataset &ds, bool verbose)
+                        const DataFrame &df, bool verbose)
 {
     // max_E=20, tau=1, Tp=1
     auto embedding_dim =
         std::unique_ptr<EmbeddingDim>(new T(max_E, 1, 1, verbose));
 
-    optmal_E.resize(ds.n_cols());
+    optmal_E.resize(df.n_cols());
 
-    for (auto i = 0; i < ds.n_cols(); i++) {
-        const Timeseries ts = ds.timeseries[i];
+    for (auto i = 0; i < df.n_cols(); i++) {
+        const Series ts = df.columns[i];
         const auto best_E = embedding_dim->run(ts);
 
         if (verbose) {
@@ -37,7 +37,7 @@ void find_embedding_dim(std::vector<uint32_t> &optmal_E, uint32_t max_E,
 }
 
 template <class T>
-void cross_mapping(uint32_t max_E, const Dataset &ds,
+void cross_mapping(uint32_t max_E, const DataFrame &df,
                    const std::vector<uint32_t> &optimal_E, bool verbose)
 {
     // max_E=20, tau=1, Tp=0
@@ -45,7 +45,7 @@ void cross_mapping(uint32_t max_E, const Dataset &ds,
 
     std::vector<float> rhos;
 
-    xmap->run(rhos, ds, optimal_E);
+    xmap->run(rhos, df, optimal_E);
 }
 
 void usage(const std::string &app_name)
@@ -103,12 +103,12 @@ int main(int argc, char *argv[])
     timer_tot.start();
     timer_io.start();
 
-    Dataset ds;
-    ds.load(fname);
+    DataFrame df;
+    df.load(fname);
 
     timer_io.stop();
 
-    std::cout << "Read dataset (" << ds.n_rows() << " rows, " << ds.n_cols()
+    std::cout << "Read dataset (" << df.n_rows() << " rows, " << df.n_cols()
               << " columns) in " << timer_io.elapsed() << " [ms]" << std::endl;
 
     std::vector<uint32_t> optimal_E;
@@ -118,13 +118,13 @@ int main(int argc, char *argv[])
     if (kernel_type == "cpu") {
         std::cout << "Using CPU Simplex kernel" << std::endl;
 
-        find_embedding_dim<EmbeddingDimCPU>(optimal_E, max_E, ds, verbose);
+        find_embedding_dim<EmbeddingDimCPU>(optimal_E, max_E, df, verbose);
     }
 #ifdef ENABLE_GPU_KERNEL
     else if (kernel_type == "gpu") {
         std::cout << "Using GPU Simplex kernel" << std::endl;
 
-        find_embedding_dim<EmbeddingDimGPU>(optimal_E, max_E, ds, verbose);
+        find_embedding_dim<EmbeddingDimGPU>(optimal_E, max_E, df, verbose);
     }
 #endif
     else {
@@ -142,13 +142,13 @@ int main(int argc, char *argv[])
     if (kernel_type == "cpu") {
         std::cout << "Using CPU cross mapping kernel" << std::endl;
 
-        cross_mapping<CrossMappingCPU>(max_E, ds, optimal_E, verbose);
+        cross_mapping<CrossMappingCPU>(max_E, df, optimal_E, verbose);
     }
 #ifdef ENABLE_GPU_KERNEL
     else if (kernel_type == "gpu") {
         std::cout << "Using GPU cross mapping kernel" << std::endl;
 
-        cross_mapping<CrossMappingGPU>(max_E, ds, optimal_E, verbose);
+        cross_mapping<CrossMappingGPU>(max_E, df, optimal_E, verbose);
     }
 #endif
     else {
@@ -166,7 +166,7 @@ int main(int argc, char *argv[])
     std::cout << "Processed dataset in " << timer_tot.elapsed() << " [ms]"
               << std::endl;
 
-    const auto xps = ds.n_cols() * ds.n_cols() * 1000 / timer_tot.elapsed();
+    const auto xps = df.n_cols() * df.n_cols() * 1000 / timer_tot.elapsed();
     std::cout << xps << " cross mappings per second" << std::endl;
 
     return 0;

@@ -1,25 +1,25 @@
-#ifndef __DATASET_H__
-#define __DATASET_H__
+#ifndef __DATAFRAME_H__
+#define __DATAFRAME_H__
 
 #include <stdexcept>
 #include <string>
 #include <vector>
 
-class Timeseries
+class Series
 {
 public:
-    Timeseries() : Timeseries(nullptr, 0) {}
-    Timeseries(const float *data, size_t size) : _data(data), _size(size) {}
-    explicit Timeseries(const std::vector<float> &vec)
-        : Timeseries(vec.data(), vec.size())
+    Series() : Series(nullptr, 0) {}
+    Series(const float *data, size_t size) : _data(data), _size(size) {}
+    explicit Series(const std::vector<float> &vec)
+        : Series(vec.data(), vec.size())
     {
     }
 
     const float *data() const { return _data; }
     size_t size() const { return _size; }
 
-    Timeseries slice(size_t start, size_t end) const;
-    Timeseries slice(size_t start) const;
+    Series slice(size_t start, size_t end) const;
+    Series slice(size_t start) const;
 
     const float &operator[](size_t i) const { return _data[i]; };
 
@@ -28,12 +28,12 @@ protected:
     size_t _size;
 };
 
-class Dataset
+class DataFrame
 {
 public:
-    std::vector<Timeseries> timeseries;
+    std::vector<Series> columns;
 
-    Dataset() : _n_rows(0), _n_cols(0) {}
+    DataFrame() : _n_rows(0), _n_cols(0) {}
 
     void load(const std::string &path);
     const float *data() const { return _data.data(); }

@@ -2,8 +2,8 @@
 
 #include "simplex_gpu.h"
 
-void SimplexGPU::predict(Timeseries &prediction, std::vector<float> &buffer,
-                         const LUT &lut, const Timeseries &target, uint32_t E)
+void SimplexGPU::predict(Series &prediction, std::vector<float> &buffer,
+                         const LUT &lut, const Series &target, uint32_t E)
 {
     const auto shift = (E - 1) * tau + Tp;
 
@@ -19,5 +19,5 @@ void SimplexGPU::predict(Timeseries &prediction, std::vector<float> &buffer,
 
     pred.host(buffer.data());
 
-    prediction = Timeseries(buffer);
+    prediction = Series(buffer);
 }

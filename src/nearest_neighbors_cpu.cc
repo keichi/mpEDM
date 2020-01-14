@@ -12,8 +12,8 @@ NearestNeighborsCPU::NearestNeighborsCPU(uint32_t tau, uint32_t Tp,
 }
 
 // clang-format off
-void NearestNeighborsCPU::compute_lut(LUT &out, const Timeseries &library,
-                                      const Timeseries &target, uint32_t E,
+void NearestNeighborsCPU::compute_lut(LUT &out, const Series &library,
+                                      const Series &target, uint32_t E,
                                       uint32_t top_k)
 {
     const auto n_library = library.size() - (E - 1) * tau - Tp;

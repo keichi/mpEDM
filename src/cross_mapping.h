@@ -3,7 +3,7 @@
 
 #include <cstdint>
 
-#include "dataset.h"
+#include "dataframe.h"
 
 class CrossMapping
 {
@@ -14,7 +14,7 @@ public:
     }
     virtual ~CrossMapping() {}
 
-    virtual void run(std::vector<float> &rhos, const Dataset &ds,
+    virtual void run(std::vector<float> &rhos, const DataFrame &df,
                      const std::vector<uint32_t> &optimal_E) = 0;
 
 protected:

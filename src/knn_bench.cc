@@ -15,14 +15,14 @@
 #include "timer.h"
 
 template <class T>
-void run_common(const Dataset &ds, uint32_t max_E, uint32_t tau, uint32_t top_k,
-                bool verbose)
+void run_common(const DataFrame &df, uint32_t max_E, uint32_t tau,
+                uint32_t top_k, bool verbose)
 {
     auto kernel = std::unique_ptr<NearestNeighbors>(new T(tau, 1, verbose));
 
     auto i = 0;
 
-    for (const auto &ts : ds.timeseries) {
+    for (const auto &ts : df.columns) {
         Timer timer;
         timer.start();
 
@@ -95,17 +95,17 @@ int main(int argc, char *argv[])
     Timer timer_tot;
     timer_tot.start();
 
-    Dataset ds;
-    ds.load(fname);
+    DataFrame df;
+    df.load(fname);
 
     timer_tot.stop();
 
-    std::cout << "Read " << ds.n_rows() << " rows in " << timer_tot.elapsed()
+    std::cout << "Read " << df.n_rows() << " rows in " << timer_tot.elapsed()
               << " [ms]" << std::endl;
 
     timer_tot.start();
 
-    int n = ds.n_rows() - (max_E - 1) * tau;
+    int n = df.n_rows() - (max_E - 1) * tau;
     if (n <= 0) {
         std::cerr << "E or tau is too large" << std::endl;
         return 1;
@@ -118,13 +118,13 @@ int main(int argc, char *argv[])
     if (kernel_type == "cpu") {
         std::cout << "Using CPU kNN kernel" << std::endl;
 
-        run_common<NearestNeighborsCPU>(ds, max_E, tau, top_k, verbose);
+        run_common<NearestNeighborsCPU>(df, max_E, tau, top_k, verbose);
     }
 #ifdef ENABLE_GPU_KERNEL
     else if (kernel_type == "gpu") {
         std::cout << "Using GPU kNN kernel" << std::endl;
 
-        run_common<NearestNeighborsGPU>(ds, max_E, tau, top_k, verbose);
+        run_common<NearestNeighborsGPU>(df, max_E, tau, top_k, verbose);
     }
 #endif
     else {

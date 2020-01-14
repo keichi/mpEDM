@@ -12,27 +12,27 @@
 #include <highfive/H5File.hpp>
 #endif
 
-#include "dataset.h"
+#include "dataframe.h"
 
-Timeseries Timeseries::slice(size_t start, size_t end) const
+Series Series::slice(size_t start, size_t end) const
 {
     if (end < start) {
         throw std::invalid_argument("Invald slice: end < start");
     } else if (start >= _size) {
-        throw std::invalid_argument("Invald slice: start is out of bounds");
+        throw std::invalid_argument("Invald slice: start is out of boundf");
     } else if (end >= _size) {
-        throw std::invalid_argument("Invald slice: end is out of bounds");
+        throw std::invalid_argument("Invald slice: end is out of boundf");
     }
 
-    return Timeseries(_data + start, end - start);
+    return Series(_data + start, end - start);
 }
 
-Timeseries Timeseries::slice(size_t start) const
+Series Series::slice(size_t start) const
 {
-    return Timeseries(_data + start, _size - start);
+    return Series(_data + start, _size - start);
 }
 
-void Dataset::load(const std::string &path)
+void DataFrame::load(const std::string &path)
 {
     if (ends_with(path, ".csv")) {
         load_csv(path);
@@ -49,7 +49,7 @@ void Dataset::load(const std::string &path)
     create_timeseries();
 }
 
-void Dataset::load_csv(const std::string &path)
+void DataFrame::load_csv(const std::string &path)
 {
     std::ifstream ifs(path);
     std::string line;
@@ -95,7 +95,7 @@ void Dataset::load_csv(const std::string &path)
 }
 
 #ifdef ENABLE_HDF5_READER
-void Dataset::load_hdf5(const std::string &path)
+void DataFrame::load_hdf5(const std::string &path)
 {
     const HighFive::File file(path, HighFive::File::ReadOnly);
     const auto dataset = file.getDataSet("/values");
@@ -109,15 +109,15 @@ void Dataset::load_hdf5(const std::string &path)
 }
 #endif
 
-void Dataset::create_timeseries()
+void DataFrame::create_timeseries()
 {
-    timeseries.resize(_n_cols);
+    columns.resize(_n_cols);
     for (auto i = 0u; i < _n_cols; i++) {
-        timeseries[i] = Timeseries(_data.data() + i * _n_rows, _n_rows);
+        columns[i] = Series(_data.data() + i * _n_rows, _n_rows);
     }
 }
 
-bool Dataset::ends_with(const std::string &str, const std::string &suffix) const
+bool DataFrame::ends_with(const std::string &str, const std::string &suffix) const
 {
     if (str.size() < suffix.size()) {
         return false;

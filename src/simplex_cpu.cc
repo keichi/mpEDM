@@ -1,7 +1,7 @@
 #include "simplex_cpu.h"
 
-void SimplexCPU::predict(Timeseries &prediction, std::vector<float> &buffer,
-                         const LUT &lut, const Timeseries &target, uint32_t E)
+void SimplexCPU::predict(Series &prediction, std::vector<float> &buffer,
+                         const LUT &lut, const Series &target, uint32_t E)
 {
     const auto shift = (E - 1) * tau + Tp;
 
@@ -16,5 +16,5 @@ void SimplexCPU::predict(Timeseries &prediction, std::vector<float> &buffer,
         }
     }
 
-    prediction = Timeseries(buffer);
+    prediction = Series(buffer);
 }

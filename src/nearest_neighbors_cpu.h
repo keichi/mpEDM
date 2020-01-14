@@ -9,9 +9,8 @@ class NearestNeighborsCPU : public NearestNeighbors
 public:
     NearestNeighborsCPU(uint32_t tau, uint32_t Tp, bool verbose);
 
-    void compute_lut(LUT &out, const Timeseries &library,
-                     const Timeseries &target, uint32_t E,
-                     uint32_t top_k) override;
+    void compute_lut(LUT &out, const Series &library, const Series &target,
+                     uint32_t E, uint32_t top_k) override;
 
 protected:
     LUT cache;

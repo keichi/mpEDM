@@ -1,7 +1,7 @@
 #define CATCH_CONFIG_MAIN
 #include <catch2/catch.hpp>
 
-#include "../src/dataset.h"
+#include "../src/dataframe.h"
 #include "../src/lut.h"
 #include "../src/nearest_neighbors_cpu.h"
 #include "../src/simplex_cpu.h"
@@ -21,22 +21,22 @@ template <class T, class U> void cross_mapping_test_common(uint32_t E)
     const auto tau = 1;
     const auto Tp = 1;
 
-    Dataset ds1, ds2;
-    ds1.load("sardine_anchovy_sst.csv");
-    ds2.load("anchovy_sst_validation_E" + std::to_string(E) + ".csv");
+    DataFrame df1, df2;
+    df1.load("sardine_anchovy_sst.csv");
+    df2.load("anchovy_sst_validation_E" + std::to_string(E) + ".csv");
 
     auto knn = std::unique_ptr<NearestNeighbors>(new T(tau, Tp, true));
     auto simplex = std::unique_ptr<Simplex>(new U(tau, Tp, true));
 
     LUT lut;
-    const Timeseries library =
-        ds1.timeseries[1].slice(0, ds1.timeseries[1].size() - (E - 1));
-    const Timeseries target =
-        ds1.timeseries[4].slice(0, ds1.timeseries[4].size() - (E - 1));
+    const Series library =
+        df1.columns[1].slice(0, df1.columns[1].size() - (E - 1));
+    const Series target =
+        df1.columns[4].slice(0, df1.columns[4].size() - (E - 1));
 
-    Timeseries prediction;
-    Timeseries shifted_target;
-    const Timeseries valid_prediction = ds2.timeseries[0];
+    Series prediction;
+    Series shifted_target;
+    const Series valid_prediction = df2.columns[0];
 
     knn->compute_lut(lut, library, library, E);
     lut.normalize();

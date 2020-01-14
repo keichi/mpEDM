@@ -1,8 +1,8 @@
 #ifndef __STATS_H__
 #define __STATS_H__
 
-#include "dataset.h"
+#include "dataframe.h"
 
-float corrcoef(const Timeseries &x, const Timeseries &y);
+float corrcoef(const Series &x, const Series &y);
 
 #endif

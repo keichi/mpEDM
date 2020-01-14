@@ -1,7 +1,7 @@
 #define CATCH_CONFIG_MAIN
 #include <catch2/catch.hpp>
 
-#include "../src/dataset.h"
+#include "../src/dataframe.h"
 #include "../src/lut.h"
 #include "../src/nearest_neighbors_cpu.h"
 #ifdef ENABLE_GPU_KERNEL
@@ -16,15 +16,15 @@ template <class T, class U> void simplex_test_common(int E)
     const auto tau = 1;
     const auto Tp = 1;
 
-    Dataset ds1, ds2;
-    ds1.load("simplex_test_data.csv");
-    ds2.load("simplex_test_validation_E" + std::to_string(E) + ".csv");
+    DataFrame df1, df2;
+    df1.load("simplex_test_data.csv");
+    df2.load("simplex_test_validation_E" + std::to_string(E) + ".csv");
 
-    const Timeseries ts = ds1.timeseries[0];
-    const Timeseries library = ts.slice(0, ts.size() / 2);
-    const Timeseries target = ts.slice(ts.size() / 2 - (E - 1) * tau,
-                                       ts.size() - (E - 1) * tau);
-    Timeseries prediction;
+    const Series ts = df1.columns[0];
+    const Series library = ts.slice(0, ts.size() / 2);
+    const Series target =
+        ts.slice(ts.size() / 2 - (E - 1) * tau, ts.size() - (E - 1) * tau);
+    Series prediction;
 
     auto knn = std::unique_ptr<NearestNeighbors>(new T(tau, Tp, true));
     auto simplex = std::unique_ptr<Simplex>(new U(tau, Tp, true));
@@ -40,10 +40,10 @@ template <class T, class U> void simplex_test_common(int E)
     float rmse = 0.0;
 
     for (size_t row = 0; row < prediction.size(); row++) {
-        rmse = pow(prediction[row] - ds2.timeseries[0][row], 2);
+        rmse = pow(prediction[row] - df2.columns[0][row], 2);
     }
 
-    REQUIRE(sqrt(rmse / ds2.n_rows()) < 0.0001);
+    REQUIRE(sqrt(rmse / df2.n_rows()) < 0.0001);
 }
 
 TEST_CASE("Compute simplex projection (CPU, E=2)", "[simplex][cpu]")
@@ -100,24 +100,24 @@ template <class T, class U> void embed_dim_test_common()
     const auto Tp = 1;
     const auto max_E = 20;
 
-    Dataset ds1, ds2;
-    ds1.load("TentMap_rEDM.csv");
-    ds2.load("TentMap_rEDM_validation.csv");
+    DataFrame df1, df2;
+    df1.load("TentMap_rEDM.csv");
+    df2.load("TentMap_rEDM_validation.csv");
 
     auto knn = std::unique_ptr<NearestNeighbors>(new T(tau, Tp, true));
     auto simplex = std::unique_ptr<Simplex>(new U(tau, Tp, true));
 
-    Timeseries prediction;
-    Timeseries shifted_target;
+    Series prediction;
+    Series shifted_target;
     std::vector<float> buffer;
     LUT lut;
     std::vector<float> rho(max_E);
     std::vector<float> rho_valid(max_E);
 
     for (auto E = 1; E <= max_E; E++) {
-        const Timeseries ts = ds1.timeseries[1];
-        const Timeseries library = ts.slice(0, 100);
-        const Timeseries target = ts.slice(200 - (E - 1) * tau, 500);
+        const Series ts = df1.columns[1];
+        const Series library = ts.slice(0, 100);
+        const Series target = ts.slice(200 - (E - 1) * tau, 500);
 
         knn->compute_lut(lut, library, target, E);
         lut.normalize();
@@ -126,7 +126,7 @@ template <class T, class U> void embed_dim_test_common()
         simplex->shift_target(shifted_target, target, E);
 
         rho[E - 1] = corrcoef(prediction, shifted_target);
-        rho_valid[E - 1] = ds2.timeseries[1][E - 1];
+        rho_valid[E - 1] = df2.columns[1][E - 1];
 
         // Check correlation coefficient
         REQUIRE(rho[E - 1] == Approx(rho_valid[E - 1]));

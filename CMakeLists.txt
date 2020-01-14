@@ -7,7 +7,7 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 project(cuEDM CXX)
 
-add_library(cuedm SHARED src/dataset.cc src/lut.cc
+add_library(cuedm SHARED src/dataframe.cc src/lut.cc
             src/nearest_neighbors_cpu.cc
             src/simplex_cpu.cc src/cross_mapping_cpu.cc
             src/embedding_dim_cpu.cc src/stats.cc)

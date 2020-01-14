@@ -3,7 +3,7 @@
 
 #include <cstdint>
 
-#include "dataset.h"
+#include "dataframe.h"
 
 class EmbeddingDim
 {
@@ -14,7 +14,7 @@ public:
     }
     virtual ~EmbeddingDim() {}
 
-    virtual uint32_t run(const Timeseries &ts) = 0;
+    virtual uint32_t run(const Series &ts) = 0;
 
 protected:
     uint32_t max_E;

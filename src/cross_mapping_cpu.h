@@ -18,11 +18,11 @@ public:
     {
     }
 
-    void run(std::vector<float> &rhos, const Dataset &ds,
+    void run(std::vector<float> &rhos, const DataFrame &df,
              const std::vector<uint32_t> &optimal_E) override;
 
-    void predict(std::vector<float> &rhos, const Timeseries &library,
-                 const std::vector<Timeseries> &targets,
+    void predict(std::vector<float> &rhos, const Series &library,
+                 const std::vector<Series> &targets,
                  const std::vector<uint32_t> &optimal_E);
 
 protected:

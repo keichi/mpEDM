@@ -1,6 +1,6 @@
 #include <iostream>
 
-#include "dataset.h"
+#include "dataframe.h"
 #include "mpi_master.h"
 #include "mpi_worker.h"
 #include "nearest_neighbors_cpu.h"
@@ -15,12 +15,12 @@ public:
     SimplexMPIMaster(const std::string &fname, MPI_Comm comm)
         : MPIMaster(comm), current_id(0)
     {
-        dataset.load(fname);
+        df.load(fname);
     }
     ~SimplexMPIMaster() {}
 
 protected:
-    Dataset dataset;
+    DataFrame df;
     uint32_t current_id;
 
     void next_task(nlohmann::json &task) override
@@ -29,10 +29,7 @@ protected:
         current_id++;
     }
 
-    bool task_left() const override
-    {
-        return current_id < dataset.timeseries.size();
-    }
+    bool task_left() const override { return current_id < df.columns.size(); }
 
     void task_done(const nlohmann::json &result) override
     {
@@ -48,12 +45,12 @@ public:
         : MPIWorker(comm), knn(new NearestNeighborsCPU(1, 1, true)),
           simplex(new SimplexCPU(1, 1, true))
     {
-        dataset.load(fname);
+        df.load(fname);
     }
     ~SimplexMPIWorker() {}
 
 protected:
-    Dataset dataset;
+    DataFrame df;
     std::unique_ptr<NearestNeighbors> knn;
     std::unique_ptr<Simplex> simplex;
 
@@ -61,13 +58,13 @@ protected:
     {
         const auto id = task["id"];
 
-        const Timeseries ts = dataset.timeseries[id];
+        const Series ts = df.columns[id];
 
         // Split input into two halves
-        const Timeseries library = ts.slice(0, ts.size() / 2);
-        const Timeseries target = ts.slice(ts.size() / 2);
-        Timeseries prediction;
-        Timeseries shifted_target;
+        const Series library = ts.slice(0, ts.size() / 2);
+        const Series target = ts.slice(ts.size() / 2);
+        Series prediction;
+        Series shifted_target;
 
         std::vector<float> rhos;
         std::vector<float> buffer;

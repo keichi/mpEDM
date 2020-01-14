@@ -13,7 +13,7 @@ class EmbeddingDimGPU : public EmbeddingDim
 public:
     EmbeddingDimGPU(uint32_t max_E, uint32_t tau, uint32_t Tp, bool verbose);
 
-    uint32_t run(const Timeseries &ts) override;
+    uint32_t run(const Series &ts) override;
 
 protected:
     std::unique_ptr<NearestNeighbors> knn;

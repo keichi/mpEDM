@@ -3,7 +3,7 @@
 #include "stats.h"
 
 // clang-format off
-float corrcoef(const Timeseries &x, const Timeseries &y)
+float corrcoef(const Series &x, const Series &y)
 {
     const auto n = std::min(x.size(), y.size());
     auto mean_x = 0.0f, mean_y = 0.0f;

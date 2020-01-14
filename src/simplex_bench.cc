@@ -4,7 +4,7 @@
 
 #include <argh.h>
 
-#include "dataset.h"
+#include "dataframe.h"
 #include "embedding_dim_cpu.h"
 #ifdef ENABLE_GPU_KERNEL
 #include "embedding_dim_gpu.h"
@@ -66,12 +66,12 @@ int main(int argc, char *argv[])
 
     timer_tot.start();
 
-    Dataset ds;
-    ds.load(fname);
+    DataFrame df;
+    df.load(fname);
 
     timer_tot.stop();
 
-    std::cout << "Read " << ds.n_rows() << " rows in " << timer_tot.elapsed()
+    std::cout << "Read " << df.n_rows() << " rows in " << timer_tot.elapsed()
               << " [ms]" << std::endl;
 
     timer_tot.start();
@@ -97,10 +97,10 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-    for (auto i = 0; i < ds.timeseries.size(); i++) {
+    for (auto i = 0; i < df.columns.size(); i++) {
         std::cout << "Simplex projection for timeseries #" << i << ": ";
 
-        const auto best_E = embedding_dim->run(ds.timeseries[i]);
+        const auto best_E = embedding_dim->run(df.columns[i]);
 
         if (verbose) {
             std::cout << "best E=" << best_E << std::endl;
