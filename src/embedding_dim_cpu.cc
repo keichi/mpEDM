@@ -11,7 +11,7 @@ uint32_t EmbeddingDimCPU::run(const Series &ts)
     Series prediction;
     Series shifted_target;
 
-    for (auto E = 1; E <= max_E; E++) {
+    for (auto E = 1u; E <= max_E; E++) {
         knn->compute_lut(lut, library, target, E, E + 1);
         lut.normalize();
 
