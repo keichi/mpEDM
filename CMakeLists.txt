@@ -7,6 +7,19 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 project(cuEDM CXX)
 
+# Enable all warnings
+# TODO Check if this works across all compilers we are using
+add_compile_options(-Wall -Werror -Wno-unknown-pragmas)
+
+# Build for native CPU architecture
+if(CMAKE_BUILD_TYPE STREQUAL "Release" OR CMAKE_BUILD_TYPE STREQUAL
+   "RelWithDebInfo")
+  check_cxx_compiler_flag(-march=native CXX_SUPPORTS_MARCH)
+  if(CXX_SUPPORTS_MARCH)
+    add_compile_options("-march=native")
+  endif()
+endif()
+
 add_library(cuedm SHARED src/dataframe.cc src/lut.cc
             src/nearest_neighbors_cpu.cc
             src/simplex_cpu.cc src/cross_mapping_cpu.cc
@@ -19,10 +32,6 @@ add_executable(cross_mapping_bench src/cross_mapping_bench.cc)
 target_link_libraries(knn_bench PRIVATE cuedm)
 target_link_libraries(simplex_bench PRIVATE cuedm)
 target_link_libraries(cross_mapping_bench PRIVATE cuedm)
-
-# Enable all warnings
-# TODO Check if this works across all compilers we are using
-add_compile_options(-Wall -Werror -Wno-unknown-pragmas)
 
 # argh
 add_subdirectory(src/thirdparty/argh)
@@ -78,15 +87,6 @@ if(MPI_CXX_FOUND)
                         nlohmann_json::nlohmann_json)
 else()
     message(WARNING "MPI was NOT found, multi-node benchmarks are disabled")
-endif()
-
-# Build for native CPU architecture
-if(CMAKE_BUILD_TYPE STREQUAL "Release" OR CMAKE_BUILD_TYPE STREQUAL
-   "RelWithDebInfo")
-  check_cxx_compiler_flag(-march=native CXX_SUPPORTS_MARCH)
-  if(CXX_SUPPORTS_MARCH)
-    add_compile_options("-march=native")
-  endif()
 endif()
 
 # Enable HDF5 reader if available
