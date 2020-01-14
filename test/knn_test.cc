@@ -24,11 +24,11 @@ template <class T> void knn_test_common(int E)
     knn->compute_lut(lut, df1.columns[0], df1.columns[0], E, k);
 
     REQUIRE(lut.n_rows() == df1.n_rows() - (E - 1));
-    REQUIRE(lut.n_cols() == k);
+    REQUIRE(lut.n_columns() == k);
 
     for (auto row = 0u; row < lut.n_rows(); row++) {
-        for (auto col = 0u; col < lut.n_cols(); col++) {
-            REQUIRE(lut.distances[row * lut.n_cols() + col] ==
+        for (auto col = 0u; col < lut.n_columns(); col++) {
+            REQUIRE(lut.distances[row * lut.n_columns() + col] ==
                     Approx(df2.columns[col][row]));
         }
     }

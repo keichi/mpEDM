@@ -21,9 +21,9 @@ void find_embedding_dim(std::vector<uint32_t> &optmal_E, uint32_t max_E,
     auto embedding_dim =
         std::unique_ptr<EmbeddingDim>(new T(max_E, 1, 1, verbose));
 
-    optmal_E.resize(df.n_cols());
+    optmal_E.resize(df.n_columns());
 
-    for (auto i = 0; i < df.n_cols(); i++) {
+    for (auto i = 0; i < df.n_columns(); i++) {
         const Series ts = df.columns[i];
         const auto best_E = embedding_dim->run(ts);
 
@@ -108,7 +108,7 @@ int main(int argc, char *argv[])
 
     timer_io.stop();
 
-    std::cout << "Read dataset (" << df.n_rows() << " rows, " << df.n_cols()
+    std::cout << "Read dataset (" << df.n_rows() << " rows, " << df.n_columns()
               << " columns) in " << timer_io.elapsed() << " [ms]" << std::endl;
 
     std::vector<uint32_t> optimal_E;
@@ -166,7 +166,8 @@ int main(int argc, char *argv[])
     std::cout << "Processed dataset in " << timer_tot.elapsed() << " [ms]"
               << std::endl;
 
-    const auto xps = df.n_cols() * df.n_cols() * 1000 / timer_tot.elapsed();
+    const auto xps =
+        df.n_columns() * df.n_columns() * 1000 / timer_tot.elapsed();
     std::cout << xps << " cross mappings per second" << std::endl;
 
     return 0;

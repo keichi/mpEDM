@@ -10,8 +10,8 @@ void SimplexCPU::predict(Series &prediction, std::vector<float> &buffer,
 
     for (auto i = 0u; i < lut.n_rows(); i++) {
         for (auto j = 0u; j < E + 1; j++) {
-            const auto idx = lut.indices[i * lut.n_cols() + j];
-            const auto dist = lut.distances[i * lut.n_cols() + j];
+            const auto idx = lut.indices[i * lut.n_columns() + j];
+            const auto dist = lut.distances[i * lut.n_columns() + j];
             buffer[i] += target[idx + shift] * dist;
         }
     }

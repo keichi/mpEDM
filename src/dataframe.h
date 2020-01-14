@@ -33,18 +33,18 @@ class DataFrame
 public:
     std::vector<Series> columns;
 
-    DataFrame() : _n_rows(0), _n_cols(0) {}
+    DataFrame() : _n_rows(0), _n_columns(0) {}
 
     void load(const std::string &path);
     const float *data() const { return _data.data(); }
     size_t n_rows() const { return _n_rows; }
-    size_t n_cols() const { return _n_cols; }
+    size_t n_columns() const { return _n_columns; }
 
 protected:
     // raw data stored in column-major
     std::vector<float> _data;
     size_t _n_rows;
-    size_t _n_cols;
+    size_t _n_columns;
 
     void load_csv(const std::string &path);
 #ifdef ENABLE_HDF5_READER

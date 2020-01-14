@@ -7,7 +7,7 @@
 void CrossMappingCPU::run(std::vector<float> &rhos, const DataFrame &df,
                           const std::vector<uint32_t> &optimal_E)
 {
-    for (auto i = 0; i < df.n_cols(); i++) {
+    for (auto i = 0; i < df.n_columns(); i++) {
         const Series library = df.columns[i];
 
         predict(rhos, library, df.columns, optimal_E);

@@ -60,7 +60,7 @@ void DataFrame::load_csv(const std::string &path)
     }
 
     _n_rows = 0;
-    _n_cols = 0;
+    _n_columns = 0;
 
     auto is_header = true;
 
@@ -72,7 +72,7 @@ void DataFrame::load_csv(const std::string &path)
             // Read header
             if (is_header) {
                 columns.push_back(std::vector<float>());
-                _n_cols++;
+                _n_columns++;
                 continue;
             }
 
@@ -87,8 +87,8 @@ void DataFrame::load_csv(const std::string &path)
         _n_rows++;
     }
 
-    _data.resize(_n_rows * _n_cols);
-    for (auto i = 0u; i < _n_cols; i++) {
+    _data.resize(_n_rows * _n_columns);
+    for (auto i = 0u; i < _n_columns; i++) {
         std::copy(columns[i].begin(), columns[i].end(),
                   _data.begin() + i * _n_rows);
     }
@@ -101,23 +101,24 @@ void DataFrame::load_hdf5(const std::string &path)
     const auto dataset = file.getDataSet("/values");
     const auto shape = dataset.getDimensions();
 
-    _n_cols = shape[0];
+    _n_columns = shape[0];
     _n_rows = shape[1];
 
-    _data.resize(_n_rows * _n_cols);
+    _data.resize(_n_rows * _n_columns);
     dataset.read(_data.data());
 }
 #endif
 
 void DataFrame::create_timeseries()
 {
-    columns.resize(_n_cols);
-    for (auto i = 0u; i < _n_cols; i++) {
+    columns.resize(_n_columns);
+    for (auto i = 0u; i < _n_columns; i++) {
         columns[i] = Series(_data.data() + i * _n_rows, _n_rows);
     }
 }
 
-bool DataFrame::ends_with(const std::string &str, const std::string &suffix) const
+bool DataFrame::ends_with(const std::string &str,
+                          const std::string &suffix) const
 {
     if (str.size() < suffix.size()) {
         return false;
