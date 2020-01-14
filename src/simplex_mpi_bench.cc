@@ -58,15 +58,13 @@ protected:
     {
         const auto id = task["id"];
 
-        const Series ts = df.columns[id];
+        const auto ts = df.columns[id];
 
         // Split input into two halves
-        const Series library = ts.slice(0, ts.size() / 2);
-        const Series target = ts.slice(ts.size() / 2);
-        Series prediction;
-        Series shifted_target;
+        const auto library = ts.slice(0, ts.size() / 2);
+        const auto target = ts.slice(ts.size() / 2);
 
-        std::vector<float> rhos;
+        std::vector<float> rhos(20);
         std::vector<float> buffer;
 
         LUT lut;
@@ -75,12 +73,10 @@ protected:
             knn->compute_lut(lut, library, target, E);
             lut.normalize();
 
-            simplex->predict(prediction, buffer, lut, library, E);
-            simplex->shift_target(shifted_target, target, E);
+            const auto prediction = simplex->predict(buffer, lut, library, E);
+            const auto shifted_target = simplex->shift_target(target, E);
 
-            const float rho = corrcoef(prediction, shifted_target);
-
-            rhos.push_back(rho);
+            rhos[E - 1] = corrcoef(prediction, shifted_target);
         }
 
         const auto it = std::max_element(rhos.begin(), rhos.end());

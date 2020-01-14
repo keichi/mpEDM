@@ -1,7 +1,7 @@
 #include "simplex_cpu.h"
 
-void SimplexCPU::predict(Series &prediction, std::vector<float> &buffer,
-                         const LUT &lut, const Series &target, uint32_t E)
+Series SimplexCPU::predict(std::vector<float> &buffer, const LUT &lut,
+                           const Series &target, uint32_t E)
 {
     buffer.resize(lut.n_rows());
     std::fill(buffer.begin(), buffer.end(), 0);
@@ -14,5 +14,5 @@ void SimplexCPU::predict(Series &prediction, std::vector<float> &buffer,
         }
     }
 
-    prediction = Series(buffer);
+    return Series(buffer);
 }

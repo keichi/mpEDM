@@ -2,8 +2,8 @@
 
 #include "simplex_gpu.h"
 
-void SimplexGPU::predict(Series &prediction, std::vector<float> &buffer,
-                         const LUT &lut, const Series &target, uint32_t E)
+Series SimplexGPU::predict(std::vector<float> &buffer, const LUT &lut,
+                           const Series &target, uint32_t E)
 {
     buffer.resize(lut.n_rows());
 
@@ -17,5 +17,5 @@ void SimplexGPU::predict(Series &prediction, std::vector<float> &buffer,
 
     pred.host(buffer.data());
 
-    prediction = Series(buffer);
+    return Series(buffer);
 }

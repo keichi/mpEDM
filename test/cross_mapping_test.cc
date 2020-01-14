@@ -29,22 +29,18 @@ template <class T, class U> void cross_mapping_test_common(uint32_t E)
     auto simplex = std::unique_ptr<Simplex>(new U(tau, Tp, true));
 
     LUT lut;
-    const Series library =
+    const auto library =
         df1.columns[1].slice(0, df1.columns[1].size() - (E - 1));
-    const Series target =
+    const auto target =
         df1.columns[4].slice(0, df1.columns[4].size() - (E - 1));
-
-    Series prediction;
-    Series shifted_target;
-    const Series valid_prediction = df2.columns[0];
+    const auto valid_prediction = df2.columns[0];
 
     knn->compute_lut(lut, library, library, E);
     lut.normalize();
 
     std::vector<float> buffer;
 
-    simplex->predict(prediction, buffer, lut, target, E);
-    simplex->shift_target(shifted_target, target, E);
+    const auto prediction = simplex->predict(buffer, lut, target, E);
 
     REQUIRE(prediction.size() == valid_prediction.size());
 

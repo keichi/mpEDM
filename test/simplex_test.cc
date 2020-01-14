@@ -20,11 +20,11 @@ template <class T, class U> void simplex_test_common(int E)
     df1.load("simplex_test_data.csv");
     df2.load("simplex_test_validation_E" + std::to_string(E) + ".csv");
 
-    const Series ts = df1.columns[0];
-    const Series library = ts.slice(0, ts.size() / 2);
-    const Series target =
+    const auto ts = df1.columns[0];
+    const auto library = ts.slice(0, ts.size() / 2);
+    const auto target =
         ts.slice(ts.size() / 2 - (E - 1) * tau, ts.size() - (E - 1) * tau);
-    Series prediction;
+    const auto valid_prediction = df2.columns[0];
 
     auto knn = std::unique_ptr<NearestNeighbors>(new T(tau, Tp, true));
     auto simplex = std::unique_ptr<Simplex>(new U(tau, Tp, true));
@@ -35,15 +35,13 @@ template <class T, class U> void simplex_test_common(int E)
 
     std::vector<float> buffer;
 
-    simplex->predict(prediction, buffer, lut, library, E);
+    const auto prediction = simplex->predict(buffer, lut, library, E);
 
-    float rmse = 0.0;
+    REQUIRE(prediction.size() == valid_prediction.size());
 
-    for (size_t row = 0; row < prediction.size(); row++) {
-        rmse = pow(prediction[row] - df2.columns[0][row], 2);
+    for (size_t i = 0; i < prediction.size(); i++) {
+        REQUIRE(prediction[i] == Approx(valid_prediction[i]).margin(1e-4f));
     }
-
-    REQUIRE(sqrt(rmse / df2.n_rows()) < 0.0001);
 }
 
 TEST_CASE("Compute simplex projection (CPU, E=2)", "[simplex][cpu]")
@@ -107,23 +105,21 @@ template <class T, class U> void embed_dim_test_common()
     auto knn = std::unique_ptr<NearestNeighbors>(new T(tau, Tp, true));
     auto simplex = std::unique_ptr<Simplex>(new U(tau, Tp, true));
 
-    Series prediction;
-    Series shifted_target;
     std::vector<float> buffer;
     LUT lut;
     std::vector<float> rho(max_E);
     std::vector<float> rho_valid(max_E);
 
     for (auto E = 1; E <= max_E; E++) {
-        const Series ts = df1.columns[1];
-        const Series library = ts.slice(0, 100);
-        const Series target = ts.slice(200 - (E - 1) * tau, 500);
+        const auto ts = df1.columns[1];
+        const auto library = ts.slice(0, 100);
+        const auto target = ts.slice(200 - (E - 1) * tau, 500);
 
         knn->compute_lut(lut, library, target, E);
         lut.normalize();
 
-        simplex->predict(prediction, buffer, lut, library, E);
-        simplex->shift_target(shifted_target, target, E);
+        const auto prediction = simplex->predict(buffer, lut, library, E);
+        const auto shifted_target = simplex->shift_target(target, E);
 
         rho[E - 1] = corrcoef(prediction, shifted_target);
         rho_valid[E - 1] = df2.columns[1][E - 1];

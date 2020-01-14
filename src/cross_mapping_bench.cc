@@ -24,7 +24,7 @@ void find_embedding_dim(std::vector<uint32_t> &optmal_E, uint32_t max_E,
     optmal_E.resize(df.n_columns());
 
     for (auto i = 0u; i < df.n_columns(); i++) {
-        const Series ts = df.columns[i];
+        const auto ts = df.columns[i];
         const auto best_E = embedding_dim->run(ts);
 
         if (verbose) {

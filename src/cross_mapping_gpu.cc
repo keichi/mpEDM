@@ -22,7 +22,7 @@ void CrossMappingGPU::run(std::vector<float> &rhos, const DataFrame &df,
                           const std::vector<uint32_t> &optimal_E)
 {
     for (auto i = 0u; i < df.n_columns(); i++) {
-        const Series library = df.columns[i];
+        const auto library = df.columns[i];
 
         predict(rhos, library, df.columns, optimal_E);
 
@@ -72,12 +72,10 @@ void CrossMappingGPU::predict(std::vector<float> &rhos,
         for (auto i = 0u; i < targets.size(); i++) {
             const auto E = optimal_E[i];
 
-            const Series target = targets[i];
-            Series prediction;
-            Series shifted_target;
-
-            simplex->predict(prediction, buffer, luts[E - 1], target, E);
-            simplex->shift_target(shifted_target, target, E);
+            const auto target = targets[i];
+            const auto prediction =
+                simplex->predict(buffer, luts[E - 1], target, E);
+            const auto shifted_target = simplex->shift_target(target, E);
 
             corrcoef(prediction, shifted_target);
         }
