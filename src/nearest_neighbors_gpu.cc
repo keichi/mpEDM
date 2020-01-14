@@ -1,5 +1,5 @@
-#include <iostream>
 #include <limits>
+#include <vector>
 
 #include <arrayfire.h>
 
@@ -18,8 +18,10 @@ void NearestNeighborsGPU::compute_lut(LUT &out, const Series &library,
                                       const Series &target, uint32_t E,
                                       uint32_t top_k)
 {
-    const auto n_library = library.size() - (E - 1) * tau - Tp;
-    const auto n_target = target.size() - (E - 1) * tau;
+    const auto shift = (E - 1) * tau + Tp;
+
+    const auto n_library = library.size() - shift;
+    const auto n_target = target.size() - shift + Tp;
     const auto p_library = library.data();
     const auto p_target = target.data();
 
@@ -80,17 +82,17 @@ void NearestNeighborsGPU::compute_lut(LUT &out, const Series &library,
     out.resize(n_target, top_k);
 
     // Remove degenerate neighbors
+    // Shift indices
     // TODO Use OpenMP?
     for (auto i = 0u; i < n_target; i++) {
-        auto shift = 0u;
-        if (p_library + idx_host[i * (top_k + 1)] == p_target + i) {
-            shift = 1u;
-        }
+        const auto offset =
+            p_library + idx_host[i * (top_k + 1)] == p_target + i ? 1u : 0u;
 
         for (auto j = 0u; j < top_k; j++) {
             out.distances[i * top_k + j] =
-                dist_host[i * (top_k + 1) + j + shift];
-            out.indices[i * top_k + j] = idx_host[i * (top_k + 1) + j + shift];
+                dist_host[i * (top_k + 1) + j + offset];
+            out.indices[i * top_k + j] =
+                idx_host[i * (top_k + 1) + j + offset] + shift;
         }
     }
 }
