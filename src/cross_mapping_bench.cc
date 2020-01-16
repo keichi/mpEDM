@@ -86,7 +86,7 @@ void usage(const std::string &app_name)
         "Usage:\n"
         "  " +
         app_name +
-        " [OPTION...] FILE\n"
+        " [OPTION...] INPUT OUTPUT\n"
         "  -t, --tau arg    Lag (default: 1)\n"
         "  -e, --maxe arg   Maximum embedding dimension (default: 20)\n"
         "  -p, --Tp arg     Steps to predict in future (default: 1)\n"
@@ -114,7 +114,15 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-    std::string fname = cmdl[1];
+    if (!cmdl(2)) {
+        std::cerr << "No output file" << std::endl;
+        usage(cmdl[0]);
+        return 1;
+    }
+
+    std::string input_fname = cmdl[1];
+    std::string output_fname = cmdl[2];
+
     uint32_t tau;
     cmdl({"t", "tau"}, 1) >> tau;
     uint32_t Tp;
@@ -127,20 +135,22 @@ int main(int argc, char *argv[])
 
     Timer timer_tot, timer_io, timer_simplex, timer_xmap;
 
-    std::cout << "Reading input dataset from " << fname << std::endl;
+    std::cout << "Input: " << input_fname << std::endl;
+    std::cout << "Output: " << output_fname << std::endl;
 
     timer_tot.start();
     timer_io.start();
 
     DataFrame df;
-    df.load(fname);
+    df.load(input_fname);
 
     timer_io.stop();
 
-    std::cout << "Read dataset (" << df.n_rows() << " rows, " << df.n_columns()
-              << " columns) in " << timer_io.elapsed() << " [ms]" << std::endl;
+    std::cout << "Read input dataset (" << df.n_rows() << " rows, "
+              << df.n_columns() << " columns) in " << timer_io.elapsed()
+              << " [ms]" << std::endl;
 
-    HighFive::File file("output.h5", HighFive::File::Overwrite);
+    HighFive::File file(output_fname, HighFive::File::Overwrite);
     std::vector<uint32_t> optimal_E;
 
     timer_simplex.start();
