@@ -18,12 +18,9 @@ public:
     {
     }
 
-    void run(std::vector<float> &rhos, const DataFrame &df,
+    void run(std::vector<float> &rhos, const Series &library,
+             const std::vector<Series> &targets,
              const std::vector<uint32_t> &optimal_E) override;
-
-    void predict(std::vector<float> &rhos, const Series &library,
-                 const std::vector<Series> &targets,
-                 const std::vector<uint32_t> &optimal_E);
 
 protected:
     std::unique_ptr<NearestNeighbors> knn;
