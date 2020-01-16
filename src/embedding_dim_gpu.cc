@@ -34,19 +34,17 @@ uint32_t EmbeddingDimGPU::run(const Series &ts)
         af::setDevice(dev_id);
 
         // Split input into two halves
-        const Series library = ts.slice(0, ts.size() / 2);
-        const Series target = ts.slice(ts.size() / 2);
-        Series prediction;
-        Series shifted_target;
+        const auto library = ts.slice(0, ts.size() / 2);
+        const auto target = ts.slice(ts.size() / 2);
 
         #pragma omp for schedule(dynamic)
         for (auto E = 1u; E <= max_E; E++) {
             knn->compute_lut(luts[dev_id], library, target, E, E + 1);
             luts[dev_id].normalize();
 
-            simplex->predict(prediction, buffers[dev_id], luts[dev_id],
-                             library, E);
-            simplex->shift_target(shifted_target, target, E);
+            const auto prediction =
+                simplex->predict(buffers[dev_id], luts[dev_id], library, E);
+            const auto shifted_target = simplex->shift_target(target, E);
 
             rhos[E - 1] = corrcoef(prediction, shifted_target);
         }

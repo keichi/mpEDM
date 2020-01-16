@@ -16,17 +16,16 @@ public:
     // Predict timeseries using Simplex projection. `prediction` is the
     // predicted rsult. The actual values are stored into `buffer`. `lut`
     // needs to be pre-computed using NearestNeighbors and normalized.
-    virtual void predict(Series &prediction, std::vector<float> &buffer,
-                         const LUT &lut, const Series &target, uint32_t E) = 0;
+    virtual Series predict(std::vector<float> &buffer, const LUT &lut,
+                           const Series &target, uint32_t E) = 0;
 
     // Shift and trim the target timeseries so that its time index matches the
     // predicted timeseries.
-    virtual void shift_target(Series &shifted_target, const Series &target,
-                              uint32_t E)
+    virtual Series shift_target(const Series &target, uint32_t E)
     {
         const auto shift = (E - 1) * tau + Tp;
 
-        shifted_target = target.slice(shift);
+        return target.slice(shift);
     }
 
 protected:

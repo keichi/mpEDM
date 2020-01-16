@@ -14,8 +14,8 @@ public:
     }
     ~SimplexGPU(){};
 
-    void predict(Series &prediction, std::vector<float> &buffer, const LUT &lut,
-                 const Series &target, uint32_t E) override;
+    Series predict(std::vector<float> &buffer, const LUT &lut,
+                   const Series &target, uint32_t E) override;
 
 protected:
 };
