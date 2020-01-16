@@ -7,10 +7,8 @@
 #include <string>
 #include <vector>
 
-#ifdef ENABLE_HDF5_READER
 #include <highfive/H5DataSet.hpp>
 #include <highfive/H5File.hpp>
-#endif
 
 #include "dataframe.h"
 
@@ -37,11 +35,9 @@ void DataFrame::load(const std::string &path)
     if (ends_with(path, ".csv")) {
         load_csv(path);
     }
-#ifdef ENABLE_HDF5_READER
     else if (ends_with(path, ".hdf5") || ends_with(path, ".h5")) {
         load_hdf5(path);
     }
-#endif
     else {
         throw std::invalid_argument("Unknown file type " + path);
     }
@@ -94,7 +90,6 @@ void DataFrame::load_csv(const std::string &path)
     }
 }
 
-#ifdef ENABLE_HDF5_READER
 void DataFrame::load_hdf5(const std::string &path)
 {
     const HighFive::File file(path, HighFive::File::ReadOnly);
@@ -107,7 +102,6 @@ void DataFrame::load_hdf5(const std::string &path)
     _data.resize(_n_rows * _n_columns);
     dataset.read(_data.data());
 }
-#endif
 
 void DataFrame::create_timeseries()
 {

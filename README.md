@@ -7,13 +7,14 @@ GPU-accelerated implementation of Empirical Dynamic Modeling
 - CMake 3.10+
 - C++ compiler that supports C++11 (Intel C++ Compiler is strongly recommended
   for building the CPU backend)
+- HDF5
 - ArrayFire 3.6.2+ for building the GPU backend
 
 ## Installation
 
 1. Install dependencies:
+    - Install [HDF5](https://www.hdfgroup.org/).
     - Install [ArrayFire](https://arrayfire.com/) if building the GPU backend.
-    - Install [HDF5](https://www.hdfgroup.org/) if building the HDF5 reader.
 
 2. Clone the source code:
     ```
@@ -31,10 +32,10 @@ GPU-accelerated implementation of Empirical Dynamic Modeling
       or `MinSizeRel`.
     - Add `-DCMAKE_CXX_COMPILER=/path/to/c++` to select the C++ compiler to use.
     - Add `-DCMAKE_CXX_FLAGS="..."` to customize the C++ compiler flags.
-    - Add `-DArrayFire_DIR=/path/to/arrayfire` if ArrayFire is not installed
-      in a standard path.
     - Add `-DHDF5_DIR=/path/to/hdf5` if HDF5 is not installed in a standard
       path.
+    - Add `-DArrayFire_DIR=/path/to/arrayfire` if ArrayFire is not installed
+      in a standard path.
 
 4. Run make:
     ```
