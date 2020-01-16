@@ -34,11 +34,9 @@ void DataFrame::load(const std::string &path)
 {
     if (ends_with(path, ".csv")) {
         load_csv(path);
-    }
-    else if (ends_with(path, ".hdf5") || ends_with(path, ".h5")) {
+    } else if (ends_with(path, ".hdf5") || ends_with(path, ".h5")) {
         load_hdf5(path);
-    }
-    else {
+    } else {
         throw std::invalid_argument("Unknown file type " + path);
     }
 

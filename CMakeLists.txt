@@ -96,6 +96,7 @@ set(HIGHFIVE_UNIT_TESTS OFF)
 set(HIGHFIVE_EXAMPLES OFF)
 add_subdirectory(src/thirdparty/highfive)
 target_link_libraries(cuedm PRIVATE HighFive)
+target_link_libraries(cross_mapping_bench PRIVATE HighFive)
 
 # Tests
 
