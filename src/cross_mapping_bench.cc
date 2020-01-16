@@ -52,6 +52,10 @@ void cross_mapping(HighFive::File file, uint32_t max_E, const DataFrame &df,
     // max_E=20, tau=1, Tp=0
     auto xmap = std::unique_ptr<CrossMapping>(new T(max_E, 1, 0, verbose));
 
+    const auto dataspace =
+        HighFive::DataSpace({df.n_columns(), df.n_columns()});
+    auto dataset = file.createDataSet<float>("/corrcoef", dataspace);
+
     for (auto i = 0u; i < df.n_columns(); i++) {
         const auto library = df.columns[i];
 
@@ -61,6 +65,8 @@ void cross_mapping(HighFive::File file, uint32_t max_E, const DataFrame &df,
             std::cout << "Cross mapping for column #" << i << " done"
                       << std::endl;
         }
+
+        dataset.select({i, 0}, {1, df.n_columns()}).write(rhos);
     }
 }
 
