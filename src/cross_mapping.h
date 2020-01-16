@@ -14,7 +14,8 @@ public:
     }
     virtual ~CrossMapping() {}
 
-    virtual void run(std::vector<float> &rhos, const DataFrame &df,
+    virtual void run(std::vector<float> &rhos, const Series &library,
+                     const std::vector<Series> &targets,
                      const std::vector<uint32_t> &optimal_E) = 0;
 
 protected:

@@ -28,7 +28,7 @@ void find_embedding_dim(std::vector<uint32_t> &optmal_E, uint32_t max_E,
         const auto best_E = embedding_dim->run(ts);
 
         if (verbose) {
-            std::cout << "Optimal E for column #" << i << " is " << best_E
+            std::cout << "Find embedding dimension for column #" << i << " done"
                       << std::endl;
         }
 
@@ -40,12 +40,21 @@ template <class T>
 void cross_mapping(uint32_t max_E, const DataFrame &df,
                    const std::vector<uint32_t> &optimal_E, bool verbose)
 {
+    std::vector<float> rhos(df.n_columns());
+
     // max_E=20, tau=1, Tp=0
     auto xmap = std::unique_ptr<CrossMapping>(new T(max_E, 1, 0, verbose));
 
-    std::vector<float> rhos;
+    for (auto i = 0u; i < df.n_columns(); i++) {
+        const auto library = df.columns[i];
 
-    xmap->run(rhos, df, optimal_E);
+        xmap->run(rhos, library, df.columns, optimal_E);
+
+        if (verbose) {
+            std::cout << "Cross mapping for column #" << i << " done"
+                      << std::endl;
+        }
+    }
 }
 
 void usage(const std::string &app_name)

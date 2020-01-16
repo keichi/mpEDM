@@ -18,26 +18,10 @@ CrossMappingGPU::CrossMappingGPU(uint32_t max_E, uint32_t tau, uint32_t Tp,
     n_devs = af::getDeviceCount();
 }
 
-void CrossMappingGPU::run(std::vector<float> &rhos, const DataFrame &df,
-                          const std::vector<uint32_t> &optimal_E)
-{
-    for (auto i = 0u; i < df.n_columns(); i++) {
-        const auto library = df.columns[i];
-
-        predict(rhos, library, df.columns, optimal_E);
-
-        if (verbose) {
-            std::cout << "Cross mapping for column #" << i << " done"
-                      << std::endl;
-        }
-    }
-}
-
 // clang-format off
-void CrossMappingGPU::predict(std::vector<float> &rhos,
-                              const Series &library,
-                              const std::vector<Series> &targets,
-                              const std::vector<uint32_t> &optimal_E)
+void CrossMappingGPU::run(std::vector<float> &rhos, const Series &library,
+                          const std::vector<Series> &targets,
+                          const std::vector<uint32_t> &optimal_E)
 {
     Timer t1, t2;
 
@@ -77,7 +61,7 @@ void CrossMappingGPU::predict(std::vector<float> &rhos,
                 simplex->predict(buffer, luts[E - 1], target, E);
             const auto shifted_target = simplex->shift_target(target, E);
 
-            corrcoef(prediction, shifted_target);
+            rhos[i] = corrcoef(prediction, shifted_target);
         }
     }
     t2.stop();
