@@ -27,13 +27,13 @@ void find_embedding_dim(HighFive::File file, std::vector<uint32_t> &optimal_E,
     optimal_E.resize(df.n_columns());
 
     for (auto i = 0u; i < df.n_columns(); i++) {
-        const auto ts = df.columns[i];
-        const auto best_E = embedding_dim->run(ts);
-
         if (verbose) {
-            std::cout << "Find embedding dimension for column #" << i << " done"
+            std::cout << "Find embedding dimension for column #" << i
                       << std::endl;
         }
+
+        const auto ts = df.columns[i];
+        const auto best_E = embedding_dim->run(ts);
 
         optimal_E[i] = best_E;
     }
@@ -59,14 +59,21 @@ void cross_mapping(HighFive::File file, uint32_t max_E, const DataFrame &df,
     for (auto i = 0u; i < df.n_columns(); i++) {
         const auto library = df.columns[i];
 
-        xmap->run(rhos, library, df.columns, optimal_E);
-
         if (verbose) {
-            std::cout << "Cross mapping for column #" << i << " done"
-                      << std::endl;
+            std::cout << "Cross mapping from column #" << i << std::endl;
         }
 
+        xmap->run(rhos, library, df.columns, optimal_E);
+
+        Timer timer_io;
+        timer_io.start();
         dataset.select({i, 0}, {1, df.n_columns()}).write(rhos);
+        timer_io.stop();
+
+        if (verbose) {
+            std::cout << "IO write: " << timer_io.elapsed() << " [ms]"
+                      << std::endl;
+        }
     }
 }
 
