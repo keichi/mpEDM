@@ -47,9 +47,8 @@ protected:
     size_t _n_columns;
 
     void load_csv(const std::string &path);
-#ifdef ENABLE_HDF5_READER
     void load_hdf5(const std::string &path);
-#endif
+
     void create_timeseries();
     bool ends_with(const std::string &full, const std::string &ending) const;
 };

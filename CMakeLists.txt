@@ -89,22 +89,14 @@ else()
     message(WARNING "MPI was NOT found, multi-node benchmarks are disabled")
 endif()
 
-# Enable HDF5 reader if available
-find_package(HDF5)
-if(HDF5_FOUND)
-  message(STATUS "HDF5 found, enabling HDF5 reader")
-
-  add_definitions(-DENABLE_HDF5_READER)
-
-  set(USE_BOOST OFF)
-  set(HIGHFIVE_UNIT_TESTS OFF)
-  set(HIGHFIVE_EXAMPLES OFF)
-  add_subdirectory(src/thirdparty/highfive)
-
-  target_link_libraries(cuedm PRIVATE HighFive)
-else()
-  message(WARNING "HDF5 was NOT found, HDF5 reader is disabled")
-endif()
+# HDF5
+find_package(HDF5 REQUIRED)
+set(USE_BOOST OFF)
+set(HIGHFIVE_UNIT_TESTS OFF)
+set(HIGHFIVE_EXAMPLES OFF)
+add_subdirectory(src/thirdparty/highfive)
+target_link_libraries(cuedm PRIVATE HighFive)
+target_link_libraries(cross_mapping_bench PRIVATE HighFive)
 
 # Tests
 
