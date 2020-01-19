@@ -16,7 +16,7 @@ public:
 
 protected:
     MPI_Comm comm;
-    std::unordered_set<int> working;
+    std::unordered_set<int> workers;
 
     virtual void next_task(nlohmann::json &task) = 0;
     virtual bool task_left() const = 0;
