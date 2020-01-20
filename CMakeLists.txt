@@ -90,6 +90,8 @@ if(MPI_CXX_FOUND)
   target_link_libraries(cross_mapping_mpi_bench PRIVATE cuedm MPI::MPI_CXX
                         nlohmann_json::nlohmann_json)
 
+  target_link_libraries(cross_mapping_mpi_bench PRIVATE argh)
+
 else()
     message(WARNING "MPI was NOT found, multi-node benchmarks are disabled")
 endif()
