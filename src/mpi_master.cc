@@ -8,8 +8,20 @@ void MPIMaster::run()
 {
     nlohmann::json task;
     MPI_Status stat;
+    int comm_size;
 
-    while (task_left() || !working.empty()) {
+    MPI_Comm_size(MPI_COMM_WORLD, &comm_size);
+
+    if (comm_size < 2) {
+        std::cout << "Need 2 or more processes" << std::endl;
+        MPI_Abort(comm, -1);
+    }
+
+    for (auto worker = 1; worker < comm_size; worker++) {
+        workers.insert(worker);
+    }
+
+    while (task_left() || !workers.empty()) {
         // Wait for any incomming message
         MPI_Probe(MPI_ANY_SOURCE, MPI_ANY_TAG, comm, &stat);
 
@@ -24,20 +36,19 @@ void MPIMaster::run()
             if (task_left()) {
                 next_task(task);
 
-                const auto send_buf = task.dump();
+                const auto send_buf = nlohmann::json::to_cbor(task);
                 // We have unprocessed tasks, we send one task to the worker
-                MPI_Send(send_buf.c_str(), send_buf.size(), MPI_BYTE, worker,
+                MPI_Send(send_buf.data(), send_buf.size(), MPI_BYTE, worker,
                          TAG_TASK_DATA, comm);
-
-                // Mark worker as working on a task
-                working.insert(worker);
             } else {
                 // Send stop msg to worker
                 MPI_Send(nullptr, 0, MPI_BYTE, worker, TAG_STOP, comm);
-            }
 
-            // Worker sent result
-        } else if (stat.MPI_TAG == TAG_RESULT) {
+                workers.erase(worker);
+            }
+        }
+        // Worker sent result
+        else if (stat.MPI_TAG == TAG_RESULT) {
             auto count = 0;
             MPI_Get_count(&stat, MPI_BYTE, &count);
 
@@ -47,15 +58,7 @@ void MPIMaster::run()
             MPI_Recv(recv_buf.data(), count, MPI_BYTE, worker, TAG_RESULT, comm,
                      &stat);
 
-            task_done(nlohmann::json::parse(recv_buf));
-
-            // Mark worker as stopped
-            working.erase(worker);
-
-            if (!task_left()) {
-                // Send stop msg to worker
-                MPI_Send(nullptr, 0, MPI_BYTE, worker, TAG_STOP, comm);
-            }
+            task_done(nlohmann::json::from_cbor(recv_buf));
         }
     }
 }

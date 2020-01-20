@@ -28,11 +28,11 @@ void MPIWorker::run()
 
             // Work on task
             nlohmann::json result;
-            do_task(result, nlohmann::json::parse(recv_buf));
+            do_task(result, nlohmann::json::from_cbor(recv_buf));
 
             // Send result to master
-            const auto send_buf = result.dump();
-            MPI_Send(send_buf.c_str(), send_buf.size(), MPI_BYTE, 0, TAG_RESULT,
+            const auto send_buf = nlohmann::json::to_cbor(result);
+            MPI_Send(send_buf.data(), send_buf.size(), MPI_BYTE, 0, TAG_RESULT,
                      comm);
 
             // We got a stop message
