@@ -29,7 +29,7 @@ jobs:
         cd build
         cmake -DCMAKE_BUILD_TYPE=Debug -DUSE_BOOST=OFF ..
     - name: Run make
-      run: make
+      run: make -j $(nproc)
       working-directory: build
     - name: Run ctest
       run: ctest
@@ -49,7 +49,7 @@ jobs:
         cd build
         cmake -DCMAKE_BUILD_TYPE=Debug -DUSE_BOOST=OFF ..
     - name: Run make
-      run: make
+      run: make -j $(nproc)
       working-directory: build
     - name: Run ctest
       run: ctest
@@ -69,7 +69,7 @@ jobs:
         cd build
         cmake -DCMAKE_BUILD_TYPE=Debug -DUSE_BOOST=OFF ..
     - name: Run make
-      run: make
+      run: make -j $(sysctl -n hw.physicalcpu_max)
       working-directory: build
     - name: Run ctest
       run: ctest
