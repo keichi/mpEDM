@@ -20,9 +20,9 @@ public:
     std::vector<uint32_t> optimal_E;
 
     EmbeddingDimMPIMaster(const DataFrame df, MPI_Comm comm)
-        : MPIMaster(comm), current_id(0), dataframe(df)
+        : MPIMaster(comm), optimal_E(df.n_columns()), current_id(0),
+          dataframe(df)
     {
-        optimal_E.resize(df.n_columns());
     }
     ~EmbeddingDimMPIMaster() {}
 
@@ -71,11 +71,6 @@ protected:
         const auto id = task["id"];
         const auto ts = dataframe.columns[id];
         const auto best_E = embedding_dim->run(ts);
-
-        if (verbose) {
-            std::cout << "Find embedding dimension for column #" << id
-                      << " done" << std::endl;
-        }
 
         result["id"] = id;
         result["E"] = best_E;
@@ -142,11 +137,6 @@ protected:
         xmap->run(rhos, library, dataframe.columns, optimal_E);
 
         result["id"] = id;
-
-        if (verbose) {
-            std::cout << "Cross mapping for column #" << id << " done"
-                      << std::endl;
-        }
     }
 };
 
