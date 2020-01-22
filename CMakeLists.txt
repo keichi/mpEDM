@@ -83,8 +83,15 @@ if(MPI_CXX_FOUND)
                         nlohmann_json::nlohmann_json)
 
   add_executable(simplex_mpi_bench src/simplex_mpi_bench.cc)
+  add_executable(cross_mapping_mpi_bench src/cross_mapping_mpi_bench.cc)
+
   target_link_libraries(simplex_mpi_bench PRIVATE cuedm MPI::MPI_CXX
                         nlohmann_json::nlohmann_json)
+  target_link_libraries(cross_mapping_mpi_bench PRIVATE cuedm MPI::MPI_CXX
+                        nlohmann_json::nlohmann_json)
+
+  target_link_libraries(cross_mapping_mpi_bench PRIVATE argh)
+
 else()
     message(WARNING "MPI was NOT found, multi-node benchmarks are disabled")
 endif()
