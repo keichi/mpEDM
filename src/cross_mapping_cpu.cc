@@ -19,23 +19,19 @@ void CrossMappingCPU::run(std::vector<float> &rhos, const Series &library,
     }
     t1.stop();
 
+    std::vector<float> buffer;
     // Compute Simplex projection from the library to every target
     t2.start();
-    #pragma omp parallel
-    {
-        std::vector<float> buffer;
+    #pragma omp parallel for private(buffer) schedule(dynamic)
+    for (auto i = 0u; i < targets.size(); i++) {
+        const auto E = optimal_E[i];
 
-        #pragma omp for
-        for (auto i = 0u; i < targets.size(); i++) {
-            const auto E = optimal_E[i];
+        const auto target = targets[i];
+        const auto prediction =
+            simplex->predict(buffer, luts[E - 1], target, E);
+        const auto shifted_target = simplex->shift_target(target, E);
 
-            const auto target = targets[i];
-            const auto prediction =
-                simplex->predict(buffer, luts[E - 1], target, E);
-            const auto shifted_target = simplex->shift_target(target, E);
-
-            rhos[i] = corrcoef(prediction, shifted_target);
-        }
+        rhos[i] = corrcoef(prediction, shifted_target);
     }
     t2.stop();
 
