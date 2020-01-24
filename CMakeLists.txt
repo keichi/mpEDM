@@ -39,6 +39,15 @@ target_link_libraries(knn_bench PRIVATE argh)
 target_link_libraries(simplex_bench PRIVATE argh)
 target_link_libraries(cross_mapping_bench PRIVATE argh)
 
+# HDF5
+find_package(HDF5 REQUIRED)
+set(USE_BOOST OFF)
+set(HIGHFIVE_UNIT_TESTS OFF)
+set(HIGHFIVE_EXAMPLES OFF)
+add_subdirectory(src/thirdparty/highfive)
+target_link_libraries(cuedm PRIVATE HighFive)
+target_link_libraries(cross_mapping_bench PRIVATE HighFive)
+
 # Enable OpenMP if available
 find_package(OpenMP)
 if(OpenMP_FOUND)
@@ -92,18 +101,15 @@ if(MPI_CXX_FOUND)
 
   target_link_libraries(cross_mapping_mpi_bench PRIVATE argh)
 
+  if(HDF5_IS_PARALLEL)
+    target_link_libraries(cross_mapping_mpi_bench PRIVATE HighFive)
+  else()
+    message(FATAL_ERROR "HDF5 is not a parallel build")
+  endif()
+
 else()
     message(WARNING "MPI was NOT found, multi-node benchmarks are disabled")
 endif()
-
-# HDF5
-find_package(HDF5 REQUIRED)
-set(USE_BOOST OFF)
-set(HIGHFIVE_UNIT_TESTS OFF)
-set(HIGHFIVE_EXAMPLES OFF)
-add_subdirectory(src/thirdparty/highfive)
-target_link_libraries(cuedm PRIVATE HighFive)
-target_link_libraries(cross_mapping_bench PRIVATE HighFive)
 
 # Tests
 
