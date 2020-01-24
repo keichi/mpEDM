@@ -142,8 +142,6 @@ protected:
 
         dataset.select({id, 0}, {1, dataframe.n_columns()}).write(rhos);
 
-        std::cout << id << " : " << rhos[0] << std::endl;
-
         result["id"] = id;
     }
 };
@@ -217,6 +215,14 @@ int main(int argc, char *argv[])
     DataFrame df;
     df.load(argv[1]);
 
+    HighFive::File file(
+        output_fname, HighFive::File::Overwrite,
+        HighFive::MPIOFileDriver(MPI_COMM_WORLD, MPI_INFO_NULL));
+
+    const auto dataspace_embedding = HighFive::DataSpace({df.n_columns()});
+    auto dataset_embedding =
+        file.createDataSet<uint32_t>("/embedding", dataspace_embedding);
+
     std::vector<uint32_t> optimal_E(df.n_columns());
 
     Timer timer;
@@ -236,18 +242,10 @@ int main(int argc, char *argv[])
 
         optimal_E = embedding_dim_master.optimal_E;
 
-        HighFive::File file(output_fname, HighFive::File::Overwrite);
-        const auto dataspace = HighFive::DataSpace::From(optimal_E);
-        auto dataset = file.createDataSet<uint32_t>("/embedding", dataspace);
-        dataset.write(optimal_E);
+        dataset_embedding.write(optimal_E);
 
         std::cout << "Processed optimal E in " << timer_embedding_dim.elapsed()
                   << " [ms]" << std::endl;
-
-        const auto dataspace_corrcoef =
-            HighFive::DataSpace({df.n_columns(), df.n_columns()});
-        auto dataset_corrcoef =
-            file.createDataSet<float>("/corrcoef", dataspace_corrcoef);
     } else {
         if (kernel_type == "cpu") {
             EmbeddingDimMPIWorker<EmbeddingDimCPU> embedding_dim_worker(
@@ -267,6 +265,11 @@ int main(int argc, char *argv[])
 
     MPI_Bcast(optimal_E.data(), optimal_E.size(), MPI_FLOAT, 0, MPI_COMM_WORLD);
 
+    const auto dataspace_corrcoef =
+        HighFive::DataSpace({df.n_columns(), df.n_columns()});
+    auto dataset_corrcoef =
+        file.createDataSet<float>("/corrcoef", dataspace_corrcoef);
+
     if (!rank) {
         CrossMappingMPIMaster cross_mapping_master(df, MPI_COMM_WORLD);
 
@@ -281,19 +284,16 @@ int main(int argc, char *argv[])
         std::cout << "Processed dataset in " << timer.elapsed() << " [ms]"
                   << std::endl;
     } else {
-        HighFive::File file(output_fname, HighFive::File::ReadWrite);
-        HighFive::DataSet dataset = file.getDataSet("/corrcoef");
-
         if (kernel_type == "cpu") {
             CrossMappingMPIWorker<CrossMappingCPU> cross_mapping_worker(
-                dataset, df, optimal_E, verbose, MPI_COMM_WORLD);
+                dataset_corrcoef, df, optimal_E, verbose, MPI_COMM_WORLD);
 
             cross_mapping_worker.run();
         }
 #ifdef ENABLE_GPU_KERNEL
         if (kernel_type == "gpu") {
             CrossMappingMPIWorker<CrossMappingGPU> cross_mapping_worker(
-                dataset, df, optimal_E, verbose, MPI_COMM_WORLD);
+                dataset_corrcoef, df, optimal_E, verbose, MPI_COMM_WORLD);
 
             cross_mapping_worker.run();
         }

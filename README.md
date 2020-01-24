@@ -7,8 +7,9 @@ GPU-accelerated implementation of Empirical Dynamic Modeling
 - CMake 3.10+
 - C++ compiler that supports C++11 (Intel C++ Compiler is strongly recommended
   for building the CPU backend)
-- HDF5
-- ArrayFire 3.6.2+ for building the GPU backend
+- HDF5 (parallel build if building the multi-node benchmarks)
+- (optional) MPI if building the multi-node benchmarks
+- (optional) ArrayFire 3.6.2+ if building the GPU backend
 
 ## Installation
 
@@ -18,7 +19,7 @@ GPU-accelerated implementation of Empirical Dynamic Modeling
 
 2. Clone the source code:
     ```
-    $ git clone --recursive git@github.com:keichi/cuEDM.git
+    $ git clone --recursive https://github.com/keichi/cuEDM.git
     ```
 
 3. Run cmake:
