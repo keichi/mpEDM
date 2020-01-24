@@ -1,6 +1,9 @@
 #include <iostream>
 
 #include <argh.h>
+#include <highfive/H5DataSet.hpp>
+#include <highfive/H5DataSpace.hpp>
+#include <highfive/H5File.hpp>
 
 #include "cross_mapping_cpu.h"
 #include "dataframe.h"
@@ -111,10 +114,10 @@ protected:
 template <class T> class CrossMappingMPIWorker : public MPIWorker
 {
 public:
-    CrossMappingMPIWorker(const DataFrame df,
+    CrossMappingMPIWorker(HighFive::DataSet dataset, const DataFrame df,
                           const std::vector<uint32_t> optimal_E, bool verbose,
                           MPI_Comm comm)
-        : MPIWorker(comm),
+        : MPIWorker(comm), dataset(dataset),
           xmap(std::unique_ptr<CrossMapping>(new T(20, 1, 0, true))),
           dataframe(df), optimal_E(optimal_E), verbose(verbose)
     {
@@ -122,6 +125,7 @@ public:
     ~CrossMappingMPIWorker() {}
 
 protected:
+    HighFive::DataSet dataset;
     std::unique_ptr<CrossMapping> xmap;
     DataFrame dataframe;
     std::vector<uint32_t> optimal_E;
@@ -135,6 +139,10 @@ protected:
         const auto library = dataframe.columns[id];
 
         xmap->run(rhos, library, dataframe.columns, optimal_E);
+
+        dataset.select({id, 0}, {1, dataframe.n_columns()}).write(rhos);
+
+        std::cout << id << " : " << rhos[0] << std::endl;
 
         result["id"] = id;
     }
@@ -177,7 +185,14 @@ int main(int argc, char *argv[])
         return 1;
     }
 
+    if (!cmdl(2)) {
+        std::cerr << "No output file" << std::endl;
+        usage(cmdl[0]);
+        return 1;
+    }
+
     std::string input_fname = cmdl[1];
+    std::string output_fname = cmdl[2];
 
     uint32_t tau;
     cmdl({"t", "tau"}, 1) >> tau;
@@ -208,6 +223,7 @@ int main(int argc, char *argv[])
 
     if (!rank) {
         std::cout << "Input: " << input_fname << std::endl;
+        std::cout << "Output: " << output_fname << std::endl;
 
         EmbeddingDimMPIMaster embedding_dim_master(df, MPI_COMM_WORLD);
 
@@ -220,8 +236,18 @@ int main(int argc, char *argv[])
 
         optimal_E = embedding_dim_master.optimal_E;
 
+        HighFive::File file(output_fname, HighFive::File::Overwrite);
+        const auto dataspace = HighFive::DataSpace::From(optimal_E);
+        auto dataset = file.createDataSet<uint32_t>("/embedding", dataspace);
+        dataset.write(optimal_E);
+
         std::cout << "Processed optimal E in " << timer_embedding_dim.elapsed()
                   << " [ms]" << std::endl;
+
+        const auto dataspace_corrcoef =
+            HighFive::DataSpace({df.n_columns(), df.n_columns()});
+        auto dataset_corrcoef =
+            file.createDataSet<float>("/corrcoef", dataspace_corrcoef);
     } else {
         if (kernel_type == "cpu") {
             EmbeddingDimMPIWorker<EmbeddingDimCPU> embedding_dim_worker(
@@ -255,16 +281,19 @@ int main(int argc, char *argv[])
         std::cout << "Processed dataset in " << timer.elapsed() << " [ms]"
                   << std::endl;
     } else {
+        HighFive::File file(output_fname, HighFive::File::ReadWrite);
+        HighFive::DataSet dataset = file.getDataSet("/corrcoef");
+
         if (kernel_type == "cpu") {
             CrossMappingMPIWorker<CrossMappingCPU> cross_mapping_worker(
-                df, optimal_E, verbose, MPI_COMM_WORLD);
+                dataset, df, optimal_E, verbose, MPI_COMM_WORLD);
 
             cross_mapping_worker.run();
         }
 #ifdef ENABLE_GPU_KERNEL
         if (kernel_type == "gpu") {
             CrossMappingMPIWorker<CrossMappingGPU> cross_mapping_worker(
-                df, optimal_E, verbose, MPI_COMM_WORLD);
+                dataset, df, optimal_E, verbose, MPI_COMM_WORLD);
 
             cross_mapping_worker.run();
         }
