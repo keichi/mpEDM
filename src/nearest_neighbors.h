@@ -3,7 +3,7 @@
 
 #include <cstdint>
 
-#include "dataframe.h"
+#include "data_frame.h"
 #include "lut.h"
 
 class NearestNeighbors

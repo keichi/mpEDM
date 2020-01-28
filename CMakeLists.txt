@@ -20,7 +20,7 @@ if(CMAKE_BUILD_TYPE STREQUAL "Release" OR CMAKE_BUILD_TYPE STREQUAL
   endif()
 endif()
 
-add_library(cuedm SHARED src/dataframe.cc src/lut.cc
+add_library(cuedm SHARED src/data_frame.cc src/lut.cc
             src/nearest_neighbors_cpu.cc
             src/simplex_cpu.cc src/cross_mapping_cpu.cc
             src/embedding_dim_cpu.cc src/stats.cc)

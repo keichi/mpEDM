@@ -7,7 +7,7 @@
 #include <highfive/H5File.hpp>
 
 #include "cross_mapping_cpu.h"
-#include "dataframe.h"
+#include "data_frame.h"
 #include "embedding_dim_cpu.h"
 #ifdef ENABLE_GPU_KERNEL
 #include "cross_mapping_gpu.h"

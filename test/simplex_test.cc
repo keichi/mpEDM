@@ -1,7 +1,7 @@
 #define CATCH_CONFIG_MAIN
 #include <catch2/catch.hpp>
 
-#include "../src/dataframe.h"
+#include "../src/data_frame.h"
 #include "../src/lut.h"
 #include "../src/nearest_neighbors_cpu.h"
 #ifdef ENABLE_GPU_KERNEL

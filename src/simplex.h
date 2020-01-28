@@ -1,7 +1,7 @@
 #ifndef __SIMPLEX_H__
 #define __SIMPLEX_H__
 
-#include "dataframe.h"
+#include "data_frame.h"
 #include "lut.h"
 
 class Simplex

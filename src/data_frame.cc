@@ -10,7 +10,7 @@
 #include <highfive/H5DataSet.hpp>
 #include <highfive/H5File.hpp>
 
-#include "dataframe.h"
+#include "data_frame.h"
 
 Series Series::slice(size_t start, size_t end) const
 {

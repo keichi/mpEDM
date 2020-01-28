@@ -4,7 +4,7 @@
 
 #include <argh.h>
 
-#include "dataframe.h"
+#include "data_frame.h"
 #include "embedding_dim_cpu.h"
 #ifdef ENABLE_GPU_KERNEL
 #include "embedding_dim_gpu.h"
