@@ -17,9 +17,9 @@ Series Series::slice(size_t start, size_t end) const
     if (end < start) {
         throw std::invalid_argument("Invald slice: end < start");
     } else if (start >= _size) {
-        throw std::invalid_argument("Invald slice: start is out of boundf");
+        throw std::invalid_argument("Invald slice: start is out of bounds");
     } else if (end >= _size) {
-        throw std::invalid_argument("Invald slice: end is out of boundf");
+        throw std::invalid_argument("Invald slice: end is out of bounds");
     }
 
     return Series(_data + start, end - start);
