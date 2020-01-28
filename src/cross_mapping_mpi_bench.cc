@@ -6,7 +6,7 @@
 #include <highfive/H5File.hpp>
 
 #include "cross_mapping_cpu.h"
-#include "dataframe.h"
+#include "data_frame.h"
 #include "embedding_dim_cpu.h"
 #include "mpi_master.h"
 #include "mpi_worker.h"
@@ -145,6 +145,14 @@ protected:
         result["id"] = id;
     }
 };
+
+bool ends_with(const std::string &str, const std::string &suffix)
+{
+    if (str.size() < suffix.size()) {
+        return false;
+    }
+    return str.compare(str.size() - suffix.size(), suffix.size(), suffix) == 0;
+}
 
 void usage(const std::string &app_name)
 {
