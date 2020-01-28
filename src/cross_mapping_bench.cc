@@ -77,6 +77,14 @@ void cross_mapping(HighFive::File file, uint32_t max_E, const DataFrame &df,
     }
 }
 
+bool ends_with(const std::string &str, const std::string &suffix)
+{
+    if (str.size() < suffix.size()) {
+        return false;
+    }
+    return str.compare(str.size() - suffix.size(), suffix.size(), suffix) == 0;
+}
+
 void usage(const std::string &app_name)
 {
     std::string msg =
@@ -142,7 +150,15 @@ int main(int argc, char *argv[])
     timer_io.start();
 
     DataFrame df;
-    df.load(input_fname);
+
+    if (ends_with(input_fname, ".csv")) {
+        df.load_csv(input_fname);
+    } else if (ends_with(input_fname, ".hdf5") ||
+               ends_with(input_fname, ".h5")) {
+        df.load_hdf5(input_fname);
+    } else {
+        throw std::invalid_argument("Unknown file type " + input_fname);
+    }
 
     timer_io.stop();
 

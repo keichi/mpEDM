@@ -67,7 +67,7 @@ int main(int argc, char *argv[])
     timer_tot.start();
 
     DataFrame df;
-    df.load(fname);
+    df.load_csv(fname);
 
     timer_tot.stop();
 

@@ -30,19 +30,6 @@ Series Series::slice(size_t start) const
     return Series(_data + start, _size - start);
 }
 
-void DataFrame::load(const std::string &path)
-{
-    if (ends_with(path, ".csv")) {
-        load_csv(path);
-    } else if (ends_with(path, ".hdf5") || ends_with(path, ".h5")) {
-        load_hdf5(path);
-    } else {
-        throw std::invalid_argument("Unknown file type " + path);
-    }
-
-    create_timeseries();
-}
-
 void DataFrame::load_csv(const std::string &path)
 {
     std::ifstream ifs(path);
@@ -86,6 +73,8 @@ void DataFrame::load_csv(const std::string &path)
         std::copy(columns[i].begin(), columns[i].end(),
                   _data.begin() + i * _n_rows);
     }
+
+    create_timeseries();
 }
 
 void DataFrame::load_hdf5(const std::string &path)
@@ -99,6 +88,8 @@ void DataFrame::load_hdf5(const std::string &path)
 
     _data.resize(_n_rows * _n_columns);
     dataset.read(_data.data());
+
+    create_timeseries();
 }
 
 void DataFrame::create_timeseries()
@@ -107,15 +98,6 @@ void DataFrame::create_timeseries()
     for (auto i = 0u; i < _n_columns; i++) {
         columns[i] = Series(_data.data() + i * _n_rows, _n_rows);
     }
-}
-
-bool DataFrame::ends_with(const std::string &str,
-                          const std::string &suffix) const
-{
-    if (str.size() < suffix.size()) {
-        return false;
-    }
-    return str.compare(str.size() - suffix.size(), suffix.size(), suffix) == 0;
 }
 
 #endif

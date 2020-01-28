@@ -17,8 +17,8 @@ template <class T, class U> void simplex_test_common(int E)
     const auto Tp = 1;
 
     DataFrame df1, df2;
-    df1.load("simplex_test_data.csv");
-    df2.load("simplex_test_validation_E" + std::to_string(E) + ".csv");
+    df1.load_csv("simplex_test_data.csv");
+    df2.load_csv("simplex_test_validation_E" + std::to_string(E) + ".csv");
 
     const auto ts = df1.columns[0];
     const auto library = ts.slice(0, ts.size() / 2);
@@ -99,8 +99,8 @@ template <class T, class U> void embed_dim_test_common()
     const auto max_E = 20;
 
     DataFrame df1, df2;
-    df1.load("TentMap_rEDM.csv");
-    df2.load("TentMap_rEDM_validation.csv");
+    df1.load_csv("TentMap_rEDM.csv");
+    df2.load_csv("TentMap_rEDM_validation.csv");
 
     auto knn = std::unique_ptr<NearestNeighbors>(new T(tau, Tp, true));
     auto simplex = std::unique_ptr<Simplex>(new U(tau, Tp, true));
