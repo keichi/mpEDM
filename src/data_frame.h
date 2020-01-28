@@ -40,7 +40,7 @@ public:
     size_t n_columns() const { return _n_columns; }
 
     void load_csv(const std::string &path);
-    void load_hdf5(const std::string &path);
+    void load_hdf5(const std::string &path, const std::string &dataset);
 
 protected:
     // raw data stored in column-major

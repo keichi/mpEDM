@@ -77,10 +77,10 @@ void DataFrame::load_csv(const std::string &path)
     create_timeseries();
 }
 
-void DataFrame::load_hdf5(const std::string &path)
+void DataFrame::load_hdf5(const std::string &path, const std::string &ds_name)
 {
     const HighFive::File file(path, HighFive::File::ReadOnly);
-    const auto dataset = file.getDataSet("/values");
+    const auto dataset = file.getDataSet(ds_name);
     const auto shape = dataset.getDimensions();
 
     _n_columns = shape[0];
