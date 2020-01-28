@@ -166,7 +166,7 @@ int main(int argc, char *argv[])
 
         df.load_hdf5(input_fname, dataset_name);
     } else {
-        std::cerr <<  "Unknown file type" << std::endl;
+        std::cerr << "Unknown file type" << std::endl;
         usage(cmdl[0]);
         return 1;
     }

@@ -83,11 +83,14 @@ void DataFrame::load_hdf5(const std::string &path, const std::string &ds_name)
     const auto dataset = file.getDataSet(ds_name);
     const auto shape = dataset.getDimensions();
 
-    _n_columns = shape[0];
-    _n_rows = shape[1];
+    _n_rows = shape[0];
+    _n_columns = shape[1];
 
     _data.resize(_n_rows * _n_columns);
-    dataset.read(_data.data());
+
+    for (auto i = 0u; i < _n_columns; i++) {
+        dataset.select({0, i}, {_n_rows, 1}).read(_data.data() + i * _n_rows);
+    }
 
     create_timeseries();
 }
