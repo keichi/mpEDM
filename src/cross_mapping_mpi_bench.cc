@@ -225,6 +225,9 @@ int main(int argc, char *argv[])
 
     DataFrame df;
 
+    Timer timer_io;
+    timer_io.start();
+
     if (ends_with(input_fname, ".csv")) {
         df.load_csv(input_fname);
     } else if (ends_with(input_fname, ".hdf5") ||
@@ -240,6 +243,14 @@ int main(int argc, char *argv[])
         std::cerr << "Unknown file type" << std::endl;
         usage(cmdl[0]);
         return 1;
+    }
+
+    timer_io.stop();
+
+    if (!rank) {
+        std::cout << "Read input dataset (" << df.n_rows() << " rows, "
+                  << df.n_columns() << " columns) in " << timer_io.elapsed()
+                  << " [ms]" << std::endl;
     }
 
     HighFive::File file(

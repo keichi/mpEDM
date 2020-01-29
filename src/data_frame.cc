@@ -86,10 +86,15 @@ void DataFrame::load_hdf5(const std::string &path, const std::string &ds_name)
     _n_rows = shape[0];
     _n_columns = shape[1];
 
+    std::vector<float> row(_n_columns);
     _data.resize(_n_rows * _n_columns);
 
-    for (auto i = 0u; i < _n_columns; i++) {
-        dataset.select({0, i}, {_n_rows, 1}).read(_data.data() + i * _n_rows);
+    for (auto i = 0u; i < _n_rows; i++) {
+        dataset.select({i, 0}, {1, _n_columns}).read(row);
+
+        for (auto j = 0u; j < _n_columns; j++) {
+            _data[j * _n_rows + i] = row[j];
+        }
     }
 
     create_timeseries();
