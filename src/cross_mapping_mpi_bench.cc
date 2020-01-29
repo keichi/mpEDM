@@ -164,13 +164,13 @@ void usage(const std::string &app_name)
         "  " +
         app_name +
         " [OPTION...] INPUT OUTPUT\n"
-        "  -t, --tau arg    Lag (default: 1)\n"
-        "  -e, --maxe arg   Maximum embedding dimension (default: 20)\n"
-        "  -p, --Tp arg     Steps to predict in future (default: 1)\n"
-        "  -x, --kernel arg Kernel type {cpu|gpu} (default: cpu)\n"
-        "  -d, --dataset arg    HDF5 dataset name (default: \"values\")\n"
-        "  -v, --verbose    Enable verbose logging (default: false)\n"
-        "  -h, --help       Show help";
+        "  -t, --tau arg        Lag (default: 1)\n"
+        "  -e, --maxe arg       Maximum embedding dimension (default: 20)\n"
+        "  -p, --Tp arg         Steps to predict in future (default: 1)\n"
+        "  -x, --kernel arg     Kernel type {cpu|gpu} (default: cpu)\n"
+        "  -d, --dataset arg    HDF5 dataset name\n"
+        "  -v, --verbose        Enable verbose logging (default: false)\n"
+        "  -h, --help           Show help";
 
     std::cout << msg << std::endl;
 }
