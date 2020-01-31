@@ -4,7 +4,7 @@
 
 #include <argh.h>
 
-#include "dataframe.h"
+#include "data_frame.h"
 #include "embedding_dim_cpu.h"
 #ifdef ENABLE_GPU_KERNEL
 #include "embedding_dim_gpu.h"
@@ -67,7 +67,7 @@ int main(int argc, char *argv[])
     timer_tot.start();
 
     DataFrame df;
-    df.load(fname);
+    df.load_csv(fname);
 
     timer_tot.stop();
 

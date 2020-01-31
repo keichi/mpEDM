@@ -7,7 +7,7 @@
 #include <highfive/H5File.hpp>
 
 #include "cross_mapping_cpu.h"
-#include "dataframe.h"
+#include "data_frame.h"
 #include "embedding_dim_cpu.h"
 #ifdef ENABLE_GPU_KERNEL
 #include "cross_mapping_gpu.h"
@@ -77,9 +77,17 @@ void cross_mapping(HighFive::File file, uint32_t max_E, const DataFrame &df,
     }
 }
 
+bool ends_with(const std::string &str, const std::string &suffix)
+{
+    if (str.size() < suffix.size()) {
+        return false;
+    }
+    return str.compare(str.size() - suffix.size(), suffix.size(), suffix) == 0;
+}
+
 void usage(const std::string &app_name)
 {
-    std::string msg =
+    const std::string msg =
         app_name +
         ": Cross Mapping Benchmark\n"
         "\n"
@@ -87,12 +95,13 @@ void usage(const std::string &app_name)
         "  " +
         app_name +
         " [OPTION...] INPUT OUTPUT\n"
-        "  -t, --tau arg    Lag (default: 1)\n"
-        "  -e, --maxe arg   Maximum embedding dimension (default: 20)\n"
-        "  -p, --Tp arg     Steps to predict in future (default: 1)\n"
-        "  -x, --kernel arg Kernel type {cpu|gpu} (default: cpu)\n"
-        "  -v, --verbose    Enable verbose logging (default: false)\n"
-        "  -h, --help       Show help";
+        "  -t, --tau arg        Lag (default: 1)\n"
+        "  -e, --maxe arg       Maximum embedding dimension (default: 20)\n"
+        "  -p, --Tp arg         Steps to predict in future (default: 1)\n"
+        "  -x, --kernel arg     Kernel type {cpu|gpu} (default: cpu)\n"
+        "  -d, --dataset arg    HDF5 dataset name\n"
+        "  -v, --verbose        Enable verbose logging (default: false)\n"
+        "  -h, --help           Show help";
 
     std::cout << msg << std::endl;
 }
@@ -100,7 +109,7 @@ void usage(const std::string &app_name)
 int main(int argc, char *argv[])
 {
     argh::parser cmdl({"-t", "--tau", "-p", "--tp", "-e", "--maxe", "-x",
-                       "--kernel", "-v", "--verbose"});
+                       "--kernel", "-d", "--dataset", "-v", "--verbose"});
     cmdl.parse(argc, argv);
 
     if (cmdl[{"-h", "--help"}]) {
@@ -131,6 +140,8 @@ int main(int argc, char *argv[])
     cmdl({"e", "maxe"}, 20) >> max_E;
     std::string kernel_type;
     cmdl({"x", "kernel"}, "cpu") >> kernel_type;
+    std::string dataset_name;
+    cmdl({"d", "dataset"}) >> dataset_name;
     bool verbose = cmdl[{"v", "verbose"}];
 
     Timer timer_tot, timer_io, timer_simplex, timer_xmap;
@@ -142,7 +153,23 @@ int main(int argc, char *argv[])
     timer_io.start();
 
     DataFrame df;
-    df.load(input_fname);
+
+    if (ends_with(input_fname, ".csv")) {
+        df.load_csv(input_fname);
+    } else if (ends_with(input_fname, ".hdf5") ||
+               ends_with(input_fname, ".h5")) {
+        if (dataset_name.empty()) {
+            std::cerr << "No HDF5 dataset name" << std::endl;
+            usage(cmdl[0]);
+            return 1;
+        }
+
+        df.load_hdf5(input_fname, dataset_name);
+    } else {
+        std::cerr << "Unknown file type" << std::endl;
+        usage(cmdl[0]);
+        return 1;
+    }
 
     timer_io.stop();
 

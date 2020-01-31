@@ -1,7 +1,7 @@
 #define CATCH_CONFIG_MAIN
 #include <catch2/catch.hpp>
 
-#include "../src/dataframe.h"
+#include "../src/data_frame.h"
 #include "../src/lut.h"
 #include "../src/nearest_neighbors_cpu.h"
 #ifdef ENABLE_GPU_KERNEL
@@ -15,8 +15,8 @@ template <class T> void knn_test_common(int E)
     const auto k = 4;
 
     DataFrame df1, df2;
-    df1.load("knn_test_data.csv");
-    df2.load("knn_test_validation_E" + std::to_string(E) + ".csv");
+    df1.load_csv("knn_test_data.csv");
+    df2.load_csv("knn_test_validation_E" + std::to_string(E) + ".csv");
 
     auto knn = std::unique_ptr<NearestNeighbors>(new T(tau, Tp, true));
     LUT lut;

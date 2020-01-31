@@ -1,6 +1,6 @@
 #include <iostream>
 
-#include "dataframe.h"
+#include "data_frame.h"
 #include "mpi_master.h"
 #include "mpi_worker.h"
 #include "nearest_neighbors_cpu.h"
@@ -15,7 +15,7 @@ public:
     SimplexMPIMaster(const std::string &fname, MPI_Comm comm)
         : MPIMaster(comm), current_id(0)
     {
-        df.load(fname);
+        df.load_csv(fname);
     }
     ~SimplexMPIMaster() {}
 
@@ -45,7 +45,7 @@ public:
         : MPIWorker(comm), knn(new NearestNeighborsCPU(1, 1, true)),
           simplex(new SimplexCPU(1, 1, true))
     {
-        df.load(fname);
+        df.load_csv(fname);
     }
     ~SimplexMPIWorker() {}
 

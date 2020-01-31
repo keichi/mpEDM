@@ -1,7 +1,7 @@
 #define CATCH_CONFIG_MAIN
 #include <catch2/catch.hpp>
 
-#include "../src/dataframe.h"
+#include "../src/data_frame.h"
 #include "../src/lut.h"
 #include "../src/nearest_neighbors_cpu.h"
 #include "../src/simplex_cpu.h"
@@ -22,8 +22,8 @@ template <class T, class U> void cross_mapping_test_common(uint32_t E)
     const auto Tp = 1;
 
     DataFrame df1, df2;
-    df1.load("sardine_anchovy_sst.csv");
-    df2.load("anchovy_sst_validation_E" + std::to_string(E) + ".csv");
+    df1.load_csv("sardine_anchovy_sst.csv");
+    df2.load_csv("anchovy_sst_validation_E" + std::to_string(E) + ".csv");
 
     auto knn = std::unique_ptr<NearestNeighbors>(new T(tau, Tp, true));
     auto simplex = std::unique_ptr<Simplex>(new U(tau, Tp, true));

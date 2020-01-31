@@ -1,7 +1,7 @@
 #ifndef __SIMPLEX_GPU_H__
 #define __SIMPLEX_GPU_H__
 
-#include "dataframe.h"
+#include "data_frame.h"
 #include "lut.h"
 #include "simplex.h"
 

@@ -6,7 +6,7 @@
 #include <highfive/H5File.hpp>
 
 #include "cross_mapping_cpu.h"
-#include "dataframe.h"
+#include "data_frame.h"
 #include "embedding_dim_cpu.h"
 #include "mpi_master.h"
 #include "mpi_worker.h"
@@ -146,6 +146,14 @@ protected:
     }
 };
 
+bool ends_with(const std::string &str, const std::string &suffix)
+{
+    if (str.size() < suffix.size()) {
+        return false;
+    }
+    return str.compare(str.size() - suffix.size(), suffix.size(), suffix) == 0;
+}
+
 void usage(const std::string &app_name)
 {
     std::string msg =
@@ -156,12 +164,13 @@ void usage(const std::string &app_name)
         "  " +
         app_name +
         " [OPTION...] INPUT OUTPUT\n"
-        "  -t, --tau arg    Lag (default: 1)\n"
-        "  -e, --maxe arg   Maximum embedding dimension (default: 20)\n"
-        "  -p, --Tp arg     Steps to predict in future (default: 1)\n"
-        "  -x, --kernel arg Kernel type {cpu|gpu} (default: cpu)\n"
-        "  -v, --verbose    Enable verbose logging (default: false)\n"
-        "  -h, --help       Show help";
+        "  -t, --tau arg        Lag (default: 1)\n"
+        "  -e, --maxe arg       Maximum embedding dimension (default: 20)\n"
+        "  -p, --Tp arg         Steps to predict in future (default: 1)\n"
+        "  -x, --kernel arg     Kernel type {cpu|gpu} (default: cpu)\n"
+        "  -d, --dataset arg    HDF5 dataset name\n"
+        "  -v, --verbose        Enable verbose logging (default: false)\n"
+        "  -h, --help           Show help";
 
     std::cout << msg << std::endl;
 }
@@ -169,7 +178,7 @@ void usage(const std::string &app_name)
 int main(int argc, char *argv[])
 {
     argh::parser cmdl({"-t", "--tau", "-p", "--tp", "-e", "--maxe", "-x",
-                       "--kernel", "-v", "--verbose"});
+                       "--kernel", "-d", "--dataset", "-v", "--verbose"});
     cmdl.parse(argc, argv);
 
     if (cmdl[{"-h", "--help"}]) {
@@ -200,6 +209,8 @@ int main(int argc, char *argv[])
     cmdl({"e", "maxe"}, 20) >> max_E;
     std::string kernel_type;
     cmdl({"x", "kernel"}, "cpu") >> kernel_type;
+    std::string dataset_name;
+    cmdl({"d", "dataset"}) >> dataset_name;
     bool verbose = cmdl[{"v", "verbose"}];
 
     MPI_Init(&argc, &argv);
@@ -213,7 +224,34 @@ int main(int argc, char *argv[])
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 
     DataFrame df;
-    df.load(argv[1]);
+
+    Timer timer_io;
+    timer_io.start();
+
+    if (ends_with(input_fname, ".csv")) {
+        df.load_csv(input_fname);
+    } else if (ends_with(input_fname, ".hdf5") ||
+               ends_with(input_fname, ".h5")) {
+        if (dataset_name.empty()) {
+            std::cerr << "No HDF5 dataset name" << std::endl;
+            usage(cmdl[0]);
+            return 1;
+        }
+
+        df.load_hdf5(input_fname, dataset_name);
+    } else {
+        std::cerr << "Unknown file type" << std::endl;
+        usage(cmdl[0]);
+        return 1;
+    }
+
+    timer_io.stop();
+
+    if (!rank) {
+        std::cout << "Read input dataset (" << df.n_rows() << " rows, "
+                  << df.n_columns() << " columns) in " << timer_io.elapsed()
+                  << " [ms]" << std::endl;
+    }
 
     HighFive::File file(
         output_fname, HighFive::File::Overwrite,

@@ -35,10 +35,12 @@ public:
 
     DataFrame() : _n_rows(0), _n_columns(0) {}
 
-    void load(const std::string &path);
     const float *data() const { return _data.data(); }
     size_t n_rows() const { return _n_rows; }
     size_t n_columns() const { return _n_columns; }
+
+    void load_csv(const std::string &path);
+    void load_hdf5(const std::string &path, const std::string &dataset);
 
 protected:
     // raw data stored in column-major
@@ -46,11 +48,7 @@ protected:
     size_t _n_rows;
     size_t _n_columns;
 
-    void load_csv(const std::string &path);
-    void load_hdf5(const std::string &path);
-
     void create_timeseries();
-    bool ends_with(const std::string &full, const std::string &ending) const;
 };
 
 #endif
