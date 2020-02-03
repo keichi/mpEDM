@@ -96,7 +96,7 @@ protected:
     void next_task(nlohmann::json &task) override
     {
         task["id"] = current_id;
-        current_id++;
+        current_id += 100;
     }
 
     bool task_left() const override
@@ -106,8 +106,8 @@ protected:
 
     void task_done(const nlohmann::json &result) override
     {
-        std::cout << "Timeseries #" << result["id"] << " finished."
-                  << std::endl;
+        std::cout << "Timeseries #" << result["start_id"] << " - #"
+                  << result["stop_id"] << " finished." << std::endl;
     }
 };
 
@@ -133,16 +133,28 @@ protected:
 
     void do_task(nlohmann::json &result, const nlohmann::json &task) override
     {
-        std::vector<float> rhos(dataframe.n_columns());
+        const uint32_t start_id = task["id"];
+        uint32_t stop_id;
+        if (start_id + 100 > dataframe.n_columns()) {
+            stop_id = dataframe.n_columns();
+        } else {
+            stop_id = start_id + 100;
+        }
+        uint32_t task_size = stop_id - start_id;
 
-        const auto id = task["id"];
-        const auto library = dataframe.columns[id];
+        std::vector<std::vector<float>> rhos(
+            task_size, std::vector<float>(dataframe.n_columns()));
 
-        xmap->run(rhos, library, dataframe.columns, optimal_E);
+        for (uint32_t i = 0; i < task_size; i++) {
+            const auto library = dataframe.columns[start_id + i];
+            xmap->run(rhos[i], library, dataframe.columns, optimal_E);
+        }
 
-        dataset.select({id, 0}, {1, dataframe.n_columns()}).write(rhos);
+        dataset.select({start_id, 0}, {task_size, dataframe.n_columns()})
+            .write(rhos);
 
-        result["id"] = id;
+        result["start_id"] = start_id;
+        result["stop_id"] = stop_id - 1;
     }
 };
 
