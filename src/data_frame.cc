@@ -86,14 +86,20 @@ void DataFrame::load_hdf5(const std::string &path, const std::string &ds_name)
     _n_rows = shape[0];
     _n_columns = shape[1];
 
-    std::vector<float> row(_n_columns);
+    const size_t MAX_CHUNK_SIZE = 100;
+
+    std::vector<float> rows(MAX_CHUNK_SIZE * _n_columns);
     _data.resize(_n_rows * _n_columns);
 
-    for (auto i = 0u; i < _n_rows; i++) {
-        dataset.select({i, 0}, {1, _n_columns}).read(row);
+    for (auto i = 0u; i < _n_rows; i += MAX_CHUNK_SIZE) {
+        const auto chunk_size = std::min(MAX_CHUNK_SIZE, _n_rows - i);
 
-        for (auto j = 0u; j < _n_columns; j++) {
-            _data[j * _n_rows + i] = row[j];
+        dataset.select({i, 0}, {chunk_size, _n_columns}).read(rows.data());
+
+        for (auto j = 0u; j < chunk_size; j++) {
+            for (auto k = 0u; k < _n_columns; k++) {
+                _data[k * _n_rows + (i + j)] = rows[j * _n_columns + k];
+            }
         }
     }
 
