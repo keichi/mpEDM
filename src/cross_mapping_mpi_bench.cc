@@ -17,6 +17,18 @@
 #include "stats.h"
 #include "timer.h"
 
+struct Parameters {
+    std::string input_fname;
+    std::string output_fname;
+    uint32_t tau;
+    uint32_t Tp;
+    uint32_t max_E;
+    std::string kernel_type;
+    std::string dataset_name;
+    uint32_t chunk_size;
+    bool verbose;
+};
+
 class EmbeddingDimMPIMaster : public MPIMaster
 {
 public:
@@ -114,7 +126,8 @@ protected:
     void task_done(const nlohmann::json &result) override
     {
         std::cout << "Timeseries #" << result["start_id"] << " - #"
-                  << result["stop_id"] << " finished." << std::endl;
+                  << result["stop_id"].get<int>() - 1 << " finished."
+                  << std::endl;
     }
 };
 
@@ -156,7 +169,7 @@ protected:
             .write(rhos);
 
         result["start_id"] = start_id;
-        result["stop_id"] = stop_id - 1;
+        result["stop_id"] = stop_id;
     }
 };
 
@@ -166,6 +179,97 @@ bool ends_with(const std::string &str, const std::string &suffix)
         return false;
     }
     return str.compare(str.size() - suffix.size(), suffix.size(), suffix) == 0;
+}
+
+void run(int rank, DataFrame df, Parameters parameters)
+{
+    HighFive::File file(
+        parameters.output_fname, HighFive::File::Overwrite,
+        HighFive::MPIOFileDriver(MPI_COMM_WORLD, MPI_INFO_NULL));
+
+    const auto dataspace_embedding = HighFive::DataSpace({df.n_columns()});
+    auto dataset_embedding =
+        file.createDataSet<uint32_t>("/embedding", dataspace_embedding);
+
+    std::vector<uint32_t> optimal_E(df.n_columns());
+
+    Timer timer;
+
+    if (!rank) {
+        std::cout << "Input: " << parameters.input_fname << std::endl;
+        std::cout << "Output: " << parameters.output_fname << std::endl;
+
+        EmbeddingDimMPIMaster embedding_dim_master(df, MPI_COMM_WORLD);
+
+        Timer timer_embedding_dim;
+
+        timer.start();
+        timer_embedding_dim.start();
+        embedding_dim_master.run();
+        timer_embedding_dim.stop();
+
+        optimal_E = embedding_dim_master.optimal_E;
+
+        dataset_embedding.write(optimal_E);
+
+        std::cout << "Processed optimal E in " << timer_embedding_dim.elapsed()
+                  << " [ms]" << std::endl;
+    } else {
+        if (parameters.kernel_type == "cpu") {
+            EmbeddingDimMPIWorker<EmbeddingDimCPU> embedding_dim_worker(
+                df, parameters.verbose, MPI_COMM_WORLD);
+
+            embedding_dim_worker.run();
+        }
+#ifdef ENABLE_GPU_KERNEL
+        if (parameters.kernel_type == "gpu") {
+            EmbeddingDimMPIWorker<EmbeddingDimGPU> embedding_dim_worker(
+                df, parameters.verbose, MPI_COMM_WORLD);
+
+            embedding_dim_worker.run();
+        }
+#endif
+    }
+
+    MPI_Bcast(optimal_E.data(), optimal_E.size(), MPI_FLOAT, 0, MPI_COMM_WORLD);
+
+    const auto dataspace_corrcoef =
+        HighFive::DataSpace({df.n_columns(), df.n_columns()});
+    auto dataset_corrcoef =
+        file.createDataSet<float>("/corrcoef", dataspace_corrcoef);
+
+    if (!rank) {
+        CrossMappingMPIMaster cross_mapping_master(df, parameters.chunk_size,
+                                                   MPI_COMM_WORLD);
+
+        Timer timer_cross_mapping;
+
+        timer_cross_mapping.start();
+        cross_mapping_master.run();
+        timer_cross_mapping.stop();
+
+        timer.stop();
+
+        std::cout << "Processed dataset in " << timer.elapsed() << " [ms]"
+                  << std::endl;
+    } else {
+        if (parameters.kernel_type == "cpu") {
+            CrossMappingMPIWorker<CrossMappingCPU> cross_mapping_worker(
+                dataset_corrcoef, df, optimal_E, parameters.verbose,
+                MPI_COMM_WORLD);
+
+            cross_mapping_worker.run();
+        }
+#ifdef ENABLE_GPU_KERNEL
+        if (parameters.kernel_type == "gpu") {
+            CrossMappingMPIWorker<CrossMappingGPU> cross_mapping_worker(
+                dataset_corrcoef, df, optimal_E, parameters.verbose,
+                MPI_COMM_WORLD);
+
+            cross_mapping_worker.run();
+        }
+#endif
+    }
 }
 
 void usage(const std::string &app_name)
@@ -214,22 +318,18 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-    std::string input_fname = cmdl[1];
-    std::string output_fname = cmdl[2];
+    Parameters parameters;
 
-    uint32_t tau;
-    cmdl({"t", "tau"}, 1) >> tau;
-    uint32_t Tp;
-    cmdl({"p", "Tp"}, 1) >> Tp;
-    uint32_t max_E;
-    cmdl({"e", "maxe"}, 20) >> max_E;
-    std::string kernel_type;
-    cmdl({"x", "kernel"}, "cpu") >> kernel_type;
-    std::string dataset_name;
-    cmdl({"d", "dataset"}) >> dataset_name;
-    uint32_t chunk_size;
-    cmdl({"c", "chunksize"}, 1) >> chunk_size;
-    bool verbose = cmdl[{"v", "verbose"}];
+    parameters.input_fname = cmdl[1];
+    parameters.output_fname = cmdl[2];
+
+    cmdl({"t", "tau"}, 1) >> parameters.tau;
+    cmdl({"p", "Tp"}, 1) >> parameters.Tp;
+    cmdl({"e", "maxe"}, 20) >> parameters.max_E;
+    cmdl({"x", "kernel"}, "cpu") >> parameters.kernel_type;
+    cmdl({"d", "dataset"}) >> parameters.dataset_name;
+    cmdl({"c", "chunksize"}, 1) >> parameters.chunk_size;
+    parameters.verbose = cmdl[{"v", "verbose"}];
 
     MPI_Init(&argc, &argv);
 
@@ -246,17 +346,17 @@ int main(int argc, char *argv[])
     Timer timer_io;
     timer_io.start();
 
-    if (ends_with(input_fname, ".csv")) {
-        df.load_csv(input_fname);
-    } else if (ends_with(input_fname, ".hdf5") ||
-               ends_with(input_fname, ".h5")) {
-        if (dataset_name.empty()) {
+    if (ends_with(parameters.input_fname, ".csv")) {
+        df.load_csv(parameters.input_fname);
+    } else if (ends_with(parameters.input_fname, ".hdf5") ||
+               ends_with(parameters.input_fname, ".h5")) {
+        if (parameters.dataset_name.empty()) {
             std::cerr << "No HDF5 dataset name" << std::endl;
             usage(cmdl[0]);
             return 1;
         }
 
-        df.load_hdf5(input_fname, dataset_name);
+        df.load_hdf5(parameters.input_fname, parameters.dataset_name);
     } else {
         std::cerr << "Unknown file type" << std::endl;
         usage(cmdl[0]);
@@ -271,91 +371,7 @@ int main(int argc, char *argv[])
                   << " [ms]" << std::endl;
     }
 
-    HighFive::File file(
-        output_fname, HighFive::File::Overwrite,
-        HighFive::MPIOFileDriver(MPI_COMM_WORLD, MPI_INFO_NULL));
-
-    const auto dataspace_embedding = HighFive::DataSpace({df.n_columns()});
-    auto dataset_embedding =
-        file.createDataSet<uint32_t>("/embedding", dataspace_embedding);
-
-    std::vector<uint32_t> optimal_E(df.n_columns());
-
-    Timer timer;
-
-    if (!rank) {
-        std::cout << "Input: " << input_fname << std::endl;
-        std::cout << "Output: " << output_fname << std::endl;
-
-        EmbeddingDimMPIMaster embedding_dim_master(df, MPI_COMM_WORLD);
-
-        Timer timer_embedding_dim;
-
-        timer.start();
-        timer_embedding_dim.start();
-        embedding_dim_master.run();
-        timer_embedding_dim.stop();
-
-        optimal_E = embedding_dim_master.optimal_E;
-
-        dataset_embedding.write(optimal_E);
-
-        std::cout << "Processed optimal E in " << timer_embedding_dim.elapsed()
-                  << " [ms]" << std::endl;
-    } else {
-        if (kernel_type == "cpu") {
-            EmbeddingDimMPIWorker<EmbeddingDimCPU> embedding_dim_worker(
-                df, verbose, MPI_COMM_WORLD);
-
-            embedding_dim_worker.run();
-        }
-#ifdef ENABLE_GPU_KERNEL
-        if (kernel_type == "gpu") {
-            EmbeddingDimMPIWorker<EmbeddingDimGPU> embedding_dim_worker(
-                df, verbose, MPI_COMM_WORLD);
-
-            embedding_dim_worker.run();
-        }
-#endif
-    }
-
-    MPI_Bcast(optimal_E.data(), optimal_E.size(), MPI_FLOAT, 0, MPI_COMM_WORLD);
-
-    const auto dataspace_corrcoef =
-        HighFive::DataSpace({df.n_columns(), df.n_columns()});
-    auto dataset_corrcoef =
-        file.createDataSet<float>("/corrcoef", dataspace_corrcoef);
-
-    if (!rank) {
-        CrossMappingMPIMaster cross_mapping_master(df, chunk_size,
-                                                   MPI_COMM_WORLD);
-
-        Timer timer_cross_mapping;
-
-        timer_cross_mapping.start();
-        cross_mapping_master.run();
-        timer_cross_mapping.stop();
-
-        timer.stop();
-
-        std::cout << "Processed dataset in " << timer.elapsed() << " [ms]"
-                  << std::endl;
-    } else {
-        if (kernel_type == "cpu") {
-            CrossMappingMPIWorker<CrossMappingCPU> cross_mapping_worker(
-                dataset_corrcoef, df, optimal_E, verbose, MPI_COMM_WORLD);
-
-            cross_mapping_worker.run();
-        }
-#ifdef ENABLE_GPU_KERNEL
-        if (kernel_type == "gpu") {
-            CrossMappingMPIWorker<CrossMappingGPU> cross_mapping_worker(
-                dataset_corrcoef, df, optimal_E, verbose, MPI_COMM_WORLD);
-
-            cross_mapping_worker.run();
-        }
-#endif
-    }
+    run(rank, df, parameters);
 
     MPI_Finalize();
 }
