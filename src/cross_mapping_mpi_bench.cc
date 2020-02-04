@@ -97,7 +97,12 @@ protected:
 
     void next_task(nlohmann::json &task) override
     {
-        task["id"] = current_id;
+        task["start_id"] = current_id;
+        if (current_id + chunk_size > dataframe.n_columns()) {
+            task["stop_id"] = dataframe.n_columns();
+        } else {
+            task["stop_id"] = current_id + chunk_size;
+        }
         current_id += chunk_size;
     }
 
@@ -117,12 +122,11 @@ template <class T> class CrossMappingMPIWorker : public MPIWorker
 {
 public:
     CrossMappingMPIWorker(HighFive::DataSet dataset, const DataFrame df,
-                          const std::vector<uint32_t> optimal_E,
-                          uint32_t chunk_size, bool verbose, MPI_Comm comm)
+                          const std::vector<uint32_t> optimal_E, bool verbose,
+                          MPI_Comm comm)
         : MPIWorker(comm), dataset(dataset),
           xmap(std::unique_ptr<CrossMapping>(new T(20, 1, 0, true))),
-          dataframe(df), optimal_E(optimal_E), chunk_size(chunk_size),
-          verbose(verbose)
+          dataframe(df), optimal_E(optimal_E), verbose(verbose)
     {
     }
     ~CrossMappingMPIWorker() {}
@@ -132,18 +136,12 @@ protected:
     std::unique_ptr<CrossMapping> xmap;
     DataFrame dataframe;
     std::vector<uint32_t> optimal_E;
-    uint32_t chunk_size;
     bool verbose;
 
     void do_task(nlohmann::json &result, const nlohmann::json &task) override
     {
-        const uint32_t start_id = task["id"];
-        uint32_t stop_id;
-        if (start_id + chunk_size > dataframe.n_columns()) {
-            stop_id = dataframe.n_columns();
-        } else {
-            stop_id = start_id + chunk_size;
-        }
+        const uint32_t start_id = task["start_id"];
+        const uint32_t stop_id = task["stop_id"];
         uint32_t task_size = stop_id - start_id;
 
         std::vector<std::vector<float>> rhos(
@@ -345,16 +343,14 @@ int main(int argc, char *argv[])
     } else {
         if (kernel_type == "cpu") {
             CrossMappingMPIWorker<CrossMappingCPU> cross_mapping_worker(
-                dataset_corrcoef, df, optimal_E, chunk_size, verbose,
-                MPI_COMM_WORLD);
+                dataset_corrcoef, df, optimal_E, verbose, MPI_COMM_WORLD);
 
             cross_mapping_worker.run();
         }
 #ifdef ENABLE_GPU_KERNEL
         if (kernel_type == "gpu") {
             CrossMappingMPIWorker<CrossMappingGPU> cross_mapping_worker(
-                dataset_corrcoef, df, optimal_E, chunk_size, verbose,
-                MPI_COMM_WORLD);
+                dataset_corrcoef, df, optimal_E, verbose, MPI_COMM_WORLD);
 
             cross_mapping_worker.run();
         }
