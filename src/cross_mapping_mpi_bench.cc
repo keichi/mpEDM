@@ -103,18 +103,15 @@ public:
     ~CrossMappingMPIMaster() {}
 
 protected:
-    uint32_t current_id;
+    size_t current_id;
     DataFrame dataframe;
-    uint32_t chunk_size;
+    size_t chunk_size;
 
     void next_task(nlohmann::json &task) override
     {
         task["start_id"] = current_id;
-        if (current_id + chunk_size > dataframe.n_columns()) {
-            task["stop_id"] = dataframe.n_columns();
-        } else {
-            task["stop_id"] = current_id + chunk_size;
-        }
+        task["stop_id"] =
+            std::min(current_id + chunk_size, dataframe.n_columns());
         current_id += chunk_size;
     }
 
@@ -181,7 +178,7 @@ bool ends_with(const std::string &str, const std::string &suffix)
     return str.compare(str.size() - suffix.size(), suffix.size(), suffix) == 0;
 }
 
-void run(int rank, DataFrame df, Parameters parameters)
+void run(int rank, const DataFrame &df, const Parameters &parameters)
 {
     HighFive::File file(
         parameters.output_fname, HighFive::File::Overwrite,
