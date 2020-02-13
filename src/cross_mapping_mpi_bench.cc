@@ -141,12 +141,15 @@ public:
     }
     ~CrossMappingMPIWorker() {}
 
+    float total_io_time() { return timer_io.elapsed(); }
+
 protected:
     HighFive::DataSet dataset;
     std::unique_ptr<CrossMapping> xmap;
     DataFrame dataframe;
     std::vector<uint32_t> optimal_E;
     bool verbose;
+    Timer timer_io;
 
     void do_task(nlohmann::json &result, const nlohmann::json &task) override
     {
@@ -162,8 +165,10 @@ protected:
             xmap->run(rhos[i], library, dataframe.columns, optimal_E);
         }
 
+        timer_io.start();
         dataset.select({start_id, 0}, {task_size, dataframe.n_columns()})
             .write(rhos);
+        timer_io.stop();
 
         result["start_id"] = start_id;
         result["stop_id"] = stop_id;
@@ -235,6 +240,8 @@ void run(int rank, const DataFrame &df, const Parameters &parameters)
     auto dataset_corrcoef =
         file.createDataSet<float>("/corrcoef", dataspace_corrcoef);
 
+    auto total_io_time = 0.0f;
+
     if (!rank) {
         CrossMappingMPIMaster cross_mapping_master(df, parameters.chunk_size,
                                                    MPI_COMM_WORLD);
@@ -256,6 +263,8 @@ void run(int rank, const DataFrame &df, const Parameters &parameters)
                 MPI_COMM_WORLD);
 
             cross_mapping_worker.run();
+
+            total_io_time = cross_mapping_worker.total_io_time();
         }
 #ifdef ENABLE_GPU_KERNEL
         if (parameters.kernel_type == "gpu") {
@@ -264,8 +273,20 @@ void run(int rank, const DataFrame &df, const Parameters &parameters)
                 MPI_COMM_WORLD);
 
             cross_mapping_worker.run();
+
+            total_io_time = cross_mapping_worker.total_io_time();
         }
 #endif
+    }
+
+    auto max_io_time = 0.0f;
+
+    MPI_Reduce(&total_io_time, &max_io_time, 1, MPI_FLOAT, MPI_MAX, 0,
+               MPI_COMM_WORLD);
+
+    if (!rank) {
+        std::cout << "Max output IO Time: " << max_io_time << " [ms]"
+                  << std::endl;
     }
 }
 
