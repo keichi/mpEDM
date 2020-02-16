@@ -137,6 +137,11 @@ add_executable(xmap_one_to_one_test test/xmap_one_to_one_test.cc)
 target_link_libraries(xmap_one_to_one_test PRIVATE cuedm Catch2::Catch2)
 catch_discover_tests(xmap_one_to_one_test
                      WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/test)
+
+# Cross mapping test (all-to-all)
+add_executable(xmap_all_to_all_test test/xmap_all_to_all_test.cc)
+target_link_libraries(xmap_all_to_all_test PRIVATE cuedm Catch2::Catch2 HighFive)
+catch_discover_tests(xmap_all_to_all_test
                      WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/test)
 
 # Simplex test
