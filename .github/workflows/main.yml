@@ -91,4 +91,4 @@ jobs:
     - name: Install cppcheck
       run: sudo apt-get update && sudo apt-get install -y cppcheck
     - name: Run cppcheck
-      run: cppcheck --enable=all --inline-suppr -i src/thirdparty src
+      run: cppcheck --enable=all --inline-suppr -i src/thirdparty --error-exitcode=1 src
