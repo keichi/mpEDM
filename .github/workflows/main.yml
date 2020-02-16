@@ -80,7 +80,7 @@ jobs:
     steps:
     - uses: actions/checkout@v1
     - name: Install clang-format
-      run: sudo apt-get update && sudo apt-get install -y clang-format-8
+      run: sudo apt-get update && sudo apt-get install -y libllvm8 clang-format-8
     - name: Run clang-format
       run: ./scripts/run-clang-format.py -r src --clang-format-executable $(which clang-format-8)
 
