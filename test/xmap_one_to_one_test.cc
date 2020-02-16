@@ -49,44 +49,44 @@ template <class T, class U> void cross_mapping_test_common(uint32_t E)
     }
 }
 
-TEST_CASE("Compute cross mapping (CPU, E=2)", "[ccm][cpu]")
+TEST_CASE("Compute one-to-one cross mapping (CPU, E=2)", "[ccm][cpu]")
 {
     cross_mapping_test_common<NearestNeighborsCPU, SimplexCPU>(2);
 }
 
-TEST_CASE("Compute cross mapping (CPU, E=3)", "[ccm][cpu]")
+TEST_CASE("Compute one-to-one cross mapping (CPU, E=3)", "[ccm][cpu]")
 {
     cross_mapping_test_common<NearestNeighborsCPU, SimplexCPU>(3);
 }
 
-TEST_CASE("Compute cross mapping (CPU, E=4)", "[ccm][cpu]")
+TEST_CASE("Compute one-to-one cross mapping (CPU, E=4)", "[ccm][cpu]")
 {
     cross_mapping_test_common<NearestNeighborsCPU, SimplexCPU>(4);
 }
 
-TEST_CASE("Compute cross mapping (CPU, E=5)", "[ccm][cpu]")
+TEST_CASE("Compute one-to-one cross mapping (CPU, E=5)", "[ccm][cpu]")
 {
     cross_mapping_test_common<NearestNeighborsCPU, SimplexCPU>(5);
 }
 
 #ifdef ENABLE_GPU_KERNEL
 
-TEST_CASE("Compute cross mapping (GPU, E=2)", "[ccm][gpu]")
+TEST_CASE("Compute one-to-one cross mapping (GPU, E=2)", "[ccm][gpu]")
 {
     cross_mapping_test_common<NearestNeighborsGPU, SimplexGPU>(2);
 }
 
-TEST_CASE("Compute cross mapping (GPU, E=3)", "[ccm][gpu]")
+TEST_CASE("Compute one-to-one cross mapping (GPU, E=3)", "[ccm][gpu]")
 {
     cross_mapping_test_common<NearestNeighborsGPU, SimplexGPU>(3);
 }
 
-TEST_CASE("Compute cross mapping (GPU, E=4)", "[ccm][gpu]")
+TEST_CASE("Compute one-to-one cross mapping (GPU, E=4)", "[ccm][gpu]")
 {
     cross_mapping_test_common<NearestNeighborsGPU, SimplexGPU>(4);
 }
 
-TEST_CASE("Compute cross mapping (GPU, E=5)", "[ccm][gpu]")
+TEST_CASE("Compute one-to-one cross mapping (GPU, E=5)", "[ccm][gpu]")
 {
     cross_mapping_test_common<NearestNeighborsGPU, SimplexGPU>(5);
 }
