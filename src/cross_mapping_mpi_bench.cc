@@ -34,7 +34,7 @@ class EmbeddingDimMPIMaster : public MPIMaster
 public:
     std::vector<uint32_t> optimal_E;
 
-    EmbeddingDimMPIMaster(const DataFrame df, MPI_Comm comm)
+    EmbeddingDimMPIMaster(const DataFrame &df, MPI_Comm comm)
         : MPIMaster(comm), optimal_E(df.n_columns()), current_id(0),
           dataframe(df)
     {
@@ -68,7 +68,7 @@ protected:
 template <class T> class EmbeddingDimMPIWorker : public MPIWorker
 {
 public:
-    EmbeddingDimMPIWorker(const DataFrame df, bool verbose, MPI_Comm comm)
+    EmbeddingDimMPIWorker(const DataFrame &df, bool verbose, MPI_Comm comm)
         : MPIWorker(comm),
           embedding_dim(std::unique_ptr<EmbeddingDim>(new T(20, 1, 1, true))),
           dataframe(df), verbose(verbose)
@@ -95,7 +95,7 @@ protected:
 class CrossMappingMPIMaster : public MPIMaster
 {
 public:
-    CrossMappingMPIMaster(const DataFrame df, uint32_t chunk_size,
+    CrossMappingMPIMaster(const DataFrame &df, uint32_t chunk_size,
                           MPI_Comm comm)
         : MPIMaster(comm), current_id(0), dataframe(df), chunk_size(chunk_size)
     {
@@ -131,8 +131,8 @@ protected:
 template <class T> class CrossMappingMPIWorker : public MPIWorker
 {
 public:
-    CrossMappingMPIWorker(HighFive::DataSet dataset, const DataFrame df,
-                          const std::vector<uint32_t> optimal_E, bool verbose,
+    CrossMappingMPIWorker(HighFive::DataSet dataset, const DataFrame &df,
+                          const std::vector<uint32_t> &optimal_E, bool verbose,
                           MPI_Comm comm)
         : MPIWorker(comm), dataset(dataset),
           xmap(std::unique_ptr<CrossMapping>(new T(20, 1, 0, true))),
