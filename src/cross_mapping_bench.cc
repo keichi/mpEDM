@@ -47,6 +47,8 @@ template <class T>
 void cross_mapping(HighFive::File file, uint32_t max_E, const DataFrame &df,
                    const std::vector<uint32_t> &optimal_E, bool verbose)
 {
+    Timer timer_io;
+
     std::vector<float> rhos(df.n_columns());
 
     // max_E=20, tau=1, Tp=0
@@ -65,16 +67,13 @@ void cross_mapping(HighFive::File file, uint32_t max_E, const DataFrame &df,
 
         xmap->run(rhos, library, df.columns, optimal_E);
 
-        Timer timer_io;
         timer_io.start();
         dataset.select({i, 0}, {1, df.n_columns()}).write(rhos);
         timer_io.stop();
-
-        if (verbose) {
-            std::cout << "IO write: " << timer_io.elapsed() << " [ms]"
-                      << std::endl;
-        }
     }
+
+    std::cout << "Total IO write: " << timer_io.elapsed() << " [ms]"
+              << std::endl;
 }
 
 bool ends_with(const std::string &str, const std::string &suffix)
