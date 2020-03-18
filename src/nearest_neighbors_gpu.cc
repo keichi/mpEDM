@@ -85,10 +85,15 @@ void NearestNeighborsGPU::compute_lut(LUT &out, const Series &library,
     // Shift indices
     // TODO Use OpenMP?
     for (auto i = 0u; i < n_target; i++) {
-        const auto offset =
-            p_library + idx_host[i * (top_k + 1)] == p_target + i ? 1u : 0u;
+        auto offset = 0u;
 
         for (auto j = 0u; j < top_k; j++) {
+            // Remove degenerate neighbor. Note that we assume there is only
+            // one degenerate neighbor for each library row.
+            if (p_library + idx_host[i * (top_k + 1) + j] == p_target + i) {
+                offset = 1u;
+            }
+
             out.distances[i * top_k + j] =
                 dist_host[i * (top_k + 1) + j + offset];
             out.indices[i * top_k + j] =
