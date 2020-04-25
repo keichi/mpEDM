@@ -1,4 +1,4 @@
-# cuEDM [![](https://github.com/keichi/cuEDM/workflows/build/badge.svg)](https://github.com/keichi/cuEDM/actions?query=workflow%3Abuild)
+# mpEDM [![](https://github.com/keichi/mpEDM/workflows/build/badge.svg)](https://github.com/keichi/mpEDM/actions?query=workflow%3Abuild)
 
 GPU-accelerated implementation of Empirical Dynamic Modeling
 
@@ -19,12 +19,12 @@ GPU-accelerated implementation of Empirical Dynamic Modeling
 
 2. Clone the source code:
     ```
-    $ git clone --recursive https://github.com/keichi/cuEDM.git
+    $ git clone --recursive https://github.com/keichi/mpEDM.git
     ```
 
 3. Run cmake:
     ```
-    $ cd cuEDM
+    $ cd mpEDM
     $ mkdir build
     $ cd build
     $ cmake -DCMAKE_BUILD_TYPE=Release ..
