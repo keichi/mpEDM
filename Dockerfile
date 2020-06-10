@@ -2,6 +2,8 @@ FROM nvidia/cuda
 
 RUN apt-get update -y && \
     apt-get install -y --no-install-recommends \
+        openssh-client \
+        openmpi-bin \
         libopenmpi-dev \
         libhdf5-openmpi-dev \
         wget \
