@@ -1,5 +1,6 @@
 #include <iostream>
 #include <memory>
+#include <random>
 #include <string>
 #ifdef ENABLE_GPU_KERNEL
 #include <mutex>
@@ -15,31 +16,36 @@
 #include "timer.h"
 
 template <class T>
-void run_common(const DataFrame &df, uint32_t max_E, uint32_t tau,
-                uint32_t top_k, bool verbose)
+void run_common(uint32_t L, uint32_t E, uint32_t tau, uint32_t iterations,
+                bool verbose)
 {
     auto kernel = std::unique_ptr<NearestNeighbors>(new T(tau, 1, verbose));
 
-    auto i = 0;
+    std::random_device rand_dev;
+    std::default_random_engine engine(rand_dev());
+    std::uniform_real_distribution<> dist(0.0f, 1.0f);
 
-    for (const auto &ts : df.columns) {
-        Timer timer;
-        timer.start();
-
-        LUT out;
-
-        for (auto E = 1u; E <= max_E; E++) {
-            kernel->compute_lut(out, ts, ts, E, top_k);
-        }
-
-        timer.stop();
-
-        i++;
-        if (verbose) {
-            std::cout << "Computed LUT for column #" << i << " in "
-                      << timer.elapsed() << " [ms]" << std::endl;
-        }
+    std::vector<float> library_vec(L);
+    std::vector<float> target_vec(L);
+    for (auto i = 0u; i < L; i++) {
+        library_vec[i] = dist(engine);
+        target_vec[i] = dist(engine);
     }
+
+    LUT out;
+    Series library(library_vec);
+    Series target(target_vec);
+
+    Timer timer;
+    timer.start();
+
+    for (auto i = 0u; i < iterations; i++) {
+        kernel->compute_lut(out, library, target, E, E + 1);
+    }
+
+    timer.stop();
+
+    std::cout << "Elapsed: " << timer.elapsed() << " [ms]" << std::endl;
 }
 
 void usage(const std::string &app_name)
@@ -51,21 +57,23 @@ void usage(const std::string &app_name)
         "Usage:\n"
         "  " +
         app_name +
-        " [OPTION...] FILE\n"
-        "  -t, --tau arg    Lag (default: 1)\n"
-        "  -e, --maxe arg   Maximum embedding dimension (default: 20)\n"
-        "  -k, --topk arg   Number of neighbors to find (default: 100)\n"
-        "  -x, --kernel arg Kernel type {cpu|gpu} (default: cpu)\n"
-        "  -v, --verbose    Enable verbose logging (default: false)\n"
-        "  -h, --help       Show help";
+        " [OPTION...]\n"
+        "  -l, --length arg        Length of time series (default: 10,000)\n"
+        "  -e, --embedding-dim arg Embedding dimension (default: 20)\n"
+        "  -t, --tau arg           Time delay (default: 1)\n"
+        "  -i, --iteration arg     Number of iterations (default: 10)\n"
+        "  -x, --kernel arg        Kernel type {cpu|gpu} (default: cpu)\n"
+        "  -v, --verbose           Enable verbose logging (default: false)\n"
+        "  -h, --help              Show this help";
 
     std::cout << msg << std::endl;
 }
 
 int main(int argc, char *argv[])
 {
-    argh::parser cmdl({"-t", "--tau", "-e", "--maxe", "-k", "--topk", "-x",
-                       "--kernel", "-v", "--verbose"});
+    argh::parser cmdl({"-e", "--embedding-dim", "-l", "--length", "-t", "--tau",
+                       "-i", "--iteration", "-x", "--kernel", "-v",
+                       "--verbose"});
     cmdl.parse(argc, argv);
 
     if (cmdl[{"-h", "--help"}]) {
@@ -73,69 +81,39 @@ int main(int argc, char *argv[])
         return 0;
     }
 
-    if (!cmdl(1)) {
-        std::cerr << "No input file" << std::endl;
-        usage(cmdl[0]);
-        return 1;
-    }
-
-    std::string fname = cmdl[1];
+    int L;
+    cmdl({"l", "length"}, 10000) >> L;
+    int E;
+    cmdl({"e", "embedding-dim"}, 20) >> E;
     int tau;
     cmdl({"t", "tau"}, 1) >> tau;
-    int max_E;
-    cmdl({"e", "maxe"}, 20) >> max_E;
-    int top_k;
-    cmdl({"k", "topk"}, 100) >> top_k;
+    int iterations;
+    cmdl({"i", "iteration"}, 10) >> iterations;
     std::string kernel_type;
     cmdl({"x", "kernel"}, "cpu") >> kernel_type;
     bool verbose = cmdl[{"v", "verbose"}];
 
-    std::cout << "Reading input dataset from " << fname << std::endl;
-
-    Timer timer_tot;
-    timer_tot.start();
-
-    DataFrame df;
-    df.load_csv(fname);
-
-    timer_tot.stop();
-
-    std::cout << "Read " << df.n_rows() << " rows in " << timer_tot.elapsed()
-              << " [ms]" << std::endl;
-
-    timer_tot.start();
-
-    int n = df.n_rows() - (max_E - 1) * tau;
-    if (n <= 0) {
+    if (L - (E - 1) * tau <= 0) {
         std::cerr << "E or tau is too large" << std::endl;
-        return 1;
-    }
-    if (n < top_k) {
-        std::cerr << "k is too large" << std::endl;
         return 1;
     }
 
     if (kernel_type == "cpu") {
         std::cout << "Using CPU kNN kernel" << std::endl;
 
-        run_common<NearestNeighborsCPU>(df, max_E, tau, top_k, verbose);
+        run_common<NearestNeighborsCPU>(L, E, tau, iterations, verbose);
     }
 #ifdef ENABLE_GPU_KERNEL
     else if (kernel_type == "gpu") {
         std::cout << "Using GPU kNN kernel" << std::endl;
 
-        run_common<NearestNeighborsGPU>(df, max_E, tau, top_k, verbose);
+        run_common<NearestNeighborsGPU>(L, E, tau, iterations, verbose);
     }
 #endif
     else {
         std::cerr << "Unknown kernel type " << kernel_type << std::endl;
         return 1;
     }
-
-    timer_tot.stop();
-
-    std::cout << "Processed dataset in " << timer_tot.elapsed() << " [ms]"
-              << std::endl;
 
     return 0;
 }

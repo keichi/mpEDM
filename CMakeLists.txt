@@ -82,31 +82,29 @@ endif()
 # Enable MPI if available
 find_package(MPI)
 if(MPI_CXX_FOUND)
-  message(STATUS "MPI found, enabling multi-node benchmarks")
-
-  set(JSON_BuildTests OFF CACHE INTERNAL "")
-  add_subdirectory(src/thirdparty/json)
-
-  target_sources(mpedm PRIVATE src/mpi_master.cc src/mpi_worker.cc)
-  target_link_libraries(mpedm PRIVATE MPI::MPI_CXX
-                        nlohmann_json::nlohmann_json)
-
-  add_executable(simplex_mpi_bench src/simplex_mpi_bench.cc)
-  add_executable(cross_mapping_mpi_bench src/cross_mapping_mpi_bench.cc)
-
-  target_link_libraries(simplex_mpi_bench PRIVATE mpedm MPI::MPI_CXX
-                        nlohmann_json::nlohmann_json)
-  target_link_libraries(cross_mapping_mpi_bench PRIVATE mpedm MPI::MPI_CXX
-                        nlohmann_json::nlohmann_json)
-
-  target_link_libraries(cross_mapping_mpi_bench PRIVATE argh)
-
   if(HDF5_IS_PARALLEL)
+    message(STATUS "MPI and parallel HDF5 found, enabling multi-node benchmarks")
+
+    set(JSON_BuildTests OFF CACHE INTERNAL "")
+    add_subdirectory(src/thirdparty/json)
+
+    target_sources(mpedm PRIVATE src/mpi_master.cc src/mpi_worker.cc)
+    target_link_libraries(mpedm PRIVATE MPI::MPI_CXX
+                          nlohmann_json::nlohmann_json)
+
+    add_executable(simplex_mpi_bench src/simplex_mpi_bench.cc)
+    add_executable(cross_mapping_mpi_bench src/cross_mapping_mpi_bench.cc)
+
+    target_link_libraries(simplex_mpi_bench PRIVATE mpedm MPI::MPI_CXX
+                          nlohmann_json::nlohmann_json)
+    target_link_libraries(cross_mapping_mpi_bench PRIVATE mpedm MPI::MPI_CXX
+                          nlohmann_json::nlohmann_json)
+
+    target_link_libraries(cross_mapping_mpi_bench PRIVATE argh)
     target_link_libraries(cross_mapping_mpi_bench PRIVATE HighFive)
   else()
-    message(FATAL_ERROR "HDF5 is not a parallel build")
+    message(WARNING "MPI was found but parallel HDF5 is missing, multi-node benchmarks are disabled")
   endif()
-
 else()
     message(WARNING "MPI was NOT found, multi-node benchmarks are disabled")
 endif()
