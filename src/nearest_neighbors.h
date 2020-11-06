@@ -5,10 +5,14 @@
 
 #include "data_frame.h"
 #include "lut.h"
+#include "timer.h"
 
 class NearestNeighbors
 {
 public:
+    Timer timer_distances;
+    Timer timer_sorting;
+
     NearestNeighbors(uint32_t tau, uint32_t Tp, bool verbose)
         : tau(tau), Tp(Tp), verbose(verbose)
     {

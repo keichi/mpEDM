@@ -3,6 +3,19 @@
 #include <limits>
 #include <vector>
 
+#ifdef LIKWID_PERFMON
+#include <likwid.h>
+#else
+#define LIKWID_MARKER_INIT
+#define LIKWID_MARKER_THREADINIT
+#define LIKWID_MARKER_SWITCH
+#define LIKWID_MARKER_REGISTER(regionTag)
+#define LIKWID_MARKER_START(regionTag)
+#define LIKWID_MARKER_STOP(regionTag)
+#define LIKWID_MARKER_CLOSE
+#define LIKWID_MARKER_GET(regionTag, nevents, events, time, count)
+#endif
+
 #include "nearest_neighbors_cpu.h"
 
 NearestNeighborsCPU::NearestNeighborsCPU(uint32_t tau, uint32_t Tp,
@@ -24,8 +37,14 @@ void NearestNeighborsCPU::compute_lut(LUT &out, const Series &library,
     const auto p_target = target.data();
 
     cache.resize(n_target, n_library);
+    timer_distances.start();
 
     // Compute distances between all library and target points
+    #pragma omp parallel
+    {
+        LIKWID_MARKER_START("calc_distances");
+    }
+
     #pragma omp parallel for
     for (auto i = 0u; i < n_target; i++) {
         std::vector<float> ssd(n_library);
@@ -45,6 +64,11 @@ void NearestNeighborsCPU::compute_lut(LUT &out, const Series &library,
             cache.distances[i * n_library + j] = ssd[j];
             cache.indices[i * n_library + j] = j;
         }
+    }
+
+    #pragma omp parallel
+    {
+        LIKWID_MARKER_STOP("calc_distances");
     }
 
     // Ignore degenerate neighbors
@@ -69,9 +93,23 @@ void NearestNeighborsCPU::compute_lut(LUT &out, const Series &library,
                                      cache.distances[i * n_library + b];
                           });
     }
+    timer_distances.stop();
 
     // Allocate buffer in LUT
     out.resize(n_target, top_k);
+
+    timer_sorting.start();
+
+    // Sort indices
+    #pragma omp parallel
+    {
+        LIKWID_MARKER_START("partial_sort");
+
+
+        LIKWID_MARKER_STOP("partial_sort");
+    }
+
+    timer_sorting.stop();
 
     // Compute L2 norms from SSDs and reorder them to match the indices
     // Shift indices

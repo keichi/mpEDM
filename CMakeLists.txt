@@ -109,6 +109,15 @@ else()
     message(WARNING "MPI was NOT found, multi-node benchmarks are disabled")
 endif()
 
+option(USE_LIKWID "Enable LIKWID performance counters")
+if(USE_LIKWID)
+  find_package(likwid)
+  target_link_libraries(mpedm PRIVATE likwid::likwid)
+  target_link_libraries(knn_bench PRIVATE likwid::likwid)
+  target_compile_definitions(mpedm PRIVATE -DLIKWID_PERFMON)
+  target_compile_definitions(knn_bench PRIVATE -DLIKWID_PERFMON)
+endif()
+
 # Tests
 
 enable_testing()

@@ -7,6 +7,18 @@
 #endif
 
 #include <argh.h>
+#ifdef LIKWID_PERFMON
+#include <likwid.h>
+#else
+#define LIKWID_MARKER_INIT
+#define LIKWID_MARKER_THREADINIT
+#define LIKWID_MARKER_SWITCH
+#define LIKWID_MARKER_REGISTER(regionTag)
+#define LIKWID_MARKER_START(regionTag)
+#define LIKWID_MARKER_STOP(regionTag)
+#define LIKWID_MARKER_CLOSE
+#define LIKWID_MARKER_GET(regionTag, nevents, events, time, count)
+#endif
 
 #include "nearest_neighbors.h"
 #include "nearest_neighbors_cpu.h"
@@ -19,14 +31,24 @@ template <class T>
 void run_common(uint32_t L, uint32_t E, uint32_t tau, uint32_t iterations,
                 bool verbose)
 {
+    LIKWID_MARKER_INIT;
+#pragma omp parallel
+    {
+        LIKWID_MARKER_THREADINIT;
+
+        LIKWID_MARKER_REGISTER("calc_distances");
+        LIKWID_MARKER_REGISTER("partial_sort");
+    }
+
     auto kernel = std::unique_ptr<NearestNeighbors>(new T(tau, 1, verbose));
+
+    std::vector<float> library_vec(L);
+    std::vector<float> target_vec(L);
 
     std::random_device rand_dev;
     std::default_random_engine engine(rand_dev());
     std::uniform_real_distribution<> dist(0.0f, 1.0f);
 
-    std::vector<float> library_vec(L);
-    std::vector<float> target_vec(L);
     for (auto i = 0u; i < L; i++) {
         library_vec[i] = dist(engine);
         target_vec[i] = dist(engine);
@@ -36,9 +58,18 @@ void run_common(uint32_t L, uint32_t E, uint32_t tau, uint32_t iterations,
     Series library(library_vec);
     Series target(target_vec);
 
+    // Warm-up loop
+    for (auto i = 0u; i < iterations / 10; i++) {
+        kernel->compute_lut(out, library, target, E, E + 1);
+    }
+
+    kernel->timer_distances.reset();
+    kernel->timer_sorting.reset();
+
     Timer timer;
     timer.start();
 
+    // Actual measurement loop
     for (auto i = 0u; i < iterations; i++) {
         kernel->compute_lut(out, library, target, E, E + 1);
     }
@@ -46,6 +77,13 @@ void run_common(uint32_t L, uint32_t E, uint32_t tau, uint32_t iterations,
     timer.stop();
 
     std::cout << "Elapsed: " << timer.elapsed() << " [ms]" << std::endl;
+
+    std::cout << "calc_distances "
+              << kernel->timer_distances.elapsed() / iterations << std::endl;
+    std::cout << "partial_sort " << kernel->timer_sorting.elapsed() / iterations
+              << std::endl;
+
+    LIKWID_MARKER_CLOSE;
 }
 
 void usage(const std::string &app_name)
