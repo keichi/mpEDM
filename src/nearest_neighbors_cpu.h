@@ -28,7 +28,7 @@ public:
     using reference = T &;
     using iterator_category = std::input_iterator_tag;
 
-    Counter(T i) : i_(i) {}
+    explicit Counter(T i) : i_(i) {}
     T operator*() const noexcept { return i_; }
     Counter &operator++() noexcept
     {
