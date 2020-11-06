@@ -1,5 +1,6 @@
 #include <algorithm>
 #include <cmath>
+#include <iostream>
 #include <limits>
 #include <vector>
 
@@ -36,7 +37,9 @@ void NearestNeighborsCPU::compute_lut(LUT &out, const Series &library,
     const auto p_library = library.data();
     const auto p_target = target.data();
 
-    cache.resize(n_target, n_library);
+    // Allocate temporary buffer for distance matrix
+    distances.resize(n_target * n_library);
+
     timer_distances.start();
 
     // Compute distances between all library and target points
@@ -50,19 +53,19 @@ void NearestNeighborsCPU::compute_lut(LUT &out, const Series &library,
         std::vector<float> ssd(n_library);
 
         for (auto k = 0u; k < E; k++) {
+            const float tmp = p_target[i + k * tau];
+
             #pragma omp simd
-            #pragma code_align 32
             for (auto j = 0u; j < n_library; j++) {
                 // Perform embedding on-the-fly
-                auto diff = p_target[i + k * tau] - p_library[j + k * tau];
+                auto diff = tmp - p_library[j + k * tau];
                 ssd[j] += diff * diff;
             }
         }
 
         #pragma omp simd
         for (auto j = 0u; j < n_library; j++) {
-            cache.distances[i * n_library + j] = ssd[j];
-            cache.indices[i * n_library + j] = j;
+            distances[i * n_library + j] = ssd[j];
         }
     }
 
@@ -76,23 +79,12 @@ void NearestNeighborsCPU::compute_lut(LUT &out, const Series &library,
     for (auto i = 0u; i < n_target; i++) {
         for (auto j = 0u; j < n_library; j++) {
             if (p_target + i == p_library + j) {
-                cache.distances[i * n_library + j] =
+                distances[i * n_library + j] =
                     std::numeric_limits<float>::infinity();
             }
         }
     }
 
-    // Sort indices
-    #pragma omp parallel for
-    for (auto i = 0u; i < n_target; i++) {
-        std::partial_sort(cache.indices.begin() + i * n_library,
-                          cache.indices.begin() + i * n_library + top_k,
-                          cache.indices.begin() + (i + 1) * n_library,
-                          [&](uint32_t a, uint32_t b) -> uint32_t {
-                              return cache.distances[i * n_library + a] <
-                                     cache.distances[i * n_library + b];
-                          });
-    }
     timer_distances.stop();
 
     // Allocate buffer in LUT
@@ -105,6 +97,17 @@ void NearestNeighborsCPU::compute_lut(LUT &out, const Series &library,
     {
         LIKWID_MARKER_START("partial_sort");
 
+        #pragma omp for
+        for (auto i = 0u; i < n_target; i++) {
+            std::partial_sort_copy(Counter<uint32_t>(0),
+                                   Counter<uint32_t>(n_library),
+                                   out.indices.begin() + i * top_k,
+                                   out.indices.begin() + (i + 1) * top_k,
+                                   [&](uint32_t a, uint32_t b) -> uint32_t {
+                                       return distances[i * n_library + a] <
+                                              distances[i * n_library + b];
+                                   });
+        }
 
         LIKWID_MARKER_STOP("partial_sort");
     }
@@ -115,13 +118,12 @@ void NearestNeighborsCPU::compute_lut(LUT &out, const Series &library,
     // Shift indices
     #pragma omp parallel for
     for (auto i = 0u; i < n_target; i++) {
-        #pragma omp simd
-        #pragma nounroll
         for (auto j = 0u; j < top_k; j++) {
-            auto idx = cache.indices[i * n_library + j];
+            auto idx = out.indices[i * top_k + j];
             out.distances[i * top_k + j] =
-                std::sqrt(cache.distances[i * n_library + idx]);
+                std::sqrt(distances[i * n_library + idx]);
             out.indices[i * top_k + j] = idx + shift;
+
         }
     }
 }
