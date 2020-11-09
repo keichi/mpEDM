@@ -3,6 +3,7 @@
 
 #include "lut.h"
 #include "nearest_neighbors.h"
+#include "uninitialized_vector.h"
 
 class NearestNeighborsCPU : public NearestNeighbors
 {
@@ -13,7 +14,7 @@ public:
                      uint32_t E, uint32_t top_k) override;
 
 protected:
-    std::vector<float> distances;
+    uninitialized_vector<float> distances;
 };
 
 template <class T> class Counter

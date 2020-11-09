@@ -50,7 +50,10 @@ void NearestNeighborsCPU::compute_lut(LUT &out, const Series &library,
 
     #pragma omp parallel for
     for (auto i = 0u; i < n_target; i++) {
-        std::vector<float> ssd(n_library);
+        #pragma omp simd
+        for (auto j = 0u; j < n_library; j++) {
+            distances[i * n_library + j] = 0.0f;
+        }
 
         for (auto k = 0u; k < E; k++) {
             const float tmp = p_target[i + k * tau];
@@ -59,13 +62,8 @@ void NearestNeighborsCPU::compute_lut(LUT &out, const Series &library,
             for (auto j = 0u; j < n_library; j++) {
                 // Perform embedding on-the-fly
                 auto diff = tmp - p_library[j + k * tau];
-                ssd[j] += diff * diff;
+                distances[i * n_library + j] += diff * diff;
             }
-        }
-
-        #pragma omp simd
-        for (auto j = 0u; j < n_library; j++) {
-            distances[i * n_library + j] = ssd[j];
         }
     }
 

@@ -4,6 +4,8 @@
 #include <cstdint>
 #include <vector>
 
+#include "uninitialized_vector.h"
+
 class LUT
 {
 public:
@@ -14,17 +16,17 @@ public:
     {
     }
     LUT(uint32_t n_rows, uint32_t n_columns,
-        const std::vector<float> &distances,
-        const std::vector<uint32_t> &indices)
+        const uninitialized_vector<float> &distances,
+        const uninitialized_vector<uint32_t> &indices)
         : distances(distances), indices(indices), _n_rows(n_rows),
           _n_columns(n_columns)
     {
     }
 
     // Eucledian distance between point i and j
-    std::vector<float> distances;
+    uninitialized_vector<float> distances;
     // Index of the j-th closest point from point i
-    std::vector<uint32_t> indices;
+    uninitialized_vector<uint32_t> indices;
 
     uint32_t n_rows() const { return _n_rows; }
     uint32_t n_columns() const { return _n_columns; }
