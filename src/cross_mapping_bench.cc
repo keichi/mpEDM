@@ -108,7 +108,7 @@ void usage(const std::string &app_name)
 int main(int argc, char *argv[])
 {
     argh::parser cmdl({"-t", "--tau", "-p", "--tp", "-e", "--maxe", "-x",
-                       "--kernel", "-d", "--dataset", "-v", "--verbose"});
+                       "--kernel", "-d", "--dataset"});
     cmdl.parse(argc, argv);
 
     if (cmdl[{"-h", "--help"}]) {
