@@ -52,4 +52,4 @@ Wassapon Watanakeesuntorn, Keichi Takahashi, Kohei Ichikawa, Joseph Park,
 George Sugihara, Ryousei Takano, Jason Haga, Gerald M. Pao, "Massively
 Parallel Causal Inference of Whole Brain Dynamics at Single Neuron Resolution",
 _26th International Conference on Parallel and Distributed Systems (ICPADS
-2020)_, Dec. 2020.
+2020)_, Dec. 2020. [10.1109/ICPADS51040.2020.00035](https://doi.org/10.1109/ICPADS51040.2020.00035)
