@@ -1,10 +1,8 @@
 #!/usr/bin/env python3
 
-import numpy as np
 import pandas as pd
 import h5py
 
-import sys
 import argparse
 from pathlib import Path
 
@@ -30,7 +28,7 @@ result_df = pd.DataFrame(result_file["corrcoef"])
 if Path(args.dataset).suffix == ".h5":
     dataset_file = h5py.File(args.dataset, 'r')
     dataset_names = pd.DataFrame(dataset_file["names"])
-    dataset_names.stack().str.decode('utf-8')
+    dataset_names = dataset_names.stack().str.decode('utf-8')
     dataset_values = pd.DataFrame(dataset_file["values"])
 
     dataset_values.columns = dataset_names
