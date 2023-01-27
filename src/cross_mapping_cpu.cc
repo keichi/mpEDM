@@ -41,6 +41,7 @@ void CrossMappingCPU::run(std::vector<float> &rhos, const Series &library,
     }
     t1.stop();
 
+    // cppcheck-suppress variableScope
     std::vector<float> buffer;
     // Compute Simplex projection from the library to every target
     t2.start();

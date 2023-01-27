@@ -34,6 +34,7 @@ void DataFrame::load_csv(const std::string &path)
 {
     std::ifstream ifs(path);
     std::string line;
+    // cppcheck-suppress shadowVariable
     std::vector<std::vector<float>> columns;
 
     if (!ifs) {
