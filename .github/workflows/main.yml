@@ -12,7 +12,7 @@ jobs:
   linux-gpu:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v3
       with:
         submodules: true
     - name: Install dependencies
@@ -38,7 +38,7 @@ jobs:
   linux-cpu:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v3
       with:
         submodules: true
     - name: Install dependencies
@@ -58,7 +58,7 @@ jobs:
   macos-cpu:
     runs-on: macOS-latest
     steps:
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v3
       with:
         submodules: true
     - name: Install dependencies
@@ -78,14 +78,14 @@ jobs:
   format:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v3
     - name: Run clang-format
       run: ./scripts/run-clang-format.py -r src --clang-format-executable $(which clang-format-8)
 
   cppcheck:
     runs-on: macOS-latest
     steps:
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v3
     - name: Install cppcheck
       run: brew install cppcheck
     - name: Run cppcheck
