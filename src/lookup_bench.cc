@@ -3,7 +3,6 @@
 #include <random>
 
 #include <argh.h>
-#include <omp.h>
 #ifdef LIKWID_PERFMON
 #include <likwid.h>
 #else
@@ -79,8 +78,8 @@ int main(int argc, char *argv[])
 
 #pragma omp parallel
     {
-        std::random_device dev;
-        std::default_random_engine engine;
+        std::random_device rand_dev;
+        std::default_random_engine engine(rand_dev());
         std::uniform_real_distribution<float> dist(0.0f, 1.0f);
 
 #pragma omp for
@@ -93,18 +92,16 @@ int main(int argc, char *argv[])
 
     LUT lut;
     std::unique_ptr<NearestNeighbors> knn;
-    std::unique_ptr<Simplex> simplex =
-        std::unique_ptr<Simplex>(new SimplexCPU(tau, 1, verbose));
 
     if (kernel_type == "cpu") {
-        std::cout << "Using CPU Simplex kernel" << std::endl;
+        std::cout << "Using CPU kNN kernel" << std::endl;
 
         knn = std::unique_ptr<NearestNeighbors>(
             new NearestNeighborsCPU(tau, 1, verbose));
     }
 #ifdef ENABLE_GPU_KERNEL
     else if (kernel_type == "gpu") {
-        std::cout << "Using GPU Simplex kernel" << std::endl;
+        std::cout << "Using GPU kNN kernel" << std::endl;
 
         knn = std::unique_ptr<NearestNeighbors>(
             new NearestNeighborsGPU(tau, 1, verbose));
@@ -137,14 +134,14 @@ int main(int argc, char *argv[])
         LIKWID_MARKER_START("lookup");
     }
 
-    for (auto iter = 0u; iter < iterations; iter++) {
+    for (auto iter = 0; iter < iterations; iter++) {
         t.start();
 #pragma omp parallel for
-        for (auto i = 0u; i < N; i++) {
+        for (auto i = 0; i < N; i++) {
             for (auto j = 0u; j < lut.n_rows(); j++) {
                 float pred = 0.0f;
 
-                for (auto e = 0u; e < E + 1; e++) {
+                for (auto e = 0; e < E + 1; e++) {
                     const auto idx = lut.indices[j * lut.n_columns() + e];
                     const auto dist = lut.distances[j * lut.n_columns() + e];
                     pred += input[i * L + idx] * dist;
