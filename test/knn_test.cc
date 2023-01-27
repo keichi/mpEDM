@@ -1,5 +1,5 @@
-#define CATCH_CONFIG_MAIN
-#include <catch2/catch.hpp>
+#include <catch2/catch_approx.hpp>
+#include <catch2/catch_test_macros.hpp>
 
 #include "../src/data_frame.h"
 #include "../src/lut.h"
@@ -29,7 +29,7 @@ template <class T> void knn_test_common(int E)
     for (auto row = 0u; row < lut.n_rows(); row++) {
         for (auto col = 0u; col < lut.n_columns(); col++) {
             REQUIRE(lut.distances[row * lut.n_columns() + col] ==
-                    Approx(df2.columns[col][row]));
+                    Catch::Approx(df2.columns[col][row]));
         }
     }
 }

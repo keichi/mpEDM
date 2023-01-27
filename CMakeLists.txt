@@ -131,34 +131,34 @@ enable_testing()
 add_subdirectory(src/thirdparty/catch2)
 include(CTest)
 
-include(src/thirdparty/catch2/contrib/Catch.cmake)
+include(src/thirdparty/catch2/extras/Catch.cmake)
 
 # Lookup table test
 add_executable(lut_test test/lut_test.cc)
-target_link_libraries(lut_test PRIVATE mpedm Catch2::Catch2)
+target_link_libraries(lut_test PRIVATE mpedm Catch2::Catch2WithMain)
 catch_discover_tests(lut_test
                      WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/test)
 
 # k-nearest neighbors test
 add_executable(knn_test test/knn_test.cc)
-target_link_libraries(knn_test PRIVATE mpedm Catch2::Catch2)
+target_link_libraries(knn_test PRIVATE mpedm Catch2::Catch2WithMain)
 catch_discover_tests(knn_test
                      WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/test)
 
 # Cross mapping test (one-to-one)
 add_executable(xmap_one_to_one_test test/xmap_one_to_one_test.cc)
-target_link_libraries(xmap_one_to_one_test PRIVATE mpedm Catch2::Catch2)
+target_link_libraries(xmap_one_to_one_test PRIVATE mpedm Catch2::Catch2WithMain)
 catch_discover_tests(xmap_one_to_one_test
                      WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/test)
 
 # Cross mapping test (all-to-all)
 add_executable(xmap_all_to_all_test test/xmap_all_to_all_test.cc)
-target_link_libraries(xmap_all_to_all_test PRIVATE mpedm Catch2::Catch2 HighFive)
+target_link_libraries(xmap_all_to_all_test PRIVATE mpedm Catch2::Catch2WithMain HighFive)
 catch_discover_tests(xmap_all_to_all_test
                      WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/test)
 
 # Simplex test
 add_executable(simplex_test test/simplex_test.cc)
-target_link_libraries(simplex_test PRIVATE mpedm Catch2::Catch2)
+target_link_libraries(simplex_test PRIVATE mpedm Catch2::Catch2WithMain)
 catch_discover_tests(simplex_test
                      WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/test)

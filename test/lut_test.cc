@@ -1,5 +1,5 @@
-#define CATCH_CONFIG_MAIN
-#include <catch2/catch.hpp>
+#include <catch2/catch_approx.hpp>
+#include <catch2/catch_test_macros.hpp>
 
 #include "../src/lut.h"
 
@@ -33,6 +33,6 @@ TEST_CASE("Normalize lookup table", "[lut][cpu]")
     lut.normalize();
 
     for (auto i = 0u; i < lut.n_columns() * lut.n_rows(); i++) {
-        REQUIRE(lut.distances[i] == Approx(normalized[i]));
+        REQUIRE(lut.distances[i] == Catch::Approx(normalized[i]));
     }
 }
