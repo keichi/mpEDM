@@ -1,5 +1,7 @@
-#define CATCH_CONFIG_MAIN
-#include <catch2/catch.hpp>
+#include <algorithm>
+
+#include <catch2/catch_approx.hpp>
+#include <catch2/catch_test_macros.hpp>
 
 #include "../src/data_frame.h"
 #include "../src/lut.h"
@@ -40,7 +42,7 @@ template <class T, class U> void simplex_test_common(int E)
     REQUIRE(prediction.size() == valid_prediction.size());
 
     for (size_t i = 0; i < prediction.size(); i++) {
-        REQUIRE(prediction[i] == Approx(valid_prediction[i]).margin(1e-4f));
+        REQUIRE(prediction[i] == Catch::Approx(valid_prediction[i]).margin(1e-4f));
     }
 }
 
@@ -125,7 +127,7 @@ template <class T, class U> void embed_dim_test_common()
         rho_valid[E - 1] = df2.columns[1][E - 1];
 
         // Check correlation coefficient
-        REQUIRE(rho[E - 1] == Approx(rho_valid[E - 1]));
+        REQUIRE(rho[E - 1] == Catch::Approx(rho_valid[E - 1]));
     }
 
     const auto it = std::max_element(rho.begin(), rho.end());

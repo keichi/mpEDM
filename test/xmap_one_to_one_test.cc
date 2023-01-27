@@ -1,5 +1,5 @@
-#define CATCH_CONFIG_MAIN
-#include <catch2/catch.hpp>
+#include <catch2/catch_approx.hpp>
+#include <catch2/catch_test_macros.hpp>
 
 #include "../src/data_frame.h"
 #include "../src/lut.h"
@@ -45,7 +45,7 @@ template <class T, class U> void cross_mapping_test_common(uint32_t E)
     REQUIRE(prediction.size() == valid_prediction.size());
 
     for (auto i = 0u; i < prediction.size(); i++) {
-        REQUIRE(prediction[i] == Approx(valid_prediction[i]).margin(1e-5f));
+        REQUIRE(prediction[i] == Catch::Approx(valid_prediction[i]).margin(1e-5f));
     }
 }
 

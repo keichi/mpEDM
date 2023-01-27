@@ -34,6 +34,16 @@ public:
     std::vector<Series> columns;
 
     DataFrame() : _n_rows(0), _n_columns(0) {}
+    DataFrame(int n_rows, int n_columns)
+        : _n_rows(n_rows), _n_columns(n_columns)
+    {
+        create_timeseries();
+    }
+    DataFrame(const std::vector<float> &data, int n_rows, int n_columns)
+        : _data(data), _n_rows(n_rows), _n_columns(n_columns)
+    {
+        create_timeseries();
+    }
 
     const float *data() const { return _data.data(); }
     size_t n_rows() const { return _n_rows; }

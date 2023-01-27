@@ -1,5 +1,5 @@
-#define CATCH_CONFIG_MAIN
-#include <catch2/catch.hpp>
+#include <catch2/catch_approx.hpp>
+#include <catch2/catch_test_macros.hpp>
 #include <highfive/H5DataSet.hpp>
 #include <highfive/H5File.hpp>
 
@@ -40,7 +40,7 @@ void xmap_all_to_all_test_common(const HighFive::File &file,
         ds_corrcoef.select({i, 0}, {1, df.n_columns()}).read(rhos_valid);
 
         for (auto j = 0u; j < df.n_columns(); j++) {
-            REQUIRE(rhos[j] == Approx(rhos_valid[j]).margin(1e-5));
+            REQUIRE(rhos[j] == Catch::Approx(rhos_valid[j]).margin(1e-5));
         }
     }
 }

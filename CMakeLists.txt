@@ -28,16 +28,19 @@ add_library(mpedm SHARED src/data_frame.cc src/lut.cc
 add_executable(knn_bench src/knn_bench.cc)
 add_executable(simplex_bench src/simplex_bench.cc)
 add_executable(cross_mapping_bench src/cross_mapping_bench.cc)
+add_executable(lookup_bench src/lookup_bench.cc)
 
 target_link_libraries(knn_bench PRIVATE mpedm)
 target_link_libraries(simplex_bench PRIVATE mpedm)
 target_link_libraries(cross_mapping_bench PRIVATE mpedm)
+target_link_libraries(lookup_bench PRIVATE mpedm)
 
 # argh
 add_subdirectory(src/thirdparty/argh)
 target_link_libraries(knn_bench PRIVATE argh)
 target_link_libraries(simplex_bench PRIVATE argh)
 target_link_libraries(cross_mapping_bench PRIVATE argh)
+target_link_libraries(lookup_bench PRIVATE argh)
 
 # HDF5
 find_package(HDF5 REQUIRED)
@@ -54,6 +57,7 @@ if(OpenMP_FOUND)
   message(STATUS "OpenMP found, enabling multi-threading")
 
   target_link_libraries(mpedm PRIVATE OpenMP::OpenMP_CXX)
+  target_link_libraries(lookup_bench PRIVATE OpenMP::OpenMP_CXX)
 else()
   message(WARNING "OpenMP was NOT found, multi-threading is disabled")
 endif()
@@ -114,8 +118,10 @@ if(USE_LIKWID)
   find_package(likwid)
   target_link_libraries(mpedm PRIVATE likwid::likwid)
   target_link_libraries(knn_bench PRIVATE likwid::likwid)
+  target_link_libraries(lookup_bench PRIVATE likwid::likwid)
   target_compile_definitions(mpedm PRIVATE -DLIKWID_PERFMON)
   target_compile_definitions(knn_bench PRIVATE -DLIKWID_PERFMON)
+  target_compile_definitions(lookup_bench PRIVATE -DLIKWID_PERFMON)
 endif()
 
 # Tests
@@ -125,34 +131,34 @@ enable_testing()
 add_subdirectory(src/thirdparty/catch2)
 include(CTest)
 
-include(src/thirdparty/catch2/contrib/Catch.cmake)
+include(src/thirdparty/catch2/extras/Catch.cmake)
 
 # Lookup table test
 add_executable(lut_test test/lut_test.cc)
-target_link_libraries(lut_test PRIVATE mpedm Catch2::Catch2)
+target_link_libraries(lut_test PRIVATE mpedm Catch2::Catch2WithMain)
 catch_discover_tests(lut_test
                      WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/test)
 
 # k-nearest neighbors test
 add_executable(knn_test test/knn_test.cc)
-target_link_libraries(knn_test PRIVATE mpedm Catch2::Catch2)
+target_link_libraries(knn_test PRIVATE mpedm Catch2::Catch2WithMain)
 catch_discover_tests(knn_test
                      WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/test)
 
 # Cross mapping test (one-to-one)
 add_executable(xmap_one_to_one_test test/xmap_one_to_one_test.cc)
-target_link_libraries(xmap_one_to_one_test PRIVATE mpedm Catch2::Catch2)
+target_link_libraries(xmap_one_to_one_test PRIVATE mpedm Catch2::Catch2WithMain)
 catch_discover_tests(xmap_one_to_one_test
                      WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/test)
 
 # Cross mapping test (all-to-all)
 add_executable(xmap_all_to_all_test test/xmap_all_to_all_test.cc)
-target_link_libraries(xmap_all_to_all_test PRIVATE mpedm Catch2::Catch2 HighFive)
+target_link_libraries(xmap_all_to_all_test PRIVATE mpedm Catch2::Catch2WithMain HighFive)
 catch_discover_tests(xmap_all_to_all_test
                      WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/test)
 
 # Simplex test
 add_executable(simplex_test test/simplex_test.cc)
-target_link_libraries(simplex_test PRIVATE mpedm Catch2::Catch2)
+target_link_libraries(simplex_test PRIVATE mpedm Catch2::Catch2WithMain)
 catch_discover_tests(simplex_test
                      WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/test)
