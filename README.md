@@ -1,5 +1,11 @@
 # mpEDM [![](https://github.com/keichi/mpEDM/workflows/build/badge.svg)](https://github.com/keichi/mpEDM/actions?query=workflow%3Abuild)
 
+This project has been superseded by [kEDM](https://github.com/keichi/kEDM) and
+will no longer be maintained. kEDM has generally higher performance than mpEDM,
+and provides Python bindings for ease of use.
+
+----
+
 GPU-accelerated implementation of Empirical Dynamic Modeling
 
 ## Requirements
